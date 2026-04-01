@@ -4,6 +4,7 @@
  * Sortable columns, alternating warm rows, pill badges
  */
 
+import React from "react";
 import { motion } from "framer-motion";
 import { partners, type Partner, statusCounts } from "@/lib/data";
 import {
@@ -259,9 +260,8 @@ export default function PartnerTable() {
               const isExpanded = expandedId === partner.id;
 
               return (
-                <>
+                <React.Fragment key={partner.id}>
                   <motion.tr
-                    key={partner.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.03 * i + 0.5, duration: 0.3 }}
@@ -332,7 +332,7 @@ export default function PartnerTable() {
                     </td>
                   </motion.tr>
                   {isExpanded && <ExpandedRow key={`exp-${partner.id}`} partner={partner} />}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
