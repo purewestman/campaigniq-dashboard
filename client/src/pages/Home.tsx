@@ -4,11 +4,10 @@
  * FY27 Partner SE Journey Compliance & Gap Analysis
  *
  * Layout: Fixed sidebar (left) + scrollable main content
- * Components: Header, KPI Cards, Gap Analysis Chart, Journey Donut,
- *             Compliance Summary, Partner Table
+ * Filter state is lifted here and passed to all child components
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -17,10 +16,24 @@ import GapAnalysisChart from "@/components/ChannelChart";
 import JourneyDonut from "@/components/BudgetDonut";
 import ComplianceSummary from "@/components/ChannelSummary";
 import PartnerTable from "@/components/CampaignTable";
+import {
+  type ComplianceFilter,
+  filterPartners,
+  getFilteredKPIs,
+  getFilteredGapBreakdown,
+  getFilteredJourneySteps,
+} from "@/lib/data";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
+
+  // Derive filtered data from the single filter state
+  const filteredPartners = useMemo(() => filterPartners(complianceFilter), [complianceFilter]);
+  const filteredKPIs = useMemo(() => getFilteredKPIs(filteredPartners), [filteredPartners]);
+  const filteredGapData = useMemo(() => getFilteredGapBreakdown(filteredPartners), [filteredPartners]);
+  const filteredJourneySteps = useMemo(() => getFilteredJourneySteps(filteredPartners), [filteredPartners]);
 
   return (
     <div className="min-h-screen flex" style={{ background: "oklch(0.975 0.008 85)" }}>
@@ -45,27 +58,34 @@ export default function Home() {
 
           {/* KPI Cards Row */}
           <section className="mb-6">
-            <KPICards />
+            <KPICards metrics={filteredKPIs} />
           </section>
 
-          {/* Compliance Status Summary Cards */}
+          {/* Compliance Status Summary Cards (clickable filter) */}
           <section className="mb-6">
-            <ComplianceSummary />
+            <ComplianceSummary
+              activeFilter={complianceFilter}
+              onFilterChange={setComplianceFilter}
+            />
           </section>
 
           {/* Charts Row: Gap Analysis (60%) + Journey Donut (40%) */}
           <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
             <div className="lg:col-span-3">
-              <GapAnalysisChart />
+              <GapAnalysisChart data={filteredGapData} />
             </div>
             <div className="lg:col-span-2">
-              <JourneyDonut />
+              <JourneyDonut data={filteredJourneySteps} />
             </div>
           </section>
 
           {/* Partner SE Compliance Table */}
           <section className="mb-8">
-            <PartnerTable />
+            <PartnerTable
+              partners={filteredPartners}
+              activeFilter={complianceFilter}
+              onFilterChange={setComplianceFilter}
+            />
           </section>
 
           {/* Footer */}

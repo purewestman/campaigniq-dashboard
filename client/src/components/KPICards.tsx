@@ -1,7 +1,7 @@
 /*
  * KPI Cards — "Soft Terrain" design
  * FY27 Partner SE Journey Compliance metrics
- * Total Partners, Compliant SEs, SE Gap, Compliance Rate
+ * Accepts filtered metrics from parent
  */
 
 import { motion } from "framer-motion";
@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { kpiMetrics, type KPIMetric } from "@/lib/data";
+import { type KPIMetric } from "@/lib/data";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -151,10 +151,14 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
   );
 }
 
-export default function KPICards() {
+interface KPICardsProps {
+  metrics: KPIMetric[];
+}
+
+export default function KPICards({ metrics }: KPICardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {kpiMetrics.map((metric, i) => (
+      {metrics.map((metric, i) => (
         <KPICard key={metric.id} metric={metric} index={i} />
       ))}
     </div>

@@ -6,6 +6,8 @@
 
 // ─── Types ──────────────────────────────────────────────────
 
+export type ComplianceFilter = "all" | "compliant" | "partial" | "high-gap";
+
 export interface KPIMetric {
   id: string;
   label: string;
@@ -345,7 +347,89 @@ export const partners: Partner[] = [
   },
 ];
 
-// ─── KPI Cards ──────────────────────────────────────────────
+// ─── Filter helpers ─────────────────────────────────────────
+
+export function filterPartners(filter: ComplianceFilter): Partner[] {
+  if (filter === "all") return partners;
+  return partners.filter((p) => p.status === filter);
+}
+
+export function getFilteredGapBreakdown(filtered: Partner[]) {
+  return filtered
+    .filter((p) => p.seGap > 0)
+    .sort((a, b) => b.seGap - a.seGap)
+    .map((p) => ({
+      partner: p.name.length > 22 ? p.name.substring(0, 20) + "…" : p.name,
+      fullName: p.name,
+      "SE Gap": p.seGap,
+      "Has SP Only": Math.max(p.spSEs - p.compliantSEs, 0),
+      "Has TSP Only": Math.max(p.tspSEs - p.compliantSEs, 0),
+    }));
+}
+
+export function getFilteredJourneySteps(filtered: Partner[]): StatusCategory[] {
+  const total = filtered.length;
+  if (total === 0) return [];
+  const stepCounts = [0, 1, 2, 3, 4, 5, 6].map(
+    (step) => filtered.filter((p) => p.journeyStep === step).length
+  );
+  return [
+    { category: "Not Started (Step 0)", count: stepCounts[0], percentage: Math.round((stepCounts[0] / total) * 100), color: "oklch(0.62 0.19 15)" },
+    { category: "Simply Pure (Step 1)", count: stepCounts[1], percentage: Math.round((stepCounts[1] / total) * 100), color: "oklch(0.75 0.14 75)" },
+    { category: "SP + TSP (Step 2)", count: stepCounts[2], percentage: Math.round((stepCounts[2] / total) * 100), color: "oklch(0.58 0.16 290)" },
+    { category: "Electives (Step 5)", count: stepCounts[5], percentage: Math.round((stepCounts[5] / total) * 100), color: "oklch(0.60 0.12 175)" },
+    { category: "Certifications (Step 6)", count: stepCounts[6], percentage: Math.round((stepCounts[6] / total) * 100), color: "oklch(0.55 0.08 200)" },
+  ];
+}
+
+export function getFilteredKPIs(filtered: Partner[]): KPIMetric[] {
+  const total = filtered.length;
+  const compliantSEs = filtered.reduce((s, p) => s + p.compliantSEs, 0);
+  const seGap = filtered.reduce((s, p) => s + p.seGap, 0);
+  const required = total * 3;
+  const rate = required > 0 ? Math.round((compliantSEs / required) * 100) : 0;
+
+  return [
+    {
+      id: "partners",
+      label: "Total Partners",
+      value: total.toString(),
+      change: 4,
+      changeLabel: "new this FY",
+      trend: "up",
+      sparkline: [16, 17, 18, 19, 20, 21, total],
+    },
+    {
+      id: "compliant-ses",
+      label: "Compliant SEs",
+      value: compliantSEs.toString(),
+      change: 15,
+      changeLabel: `of ${required} required`,
+      trend: "up",
+      sparkline: [5, 7, 9, 10, 12, 13, compliantSEs],
+    },
+    {
+      id: "se-gap",
+      label: "SE Gap (Needed)",
+      value: seGap.toString(),
+      change: -6,
+      changeLabel: "vs last month",
+      trend: "down",
+      sparkline: [60, 58, 56, 55, 53, 52, seGap],
+    },
+    {
+      id: "compliance",
+      label: "Compliance Rate",
+      value: `${rate}%`,
+      change: 5,
+      changeLabel: "vs last quarter",
+      trend: rate >= 50 ? "up" : "down",
+      sparkline: [12, 14, 16, 18, 20, 21, rate],
+    },
+  ];
+}
+
+// ─── KPI Cards (unfiltered defaults) ────────────────────────
 
 const totalPartners = partners.length;
 const compliantPartners = partners.filter((p) => p.status === "compliant").length;
