@@ -1,16 +1,15 @@
 /*
  * KPI Cards — "Soft Terrain" design
- * Warm cream cards with soft shadows, micro-sparklines, animated values
- * Rounded 16px corners, gentle hover lift
+ * Partner Certification Readiness metrics
+ * Total Partners, Certifications Passed, Open Gaps, Readiness Score
  */
 
 import { motion } from "framer-motion";
 import {
-  DollarSign,
-  Eye,
-  MousePointerClick,
-  TrendingUp,
-  TrendingDown,
+  Building2,
+  Award,
+  AlertTriangle,
+  Gauge,
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
@@ -18,29 +17,29 @@ import { kpiMetrics, type KPIMetric } from "@/lib/data";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const iconMap: Record<string, React.ElementType> = {
-  "ad-spend": DollarSign,
-  impressions: Eye,
-  ctr: MousePointerClick,
-  roas: TrendingUp,
+  partners: Building2,
+  "certs-passed": Award,
+  "open-gaps": AlertTriangle,
+  readiness: Gauge,
 };
 
 const gradientMap: Record<string, { from: string; to: string; iconBg: string }> = {
-  "ad-spend": {
+  partners: {
     from: "oklch(0.60 0.12 175 / 0.12)",
     to: "oklch(0.60 0.12 175 / 0.02)",
     iconBg: "oklch(0.60 0.12 175 / 0.12)",
   },
-  impressions: {
+  "certs-passed": {
     from: "oklch(0.58 0.16 290 / 0.12)",
     to: "oklch(0.58 0.16 290 / 0.02)",
     iconBg: "oklch(0.58 0.16 290 / 0.12)",
   },
-  ctr: {
+  "open-gaps": {
     from: "oklch(0.62 0.19 15 / 0.12)",
     to: "oklch(0.62 0.19 15 / 0.02)",
     iconBg: "oklch(0.62 0.19 15 / 0.12)",
   },
-  roas: {
+  readiness: {
     from: "oklch(0.75 0.14 75 / 0.12)",
     to: "oklch(0.75 0.14 75 / 0.02)",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
@@ -48,10 +47,10 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
 };
 
 const sparklineColorMap: Record<string, string> = {
-  "ad-spend": "oklch(0.55 0.12 175)",
-  impressions: "oklch(0.53 0.16 290)",
-  ctr: "oklch(0.58 0.19 15)",
-  roas: "oklch(0.70 0.14 75)",
+  partners: "oklch(0.55 0.12 175)",
+  "certs-passed": "oklch(0.53 0.16 290)",
+  "open-gaps": "oklch(0.58 0.19 15)",
+  readiness: "oklch(0.70 0.14 75)",
 };
 
 function MiniSparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
@@ -84,9 +83,9 @@ function MiniSparkline({ data, color, id }: { data: number[]; color: string; id:
 }
 
 function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
-  const Icon = iconMap[metric.id] || TrendingUp;
-  const colors = gradientMap[metric.id];
-  const sparkColor = sparklineColorMap[metric.id];
+  const Icon = iconMap[metric.id] || Gauge;
+  const colors = gradientMap[metric.id] || gradientMap.partners;
+  const sparkColor = sparklineColorMap[metric.id] || "oklch(0.55 0.12 175)";
 
   return (
     <motion.div
@@ -95,7 +94,6 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="terrain-card p-5 relative overflow-hidden"
     >
-      {/* Subtle gradient overlay */}
       <div
         className="absolute inset-0 opacity-60 pointer-events-none"
         style={{
@@ -104,7 +102,6 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
       />
 
       <div className="relative z-10">
-        {/* Header row */}
         <div className="flex items-center justify-between mb-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -115,7 +112,6 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
           <MiniSparkline data={metric.sparkline} color={sparkColor} id={metric.id} />
         </div>
 
-        {/* Value */}
         <div className="mb-1">
           <p className="text-[13px] font-medium text-muted-foreground mb-1">
             {metric.label}
@@ -125,7 +121,6 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
           </p>
         </div>
 
-        {/* Change indicator */}
         <div className="flex items-center gap-1.5 mt-2">
           <span
             className="inline-flex items-center gap-0.5 text-[12px] font-semibold px-2 py-0.5 rounded-full"

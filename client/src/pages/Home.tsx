@@ -1,10 +1,11 @@
 /*
  * Home Page — CampaignIQ Dashboard
  * "Soft Terrain" design: Organic Gradient Landscape
+ * Partner Certification Readiness & Training Gap Analysis
  *
  * Layout: Fixed sidebar (left) + scrollable main content
- * Components: Header, KPI Cards, Channel Chart, Budget Donut,
- *             Channel Summary, Campaign Table
+ * Components: Header, KPI Cards, Gap Analysis Chart, Certification Donut,
+ *             Gap Type Summary, Partner Table
  */
 
 import { useState } from "react";
@@ -12,10 +13,10 @@ import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
 import KPICards from "@/components/KPICards";
-import ChannelChart from "@/components/ChannelChart";
-import BudgetDonut from "@/components/BudgetDonut";
-import ChannelSummary from "@/components/ChannelSummary";
-import CampaignTable from "@/components/CampaignTable";
+import GapAnalysisChart from "@/components/ChannelChart";
+import CertificationDonut from "@/components/BudgetDonut";
+import GapTypeSummary from "@/components/ChannelSummary";
+import PartnerTable from "@/components/CampaignTable";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("overview");
@@ -31,7 +32,7 @@ export default function Home() {
         onCollapse={setSidebarCollapsed}
       />
 
-      {/* Main content area — offset by sidebar width */}
+      {/* Main content area */}
       <motion.main
         className="flex-1 min-h-screen"
         initial={false}
@@ -39,7 +40,7 @@ export default function Home() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <div className="max-w-[1400px] mx-auto px-6 py-6">
-          {/* Header with gradient background */}
+          {/* Header */}
           <DashboardHeader />
 
           {/* KPI Cards Row */}
@@ -47,30 +48,30 @@ export default function Home() {
             <KPICards />
           </section>
 
-          {/* Charts Row: Channel Chart (60%) + Budget Donut (40%) */}
+          {/* Gap Type Summary Cards */}
+          <section className="mb-6">
+            <GapTypeSummary />
+          </section>
+
+          {/* Charts Row: Gap Analysis (60%) + Certification Donut (40%) */}
           <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
             <div className="lg:col-span-3">
-              <ChannelChart />
+              <GapAnalysisChart />
             </div>
             <div className="lg:col-span-2">
-              <BudgetDonut />
+              <CertificationDonut />
             </div>
           </section>
 
-          {/* Channel Summary Cards */}
-          <section className="mb-6">
-            <ChannelSummary />
-          </section>
-
-          {/* Campaign Comparison Table */}
+          {/* Partner Readiness Table */}
           <section className="mb-8">
-            <CampaignTable />
+            <PartnerTable />
           </section>
 
           {/* Footer */}
           <footer className="pb-6 text-center">
             <p className="text-[11px] text-muted-foreground">
-              CampaignIQ Dashboard &middot; Data refreshed hourly &middot; &copy; 2026
+              CampaignIQ &middot; Partner Certification Readiness Dashboard &middot; Data as of April 2026
             </p>
           </footer>
         </div>

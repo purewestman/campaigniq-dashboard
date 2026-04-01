@@ -1,6 +1,6 @@
 /*
  * Dashboard Header — "Soft Terrain" design
- * Warm greeting area with date range selector and search
+ * Partner Certification Readiness context
  * Uses the hero gradient background image subtly
  */
 
@@ -42,10 +42,10 @@ export default function DashboardHeader() {
         {/* Left: Greeting */}
         <div>
           <h2 className="text-xl font-bold text-foreground tracking-tight">
-            Marketing Dashboard
+            Partner Certification Readiness
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Track your campaign performance, channel metrics, and ROI in one place.
+            Track partner certification gaps, training progress, and readiness across your ecosystem.
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export default function DashboardHeader() {
             <Search className="w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search campaigns..."
+              placeholder="Search partners..."
               className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none w-40"
             />
           </div>
@@ -79,7 +79,7 @@ export default function DashboardHeader() {
             onClick={() => toast("Feature coming soon", { description: "Date range picker is under development." })}
           >
             <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <span>Jan — Jun 2026</span>
+            <span>April 2026</span>
           </button>
 
           {/* Notifications */}

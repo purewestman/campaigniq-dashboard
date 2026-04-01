@@ -1,62 +1,58 @@
 /*
- * Campaign Comparison Table — "Soft Terrain" design
- * Alternating warm-toned rows, pill-shaped status badges
- * Rounded container, soft shadows, organic spacing
+ * Partner Comparison Table — "Soft Terrain" design
+ * Shows all 19 partners with gap counts, exams passed, status badges
+ * Sortable columns, alternating warm rows, pill badges
  */
 
 import { motion } from "framer-motion";
-import { campaigns, type Campaign } from "@/lib/data";
+import { partners, type Partner, statusCounts } from "@/lib/data";
 import {
   ArrowUpDown,
   MoreHorizontal,
-  Circle,
-  Pause,
   CheckCircle2,
-  FileEdit,
+  AlertTriangle,
+  XCircle,
+  Award,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useState } from "react";
 
-type SortKey = "name" | "spent" | "impressions" | "ctr" | "roas";
+type SortKey = "name" | "totalGaps" | "examsPassed" | "certifiedPeople";
 
 const statusConfig: Record<
-  Campaign["status"],
+  Partner["status"],
   { label: string; bg: string; color: string; icon: React.ElementType }
 > = {
-  active: {
-    label: "Active",
+  certified: {
+    label: "Certified",
     bg: "oklch(0.60 0.12 175 / 0.10)",
-    color: "oklch(0.48 0.12 175)",
-    icon: Circle,
+    color: "oklch(0.45 0.12 175)",
+    icon: Award,
   },
-  paused: {
-    label: "Paused",
-    bg: "oklch(0.75 0.14 75 / 0.12)",
-    color: "oklch(0.62 0.14 75)",
-    icon: Pause,
-  },
-  completed: {
-    label: "Completed",
+  "on-track": {
+    label: "On Track",
     bg: "oklch(0.65 0.10 145 / 0.12)",
-    color: "oklch(0.50 0.10 145)",
+    color: "oklch(0.48 0.10 145)",
     icon: CheckCircle2,
   },
-  draft: {
-    label: "Draft",
-    bg: "oklch(0.55 0.02 55 / 0.08)",
-    color: "oklch(0.50 0.02 55)",
-    icon: FileEdit,
+  "at-risk": {
+    label: "At Risk",
+    bg: "oklch(0.75 0.14 75 / 0.12)",
+    color: "oklch(0.58 0.14 75)",
+    icon: AlertTriangle,
+  },
+  critical: {
+    label: "Critical",
+    bg: "oklch(0.62 0.19 15 / 0.10)",
+    color: "oklch(0.50 0.19 15)",
+    icon: XCircle,
   },
 };
 
-const channelBadgeColors: Record<string, { bg: string; color: string }> = {
-  Social: { bg: "oklch(0.60 0.12 175 / 0.08)", color: "oklch(0.48 0.12 175)" },
-  Search: { bg: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.48 0.16 290)" },
-  Email: { bg: "oklch(0.75 0.14 75 / 0.08)", color: "oklch(0.60 0.14 75)" },
-};
-
-function ProgressBar({ spent, budget }: { spent: number; budget: number }) {
-  const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
-  const isHigh = pct > 80;
+function GapBar({ value, max }: { value: number; max: number }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  const isHigh = pct > 60;
 
   return (
     <div className="flex items-center gap-2">
@@ -76,16 +72,86 @@ function ProgressBar({ spent, budget }: { spent: number; budget: number }) {
           }}
         />
       </div>
-      <span className="text-[11px] text-muted-foreground font-medium">
-        {pct.toFixed(0)}%
+      <span className="text-[11px] text-muted-foreground font-medium w-4 text-right">
+        {value}
       </span>
     </div>
   );
 }
 
-export default function CampaignTable() {
-  const [sortKey, setSortKey] = useState<SortKey>("roas");
+function ExpandedRow({ partner }: { partner: Partner }) {
+  return (
+    <motion.tr
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      style={{ background: "oklch(0.97 0.008 145 / 0.3)" }}
+    >
+      <td colSpan={8} className="px-6 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
+              Recommended Action
+            </p>
+            <p className="text-[13px] text-foreground leading-relaxed">
+              {partner.action}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
+              Contact Emails
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {partner.recommendedEmails.map((email) => (
+                <span
+                  key={email}
+                  className="text-[11px] px-2 py-1 rounded-lg font-medium"
+                  style={{
+                    background: "oklch(0.60 0.12 175 / 0.08)",
+                    color: "oklch(0.45 0.12 175)",
+                  }}
+                >
+                  {email}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
+              Gap Breakdown
+            </p>
+            <div className="flex gap-3">
+              {[
+                { label: "Bootcamp", val: partner.gaps.bootcamp },
+                { label: "Tech Pro", val: partner.gaps.techPro },
+                { label: "Sales Pro", val: partner.gaps.salesPro },
+                { label: "Impl. Spec", val: partner.gaps.implementationSpec },
+              ].map((g) => (
+                <span
+                  key={g.label}
+                  className="text-[11px] px-2.5 py-1 rounded-lg font-medium"
+                  style={{
+                    background: g.val > 0 ? "oklch(0.62 0.19 15 / 0.08)" : "oklch(0.60 0.12 175 / 0.08)",
+                    color: g.val > 0 ? "oklch(0.50 0.19 15)" : "oklch(0.45 0.12 175)",
+                  }}
+                >
+                  {g.label}: {g.val}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </td>
+    </motion.tr>
+  );
+}
+
+export default function PartnerTable() {
+  const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const maxGaps = Math.max(...partners.map((p) => p.totalGaps));
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -96,7 +162,7 @@ export default function CampaignTable() {
     }
   };
 
-  const sorted = [...campaigns].sort((a, b) => {
+  const sorted = [...partners].sort((a, b) => {
     const aVal = a[sortKey];
     const bVal = b[sortKey];
     if (typeof aVal === "string" && typeof bVal === "string") {
@@ -143,17 +209,17 @@ export default function CampaignTable() {
       className="terrain-card overflow-hidden"
     >
       <div className="px-6 py-5 border-b border-border">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-[15px] font-bold text-foreground">Campaign Comparison</h3>
+            <h3 className="text-[15px] font-bold text-foreground">Partner Readiness Overview</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
-              {campaigns.length} campaigns across all channels
+              {partners.length} partners — click a row to see details
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {(["active", "paused", "completed", "draft"] as const).map((status) => {
+          <div className="flex items-center gap-2 flex-wrap">
+            {(["certified", "on-track", "at-risk", "critical"] as const).map((status) => {
               const config = statusConfig[status];
-              const count = campaigns.filter((c) => c.status === status).length;
+              const count = statusCounts[status];
               return (
                 <span
                   key={status}
@@ -172,105 +238,101 @@ export default function CampaignTable() {
         <table className="w-full">
           <thead>
             <tr style={{ background: "oklch(0.97 0.005 85)" }}>
-              <SortHeader label="Campaign" sortKeyName="name" />
-              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
-                Channel
-              </th>
+              <th className="px-4 py-3 w-8" />
+              <SortHeader label="Partner" sortKeyName="name" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
                 Status
               </th>
+              <SortHeader label="Total Gaps" sortKeyName="totalGaps" align="right" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
-                Budget Used
+                Gap Level
               </th>
-              <SortHeader label="Spent" sortKeyName="spent" align="right" />
-              <SortHeader label="Impressions" sortKeyName="impressions" align="right" />
-              <SortHeader label="CTR" sortKeyName="ctr" align="right" />
-              <SortHeader label="ROAS" sortKeyName="roas" align="right" />
+              <SortHeader label="Exams Passed" sortKeyName="examsPassed" align="right" />
+              <SortHeader label="Certified People" sortKeyName="certifiedPeople" align="right" />
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
           <tbody>
-            {sorted.map((campaign, i) => {
-              const status = statusConfig[campaign.status];
+            {sorted.map((partner, i) => {
+              const status = statusConfig[partner.status];
               const StatusIcon = status.icon;
-              const channelColor = channelBadgeColors[campaign.channel] || channelBadgeColors.Social;
+              const isExpanded = expandedId === partner.id;
 
               return (
-                <motion.tr
-                  key={campaign.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * i + 0.5, duration: 0.3 }}
-                  className="border-b border-border/50 hover:bg-accent/30 transition-colors"
-                  style={
-                    i % 2 === 0
-                      ? { background: "oklch(0.99 0.003 85)" }
-                      : { background: "oklch(0.975 0.006 85)" }
-                  }
-                >
-                  <td className="px-4 py-3.5">
-                    <span className="text-[13px] font-semibold text-foreground">
-                      {campaign.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span
-                      className="text-[11px] font-medium px-2.5 py-1 rounded-full"
-                      style={{ background: channelColor.bg, color: channelColor.color }}
-                    >
-                      {campaign.channel}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span
-                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full"
-                      style={{ background: status.bg, color: status.color }}
-                    >
-                      <StatusIcon className="w-3 h-3" />
-                      {status.label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <ProgressBar spent={campaign.spent} budget={campaign.budget} />
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span className="text-[13px] font-semibold text-foreground">
-                      ${campaign.spent.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span className="text-[13px] text-foreground">
-                      {campaign.impressions > 0
-                        ? `${(campaign.impressions / 1000).toFixed(0)}k`
-                        : "—"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span className="text-[13px] text-foreground">
-                      {campaign.ctr > 0 ? `${campaign.ctr.toFixed(1)}%` : "—"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span
-                      className="text-[13px] font-bold"
-                      style={{
-                        color:
-                          campaign.roas >= 4
-                            ? "oklch(0.48 0.12 175)"
-                            : campaign.roas >= 3
-                            ? "oklch(0.55 0.02 55)"
-                            : "oklch(0.55 0.19 15)",
-                      }}
-                    >
-                      {campaign.roas > 0 ? `${campaign.roas.toFixed(1)}x` : "—"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <button className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </td>
-                </motion.tr>
+                <>
+                  <motion.tr
+                    key={partner.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.03 * i + 0.5, duration: 0.3 }}
+                    className="border-b border-border/50 hover:bg-accent/30 transition-colors cursor-pointer"
+                    style={
+                      i % 2 === 0
+                        ? { background: "oklch(0.99 0.003 85)" }
+                        : { background: "oklch(0.975 0.006 85)" }
+                    }
+                    onClick={() => setExpandedId(isExpanded ? null : partner.id)}
+                  >
+                    <td className="px-4 py-3.5 text-center">
+                      {isExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-[13px] font-semibold text-foreground">
+                        {partner.name}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full"
+                        style={{ background: status.bg, color: status.color }}
+                      >
+                        <StatusIcon className="w-3 h-3" />
+                        {status.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span
+                        className="text-[13px] font-bold"
+                        style={{
+                          color:
+                            partner.totalGaps === 0
+                              ? "oklch(0.48 0.12 175)"
+                              : partner.totalGaps <= 4
+                              ? "oklch(0.55 0.02 55)"
+                              : "oklch(0.50 0.19 15)",
+                        }}
+                      >
+                        {partner.totalGaps}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <GapBar value={partner.totalGaps} max={maxGaps} />
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-[13px] font-semibold text-foreground">
+                        {partner.examsPassed}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="text-[13px] text-foreground">
+                        {partner.certifiedPeople}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <button
+                        className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </motion.tr>
+                  {isExpanded && <ExpandedRow key={`exp-${partner.id}`} partner={partner} />}
+                </>
               );
             })}
           </tbody>

@@ -1,15 +1,14 @@
 /*
  * Sidebar — "Soft Terrain" design
- * Dark teal-slate sidebar with organic rounded inner edge
- * Warm glow highlights, pill-shaped active indicator
+ * Dark teal-slate sidebar with certification navigation
  */
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
-  Megaphone,
-  Share2,
-  Wallet,
+  Building2,
+  AlertTriangle,
+  Award,
   FileBarChart,
   Settings,
   ChevronLeft,
@@ -21,9 +20,9 @@ import { toast } from "sonner";
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
-  Megaphone,
-  Share2,
-  Wallet,
+  Building2,
+  AlertTriangle,
+  Award,
   FileBarChart,
   Settings,
 };
@@ -78,7 +77,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                 CampaignIQ
               </h1>
               <p className="text-[10px] text-white/40 -mt-0.5 whitespace-nowrap">
-                Marketing Intelligence
+                Partner Certification
               </p>
             </motion.div>
           )}

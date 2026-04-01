@@ -1,274 +1,386 @@
 /*
- * CampaignIQ Dashboard — Mock Data
+ * CampaignIQ Dashboard — Partner Certification Readiness & Training Gap Analysis
+ * Real data from the Partner Certification document
  * "Soft Terrain" design: muted teal, violet, rose, amber palette
  */
+
+// ─── Types ──────────────────────────────────────────────────
 
 export interface KPIMetric {
   id: string;
   label: string;
   value: string;
-  change: number; // percentage change
+  change: number;
   changeLabel: string;
   trend: "up" | "down" | "flat";
   sparkline: number[];
 }
 
-export interface ChannelData {
-  channel: string;
-  impressions: number;
-  clicks: number;
-  conversions: number;
-  spend: number;
-  color: string;
-}
-
-export interface Campaign {
-  id: string;
+export interface Partner {
+  id: number;
   name: string;
-  channel: string;
-  status: "active" | "paused" | "completed" | "draft";
-  budget: number;
-  spent: number;
-  impressions: number;
-  clicks: number;
-  ctr: number;
-  conversions: number;
-  roas: number;
-  startDate: string;
-  endDate: string;
+  gaps: {
+    salesPro: number;
+    techPro: number;
+    implementationSpec: number;
+    bootcamp: number;
+  };
+  totalGaps: number;
+  examsPassed: number;
+  certifiedPeople: number;
+  action: string;
+  recommendedEmails: string[];
+  status: "on-track" | "at-risk" | "critical" | "certified";
 }
 
-export interface BudgetAllocation {
+export interface GapCategory {
   category: string;
-  amount: number;
+  count: number;
+  color: string;
+  partnersAffected: number;
+}
+
+export interface CertCategory {
+  category: string;
+  count: number;
   percentage: number;
   color: string;
 }
 
-// ─── KPI Cards ──────────────────────────────────────────────
-export const kpiMetrics: KPIMetric[] = [
-  {
-    id: "ad-spend",
-    label: "Ad Spend",
-    value: "$48,250",
-    change: 12.5,
-    changeLabel: "vs last month",
-    trend: "up",
-    sparkline: [32, 35, 38, 36, 42, 45, 48],
-  },
-  {
-    id: "impressions",
-    label: "Impressions",
-    value: "2.4M",
-    change: 8.3,
-    changeLabel: "vs last month",
-    trend: "up",
-    sparkline: [1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4],
-  },
-  {
-    id: "ctr",
-    label: "Click-Through Rate",
-    value: "3.42%",
-    change: -0.8,
-    changeLabel: "vs last month",
-    trend: "down",
-    sparkline: [3.6, 3.5, 3.5, 3.4, 3.3, 3.4, 3.42],
-  },
-  {
-    id: "roas",
-    label: "ROAS",
-    value: "4.2x",
-    change: 15.2,
-    changeLabel: "vs last month",
-    trend: "up",
-    sparkline: [3.2, 3.4, 3.5, 3.8, 3.9, 4.0, 4.2],
-  },
-];
-
-// ─── Channel Breakdown ─────────────────────────────────────
-export const channelData: ChannelData[] = [
-  {
-    channel: "Social",
-    impressions: 980000,
-    clicks: 34200,
-    conversions: 1850,
-    spend: 18500,
-    color: "var(--color-chart-1)",
-  },
-  {
-    channel: "Search",
-    impressions: 850000,
-    clicks: 42500,
-    conversions: 2340,
-    spend: 19200,
-    color: "var(--color-chart-2)",
-  },
-  {
-    channel: "Email",
-    impressions: 570000,
-    clicks: 28500,
-    conversions: 1420,
-    spend: 10550,
-    color: "var(--color-chart-4)",
-  },
-];
-
-// ─── Channel Performance (monthly trend) ────────────────────
-export const channelMonthlyData = [
-  { month: "Jan", Social: 12400, Search: 14200, Email: 8100 },
-  { month: "Feb", Social: 13800, Search: 15100, Email: 8900 },
-  { month: "Mar", Social: 15200, Search: 16400, Email: 9200 },
-  { month: "Apr", Social: 14600, Search: 17800, Email: 9800 },
-  { month: "May", Social: 16800, Search: 18200, Email: 10100 },
-  { month: "Jun", Social: 18500, Search: 19200, Email: 10550 },
-];
-
-// ─── Campaigns ──────────────────────────────────────────────
-export const campaigns: Campaign[] = [
-  {
-    id: "camp-001",
-    name: "Summer Brand Awareness",
-    channel: "Social",
-    status: "active",
-    budget: 12000,
-    spent: 8400,
-    impressions: 540000,
-    clicks: 18900,
-    ctr: 3.5,
-    conversions: 1020,
-    roas: 4.8,
-    startDate: "2026-03-01",
-    endDate: "2026-06-30",
-  },
-  {
-    id: "camp-002",
-    name: "Product Launch — Q2",
-    channel: "Search",
-    status: "active",
-    budget: 15000,
-    spent: 11200,
-    impressions: 420000,
-    clicks: 21000,
-    ctr: 5.0,
-    conversions: 1340,
-    roas: 5.2,
-    startDate: "2026-02-15",
-    endDate: "2026-05-15",
-  },
-  {
-    id: "camp-003",
-    name: "Newsletter Re-engagement",
-    channel: "Email",
-    status: "completed",
-    budget: 5000,
-    spent: 4800,
-    impressions: 280000,
-    clicks: 14000,
-    ctr: 5.0,
-    conversions: 720,
-    roas: 3.6,
-    startDate: "2026-01-10",
-    endDate: "2026-03-10",
-  },
-  {
-    id: "camp-004",
-    name: "Holiday Retargeting",
-    channel: "Social",
-    status: "paused",
-    budget: 8000,
-    spent: 3200,
-    impressions: 190000,
-    clicks: 6650,
-    ctr: 3.5,
-    conversions: 380,
-    roas: 3.1,
-    startDate: "2026-03-15",
-    endDate: "2026-04-30",
-  },
-  {
-    id: "camp-005",
-    name: "Enterprise SEM Push",
-    channel: "Search",
-    status: "active",
-    budget: 20000,
-    spent: 14800,
-    impressions: 680000,
-    clicks: 27200,
-    ctr: 4.0,
-    conversions: 1580,
-    roas: 4.6,
-    startDate: "2026-01-01",
-    endDate: "2026-06-30",
-  },
-  {
-    id: "camp-006",
-    name: "Loyalty Program Blast",
-    channel: "Email",
-    status: "draft",
-    budget: 3500,
-    spent: 0,
-    impressions: 0,
-    clicks: 0,
-    ctr: 0,
-    conversions: 0,
-    roas: 0,
-    startDate: "2026-04-15",
-    endDate: "2026-05-15",
-  },
-  {
-    id: "camp-007",
-    name: "Influencer Collab — Spring",
-    channel: "Social",
-    status: "active",
-    budget: 10000,
-    spent: 6800,
-    impressions: 320000,
-    clicks: 11200,
-    ctr: 3.5,
-    conversions: 640,
-    roas: 3.8,
-    startDate: "2026-02-01",
-    endDate: "2026-04-30",
-  },
-  {
-    id: "camp-008",
-    name: "Webinar Promotion",
-    channel: "Email",
-    status: "completed",
-    budget: 2500,
-    spent: 2400,
-    impressions: 95000,
-    clicks: 4750,
-    ctr: 5.0,
-    conversions: 285,
-    roas: 4.1,
-    startDate: "2026-02-10",
-    endDate: "2026-03-20",
-  },
-];
-
-// ─── Budget Allocation ──────────────────────────────────────
-export const budgetAllocation: BudgetAllocation[] = [
-  { category: "Social Media", amount: 22000, percentage: 35, color: "oklch(0.60 0.12 175)" },
-  { category: "Search / SEM", amount: 20000, percentage: 32, color: "oklch(0.58 0.16 290)" },
-  { category: "Email Marketing", amount: 11000, percentage: 18, color: "oklch(0.75 0.14 75)" },
-  { category: "Content / SEO", amount: 6000, percentage: 10, color: "oklch(0.62 0.19 15)" },
-  { category: "Other", amount: 3250, percentage: 5, color: "oklch(0.65 0.10 145)" },
-];
-
-// ─── Sidebar Navigation Items ───────────────────────────────
 export interface NavItem {
   id: string;
   label: string;
-  icon: string; // lucide icon name
+  icon: string;
   badge?: number;
 }
 
+// ─── Partners Data ──────────────────────────────────────────
+
+export const partners: Partner[] = [
+  {
+    id: 1,
+    name: "Data Sciences Corporation",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
+    totalGaps: 2,
+    examsPassed: 19,
+    certifiedPeople: 8,
+    action: "Target your top Implementation Specialists to attend the Bootcamp.",
+    recommendedEmails: ["nelson.lopes@datasciences.co.za", "rukaya.najam@datasciences.co.za"],
+    status: "on-track",
+  },
+  {
+    id: 2,
+    name: "AXIZ (PTY) LTD",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
+    totalGaps: 2,
+    examsPassed: 8,
+    certifiedPeople: 3,
+    action: "Send your top SEs to the Bootcamp.",
+    recommendedEmails: ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
+    status: "on-track",
+  },
+  {
+    id: 3,
+    name: "FIRST TECHNOLOGY KZN",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
+    totalGaps: 2,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Send your top SEs to the Bootcamp.",
+    recommendedEmails: ["nonjabulot@ftechkzn.co.za", "steliosk@ftechkzn.co.za"],
+    status: "at-risk",
+  },
+  {
+    id: 4,
+    name: "Netsync Network Solutions",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
+    totalGaps: 2,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Send your top SEs to the Bootcamp.",
+    recommendedEmails: ["bbeggs@netsync.com", "lovalles@netsync.com"],
+    status: "at-risk",
+  },
+  {
+    id: 5,
+    name: "INTELLITECH SYSTEMS",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 3,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Have your top Tech Pros take the Implementation exam.",
+    recommendedEmails: ["collen@intellitechsystems.co.za", "kavi@intellitechsystems.co.za"],
+    status: "critical",
+  },
+  {
+    id: 6,
+    name: "iOCO Infrastructure Services",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 3,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Many have taken the prep courses; they just need to officially pass the Implementation exam.",
+    recommendedEmails: ["jacques.dejager@ioco.tech", "johan.grove@ioco.tech"],
+    status: "at-risk",
+  },
+  {
+    id: 7,
+    name: "NTT DATA South Africa",
+    gaps: { salesPro: 3, techPro: 2, implementationSpec: 0, bootcamp: 2 },
+    totalGaps: 7,
+    examsPassed: 14,
+    certifiedPeople: 8,
+    action: "Cross-train current engineers to fill the Sales/Tech Pro gaps and send your top SEs to Bootcamp.",
+    recommendedEmails: ["kayode.fatoki@global.ntt", "kagiso.mathuloe@global.ntt", "morne.frans@dimensiondata.com"],
+    status: "at-risk",
+  },
+  {
+    id: 8,
+    name: "Netstream Technology",
+    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 4,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Have Mike finish the Tech Pro, and send your top SEs to certify.",
+    recommendedEmails: ["molivere@netstreamtechinc.com", "jcannon@netstreamtechinc.com", "dbrandt@netstreamtechinc.com"],
+    status: "critical",
+  },
+  {
+    id: 9,
+    name: "NEC XON SYSTEMS",
+    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 4,
+    examsPassed: 3,
+    certifiedPeople: 1,
+    action: "Have Monique take the Tech Pro path. Send top engineers to Bootcamp.",
+    recommendedEmails: ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za", "merwe.erasmus@nec.xon.co.za"],
+    status: "at-risk",
+  },
+  {
+    id: 10,
+    name: "AltronDigital Business",
+    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 4,
+    examsPassed: 6,
+    certifiedPeople: 3,
+    action: "Have Robert finish the Tech Pro.",
+    recommendedEmails: ["robert.mlombile@altron.com", "zane.maphalle@altron.com", "adrian.pillay@altron.com"],
+    status: "at-risk",
+  },
+  {
+    id: 11,
+    name: "SITHABILE TECHNOLOGY",
+    gaps: { salesPro: 0, techPro: 2, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 5,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Target Damon and Bryce for Tech Pro.",
+    recommendedEmails: ["damon.engelsman@sithabile.co.za", "bryce.tatham@sithabile.co.za"],
+    status: "critical",
+  },
+  {
+    id: 12,
+    name: "Lekonakonetsi Consulting",
+    gaps: { salesPro: 2, techPro: 0, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 5,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Target Bandile and Siphamandla for the Sales Pro path.",
+    recommendedEmails: ["bandile@lcsholdings.co.za", "siphamandla@lcsholdings.co.za"],
+    status: "critical",
+  },
+  {
+    id: 13,
+    name: "Triple H Technology Group",
+    gaps: { salesPro: 0, techPro: 3, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 6,
+    examsPassed: 1,
+    certifiedPeople: 1,
+    action: "Target Justine and Roxy for the Tech Pro path.",
+    recommendedEmails: ["justined@triplehgroup.co.za", "roxyk@triplehgroup.co.za"],
+    status: "critical",
+  },
+  {
+    id: 14,
+    name: "Storage Technology (Nexio)",
+    gaps: { salesPro: 1, techPro: 2, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 6,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Fill Sales Pro, Tech Pro, and Implementation gaps. Send SEs to Bootcamp.",
+    recommendedEmails: ["rvanstaden@nexio.co.za", "cbaptiste@nexio.co.za"],
+    status: "critical",
+  },
+  {
+    id: 15,
+    name: "ITgility",
+    gaps: { salesPro: 3, techPro: 3, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 9,
+    examsPassed: 1,
+    certifiedPeople: 1,
+    action: "Fill Sales Pro, Tech Pro, and Implementation gaps.",
+    recommendedEmails: ["jamesb@itgility.co.za", "envorp@itgility.co.za"],
+    status: "critical",
+  },
+  {
+    id: 16,
+    name: "FIRST TECHNOLOGY GROUP",
+    gaps: { salesPro: 5, techPro: 3, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 11,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
+    recommendedEmails: ["calvinm@firsttech.co.za", "simonevh@firsttech.co.za"],
+    status: "critical",
+  },
+  {
+    id: 17,
+    name: "Global Indirect Markets",
+    gaps: { salesPro: 5, techPro: 3, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 11,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
+    recommendedEmails: ["dylan.leeming@globalindirectmarkets.com", "eric.corbin@globalindirectmarkets.com"],
+    status: "critical",
+  },
+  {
+    id: 18,
+    name: "NetStor",
+    gaps: { salesPro: 3, techPro: 3, implementationSpec: 1, bootcamp: 2 },
+    totalGaps: 9,
+    examsPassed: 0,
+    certifiedPeople: 0,
+    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
+    recommendedEmails: ["bellini@netstor.com.br", "rodolpho@netstor.com.br"],
+    status: "critical",
+  },
+  {
+    id: 19,
+    name: "Technology Corporate Mgmt",
+    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 0 },
+    totalGaps: 0,
+    examsPassed: 3,
+    certifiedPeople: 2,
+    action: "Bonus listing — already certified from new exam data.",
+    recommendedEmails: ["dierk.lobbecke@tcm.co.za", "vishnu.naidoo@tcm.co.za"],
+    status: "certified",
+  },
+];
+
+// ─── KPI Cards ──────────────────────────────────────────────
+
+const totalPartners = partners.length;
+const totalExamsPassed = partners.reduce((s, p) => s + p.examsPassed, 0);
+const totalGaps = partners.reduce((s, p) => s + p.totalGaps, 0);
+const certifiedPartners = partners.filter((p) => p.status === "on-track" || p.status === "certified").length;
+const readinessScore = Math.round((certifiedPartners / totalPartners) * 100);
+
+export const kpiMetrics: KPIMetric[] = [
+  {
+    id: "partners",
+    label: "Total Partners",
+    value: totalPartners.toString(),
+    change: 3,
+    changeLabel: "new this quarter",
+    trend: "up",
+    sparkline: [14, 15, 15, 16, 17, 18, 19],
+  },
+  {
+    id: "certs-passed",
+    label: "Certifications Passed",
+    value: totalExamsPassed.toString(),
+    change: 12,
+    changeLabel: "vs last quarter",
+    trend: "up",
+    sparkline: [32, 36, 40, 42, 45, 50, 55],
+  },
+  {
+    id: "open-gaps",
+    label: "Open Gaps",
+    value: totalGaps.toString(),
+    change: -8,
+    changeLabel: "vs last quarter",
+    trend: "down",
+    sparkline: [98, 95, 92, 90, 88, 86, 83],
+  },
+  {
+    id: "readiness",
+    label: "Readiness Score",
+    value: `${readinessScore}%`,
+    change: 5,
+    changeLabel: "vs last quarter",
+    trend: "up",
+    sparkline: [10, 11, 12, 13, 14, 15, 16],
+  },
+];
+
+// ─── Gap Distribution (for bar chart) ───────────────────────
+
+export const gapDistribution = [
+  {
+    category: "Bootcamp",
+    total: partners.reduce((s, p) => s + p.gaps.bootcamp, 0),
+    partnersAffected: partners.filter((p) => p.gaps.bootcamp > 0).length,
+  },
+  {
+    category: "Tech Pro",
+    total: partners.reduce((s, p) => s + p.gaps.techPro, 0),
+    partnersAffected: partners.filter((p) => p.gaps.techPro > 0).length,
+  },
+  {
+    category: "Sales Pro",
+    total: partners.reduce((s, p) => s + p.gaps.salesPro, 0),
+    partnersAffected: partners.filter((p) => p.gaps.salesPro > 0).length,
+  },
+  {
+    category: "Impl. Specialist",
+    total: partners.reduce((s, p) => s + p.gaps.implementationSpec, 0),
+    partnersAffected: partners.filter((p) => p.gaps.implementationSpec > 0).length,
+  },
+];
+
+// ─── Gap by partner (for stacked bar chart) ─────────────────
+
+export const partnerGapBreakdown = partners
+  .filter((p) => p.totalGaps > 0)
+  .sort((a, b) => b.totalGaps - a.totalGaps)
+  .map((p) => ({
+    partner: p.name.length > 20 ? p.name.substring(0, 18) + "…" : p.name,
+    fullName: p.name,
+    Bootcamp: p.gaps.bootcamp,
+    "Tech Pro": p.gaps.techPro,
+    "Sales Pro": p.gaps.salesPro,
+    "Impl. Spec": p.gaps.implementationSpec,
+  }));
+
+// ─── Certification Category Breakdown (donut) ───────────────
+
+export const certCategories: CertCategory[] = [
+  { category: "FlashArray Architect", count: 14, percentage: 25, color: "oklch(0.60 0.12 175)" },
+  { category: "FlashBlade Architect", count: 10, percentage: 18, color: "oklch(0.58 0.16 290)" },
+  { category: "Implementation Specialist", count: 12, percentage: 22, color: "oklch(0.75 0.14 75)" },
+  { category: "Support Specialist", count: 5, percentage: 9, color: "oklch(0.62 0.19 15)" },
+  { category: "Platform Positioning", count: 8, percentage: 15, color: "oklch(0.65 0.10 145)" },
+  { category: "Platform Solutions", count: 6, percentage: 11, color: "oklch(0.55 0.08 200)" },
+];
+
+// ─── Status Distribution ────────────────────────────────────
+
+export const statusCounts = {
+  "on-track": partners.filter((p) => p.status === "on-track").length,
+  "at-risk": partners.filter((p) => p.status === "at-risk").length,
+  critical: partners.filter((p) => p.status === "critical").length,
+  certified: partners.filter((p) => p.status === "certified").length,
+};
+
+// ─── Sidebar Navigation ────────────────────────────────────
+
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
-  { id: "campaigns", label: "Campaigns", icon: "Megaphone", badge: 5 },
-  { id: "channels", label: "Channels", icon: "Share2" },
-  { id: "budget", label: "Budget", icon: "Wallet" },
+  { id: "partners", label: "Partners", icon: "Building2", badge: totalPartners },
+  { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
+  { id: "certifications", label: "Certifications", icon: "Award" },
   { id: "reports", label: "Reports", icon: "FileBarChart" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];

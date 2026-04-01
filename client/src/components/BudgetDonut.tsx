@@ -1,7 +1,6 @@
 /*
- * Budget Allocation Donut Chart — "Soft Terrain" design
- * Gradient-filled segments with rounded appearance
- * Center label showing total budget
+ * Certification Category Donut — "Soft Terrain" design
+ * Breakdown of exam types passed across all partners
  */
 
 import { motion } from "framer-motion";
@@ -12,15 +11,9 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { budgetAllocation } from "@/lib/data";
+import { certCategories } from "@/lib/data";
 
-const COLORS = [
-  "oklch(0.60 0.12 175)",
-  "oklch(0.58 0.16 290)",
-  "oklch(0.75 0.14 75)",
-  "oklch(0.62 0.19 15)",
-  "oklch(0.65 0.10 145)",
-];
+const COLORS = certCategories.map((c) => c.color);
 
 function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.[0]) return null;
@@ -36,14 +29,14 @@ function CustomTooltip({ active, payload }: any) {
     >
       <p className="text-[12px] font-semibold text-foreground">{data.category}</p>
       <p className="text-[12px] text-muted-foreground mt-1">
-        ${data.amount.toLocaleString()} ({data.percentage}%)
+        {data.count} certifications ({data.percentage}%)
       </p>
     </div>
   );
 }
 
-export default function BudgetDonut() {
-  const totalBudget = budgetAllocation.reduce((sum, item) => sum + item.amount, 0);
+export default function CertificationDonut() {
+  const totalCerts = certCategories.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <motion.div
@@ -53,9 +46,9 @@ export default function BudgetDonut() {
       className="terrain-card p-6"
     >
       <div className="mb-4">
-        <h3 className="text-[15px] font-bold text-foreground">Budget Allocation</h3>
+        <h3 className="text-[15px] font-bold text-foreground">Certifications by Type</h3>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          How your budget is distributed
+          Distribution of exams passed across categories
         </p>
       </div>
 
@@ -63,19 +56,19 @@ export default function BudgetDonut() {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={budgetAllocation}
+              data={certCategories}
               cx="50%"
               cy="50%"
               innerRadius={65}
               outerRadius={95}
               paddingAngle={3}
-              dataKey="amount"
+              dataKey="count"
               nameKey="category"
               strokeWidth={0}
               animationDuration={1200}
               animationBegin={300}
             >
-              {budgetAllocation.map((_, index) => (
+              {certCategories.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -83,20 +76,17 @@ export default function BudgetDonut() {
           </PieChart>
         </ResponsiveContainer>
 
-        {/* Center label */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-[11px] text-muted-foreground font-medium">Total</p>
-            <p className="text-xl font-bold text-foreground">
-              ${(totalBudget / 1000).toFixed(1)}k
-            </p>
+            <p className="text-xl font-bold text-foreground">{totalCerts}</p>
+            <p className="text-[10px] text-muted-foreground">certs</p>
           </div>
         </div>
       </div>
 
-      {/* Legend */}
       <div className="mt-3 space-y-2">
-        {budgetAllocation.map((item, i) => (
+        {certCategories.map((item, i) => (
           <div key={item.category} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span
@@ -107,7 +97,7 @@ export default function BudgetDonut() {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-[12px] font-semibold text-foreground">
-                ${item.amount.toLocaleString()}
+                {item.count}
               </span>
               <span
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded-md"

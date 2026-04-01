@@ -1,46 +1,52 @@
 /*
- * Channel Summary Cards — "Soft Terrain" design
- * Three horizontal cards showing Social, Search, Email key stats
+ * Gap Type Summary Cards — "Soft Terrain" design
+ * Four cards showing gap categories: Bootcamp, Tech Pro, Sales Pro, Impl. Specialist
  */
 
 import { motion } from "framer-motion";
-import { channelData } from "@/lib/data";
-import { Share2, Search, Mail } from "lucide-react";
+import { gapDistribution } from "@/lib/data";
+import { GraduationCap, Cpu, Briefcase, Wrench } from "lucide-react";
 
-const channelIcons: Record<string, React.ElementType> = {
-  Social: Share2,
-  Search: Search,
-  Email: Mail,
+const gapIcons: Record<string, React.ElementType> = {
+  Bootcamp: GraduationCap,
+  "Tech Pro": Cpu,
+  "Sales Pro": Briefcase,
+  "Impl. Specialist": Wrench,
 };
 
-const channelStyles: Record<string, { gradient: string; iconBg: string; iconColor: string }> = {
-  Social: {
+const gapStyles: Record<string, { gradient: string; iconBg: string; iconColor: string }> = {
+  Bootcamp: {
     gradient: "linear-gradient(135deg, oklch(0.60 0.12 175 / 0.06), oklch(0.60 0.12 175 / 0.01))",
     iconBg: "oklch(0.60 0.12 175 / 0.12)",
     iconColor: "oklch(0.50 0.12 175)",
   },
-  Search: {
+  "Tech Pro": {
     gradient: "linear-gradient(135deg, oklch(0.58 0.16 290 / 0.06), oklch(0.58 0.16 290 / 0.01))",
     iconBg: "oklch(0.58 0.16 290 / 0.12)",
     iconColor: "oklch(0.48 0.16 290)",
   },
-  Email: {
+  "Sales Pro": {
     gradient: "linear-gradient(135deg, oklch(0.75 0.14 75 / 0.06), oklch(0.75 0.14 75 / 0.01))",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
     iconColor: "oklch(0.60 0.14 75)",
   },
+  "Impl. Specialist": {
+    gradient: "linear-gradient(135deg, oklch(0.62 0.19 15 / 0.06), oklch(0.62 0.19 15 / 0.01))",
+    iconBg: "oklch(0.62 0.19 15 / 0.12)",
+    iconColor: "oklch(0.52 0.19 15)",
+  },
 };
 
-export default function ChannelSummary() {
+export default function GapTypeSummary() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {channelData.map((ch, i) => {
-        const Icon = channelIcons[ch.channel] || Share2;
-        const style = channelStyles[ch.channel];
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {gapDistribution.map((gap, i) => {
+        const Icon = gapIcons[gap.category] || GraduationCap;
+        const style = gapStyles[gap.category] || gapStyles.Bootcamp;
 
         return (
           <motion.div
-            key={ch.channel}
+            key={gap.category}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 + i * 0.08, duration: 0.4 }}
@@ -58,40 +64,24 @@ export default function ChannelSummary() {
                 >
                   <Icon className="w-4 h-4" style={{ color: style.iconColor }} />
                 </div>
-                <h4 className="text-[14px] font-bold text-foreground">{ch.channel}</h4>
+                <h4 className="text-[14px] font-bold text-foreground">{gap.category}</h4>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Impressions
+                    Total Gaps
                   </p>
-                  <p className="text-[15px] font-bold text-foreground">
-                    {(ch.impressions / 1000).toFixed(0)}k
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Clicks
-                  </p>
-                  <p className="text-[15px] font-bold text-foreground">
-                    {(ch.clicks / 1000).toFixed(1)}k
+                  <p className="text-2xl font-bold text-foreground">
+                    {gap.total}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Conversions
+                    Partners
                   </p>
-                  <p className="text-[15px] font-bold text-foreground">
-                    {ch.conversions.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Spend
-                  </p>
-                  <p className="text-[15px] font-bold text-foreground">
-                    ${(ch.spend / 1000).toFixed(1)}k
+                  <p className="text-2xl font-bold text-foreground">
+                    {gap.partnersAffected}
                   </p>
                 </div>
               </div>
