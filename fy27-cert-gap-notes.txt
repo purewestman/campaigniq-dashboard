@@ -1,0 +1,53 @@
+FY27 Partner Certification Gap Analysis and Performance Status — Key Data
+========================================================================
+
+MAJOR CHANGES FROM PREVIOUS VERSION:
+- Now 19 partners total (was 11)
+- Several partners moved from Partial/High-Gap to Compliant (Tier 1)
+- New partners added: NEC XON, iOCO, Netstream, Triple H, Storage Technology Services (Nexio), SITHABILE, NetStor, Altron Digital Business, TCM
+- Data Sciences now has 5 compliant SEs (was 1)
+- NTT DATA now fully compliant (was partial)
+- First Technology KZN now compliant (was partial)
+
+TIER 1: GOALS MET (8 partners)
+1. Data Sciences Corporation — Gap CLOSED, 5 SEs compliant, 11+ exams
+2. AXIZ (PTY) LTD — Gap CLOSED, 3+ SEs compliant, 7 exams
+3. NTT DATA / Dimension Data — Gap CLOSED, 3 SEs compliant (Ryan Daniels, Riaan Taylor, Rudi Fischer)
+4. NEC XON SYSTEMS — Gap CLOSED, 3 SEs compliant (Peter McGuigan, Merwe Erasmus, Conrad Van Niekerk), 3 exams
+5. FIRST TECHNOLOGY KZN — Gap CLOSED, 3 SEs compliant
+6. iOCO Infrastructure Services — Gap CLOSED, 6 SEs compliant
+7. Netsync Network Solutions — Gap CLOSED, 5+ SEs compliant
+8. Netstream Technology — Gap CLOSED, 3 SEs compliant
+
+TIER 2: PARTIAL PROGRESS (4 partners)
+9. Altron Digital Business — Gap of 2, need Mpho Mpya and Paulina Moagi to complete TSP, 5 exams
+10. Technology Corporate Management (TCM) — Gap of 2, need cross-training, 3 exams
+11. Global Indirect Markets — Gap of 2, no exams
+12. ITgility — Gap of 2, 1 exam
+
+TIER 3: HIGH GAP / STALLED (7 partners)
+13. Triple H Technology Group — Gap of 3, need cross-training, 1 exam
+14. INTELLITECH SYSTEMS — Gap of 3
+15. FIRST TECHNOLOGY GROUP — Gap of 3
+16. Storage Technology Services (Nexio) — Gap of 3
+17. SITHABILE TECHNOLOGY SERVICES — Gap of 3
+18. NetStor — Gap of 3
+19. ETS INNOVATIONS & Lekonakonetsi — Gap of 3
+
+RSA Online Training PDF:
+- Contains detailed training completion records for multiple partners
+- Columns: Company, Activity, Email, Status, Relationship Type, Type, Instructor User, Last Login At, etc.
+- Partners include: AltronDigital, AXIZ, AME PTY, NEC XON, iOCO, etc.
+- Activities include: Sales Portfolio courses, FlashArray/FlashBlade training, Partner Program Training, etc.
+- Most entries show "passed" status with "elective" relationship type
+- This provides the raw training completion data backing the gap analysis
+
+COMPUTED METRICS:
+- Total Partners: 19
+- Compliant Partners (Tier 1): 8
+- Partial Progress (Tier 2): 4
+- High Gap (Tier 3): 7
+- Total SE Gap: 4*2 + 7*3 = 8 + 21 = 29
+- Compliant SEs: ~31+ (5+3+3+3+3+6+5+3 = 31 minimum)
+- Required SEs: 19*3 = 57
+- Compliance Rate: ~54% (31/57)

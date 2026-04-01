@@ -45,7 +45,7 @@ export default function DashboardHeader() {
             FY27 SE Journey Compliance
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Track partner SE compliance gaps, certification records, and the training roadmap across your ecosystem.
+            Track partner SE certification gaps, exam performance, and compliance status across your ecosystem.
           </p>
         </div>
 
