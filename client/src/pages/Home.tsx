@@ -4,7 +4,7 @@
  * FY27 Global Reseller Program Tier Compliance — Elite Zone B
  *
  * Layout: Fixed sidebar (left) + scrollable main content
- * Filter state is lifted here and passed to all child components
+ * Filter state (tier + search) is lifted here and passed to all child components
  */
 
 import { useState, useMemo } from "react";
@@ -22,15 +22,31 @@ import {
   getFilteredKPIs,
   getFilteredGapBreakdown,
   getFilteredEnablementDistribution,
+  partners as allPartners,
 } from "@/lib/data";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Derive filtered data from the single filter state
-  const filteredPartners = useMemo(() => filterPartners(complianceFilter), [complianceFilter]);
+  // Combined filtering: tier filter first, then search query
+  const filteredPartners = useMemo(() => {
+    let result = filterPartners(complianceFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.tierLabel.toLowerCase().includes(q) ||
+          p.action.toLowerCase().includes(q) ||
+          p.targetEmails.some((e) => e.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [complianceFilter, searchQuery]);
+
   const filteredKPIs = useMemo(() => getFilteredKPIs(filteredPartners), [filteredPartners]);
   const filteredGapData = useMemo(() => getFilteredGapBreakdown(filteredPartners), [filteredPartners]);
   const filteredEnablement = useMemo(() => getFilteredEnablementDistribution(filteredPartners), [filteredPartners]);
@@ -53,8 +69,39 @@ export default function Home() {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <div className="max-w-[1400px] mx-auto px-6 py-6">
-          {/* Header */}
-          <DashboardHeader />
+          {/* Header with controlled search */}
+          <DashboardHeader
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+
+          {/* Search indicator */}
+          {searchQuery.trim() && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl"
+              style={{
+                background: "oklch(0.58 0.16 290 / 0.06)",
+                border: "1px solid oklch(0.58 0.16 290 / 0.12)",
+              }}
+            >
+              <span className="text-[12px] text-foreground">
+                Showing <span className="font-bold">{filteredPartners.length}</span> of{" "}
+                <span className="font-bold">{allPartners.length}</span> partners matching{" "}
+                <span className="font-bold">"{searchQuery.trim()}"</span>
+                {complianceFilter !== "all" && (
+                  <span className="text-muted-foreground"> in filtered view</span>
+                )}
+              </span>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="ml-auto text-[11px] font-medium px-2 py-1 rounded-lg hover:bg-white/60 transition-colors text-muted-foreground hover:text-foreground"
+              >
+                Clear search
+              </button>
+            </motion.div>
+          )}
 
           {/* KPI Cards Row */}
           <section className="mb-6">
@@ -85,6 +132,7 @@ export default function Home() {
               partners={filteredPartners}
               activeFilter={complianceFilter}
               onFilterChange={setComplianceFilter}
+              searchQuery={searchQuery}
             />
           </section>
 

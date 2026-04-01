@@ -1,16 +1,21 @@
-Screenshot Review — FY27 Global Reseller Tier Compliance Update
-================================================================
+Screenshot Review — Search + Gap Override Update
+=================================================
 
-Dashboard renders correctly with zero TypeScript errors.
+Dashboard renders correctly with zero TypeScript/LSP errors.
 
-Visible elements:
-1. Sidebar: CampaignIQ / FY27 Tier Compliance branding, nav items with Shield icon for Tier Compliance, badges (23 partners, 43 certifications)
-2. Header: "FY27 Global Reseller Tier Compliance" title, Elite Zone B subtitle, search bar, FY27 Q1 date
-3. KPI Cards: Total Partners (23), Enablement Score (31%), Total Gaps (175), Exams Passed (43)
-4. Tier Summary Cards: Top Performers (4, 17%), Mid-Tier (4, 17%), Falling Behind (15, 65%)
-5. Enablement Gap by Partner chart: visible with stacked bars for Sales Pro, Tech Pro, Bootcamp, Impl Spec
-6. Requirement Compliance donut: visible with 4 categories
-7. Partner table: visible below (scrolled out of view)
+New features implemented:
+1. Search bar: Controlled input in header, wired to Home.tsx state
+   - Filters partners by name, tier label, action text, and email
+   - Shows search indicator bar with result count and "Clear search" button
+   - All components (KPIs, charts, donut, table) update dynamically
+2. Gap Override system: OverrideProvider context with localStorage persistence
+   - Each requirement bar in expanded row has "Mark Complete" button
+   - Comment input with optional text before confirming
+   - Override badge shows who marked it, when, and the comment
+   - "Undo" button to remove overrides
+   - Override count badge shown next to partner name in table row
+   - Overrides persist across page refreshes via localStorage
 
-All components render cleanly. The tier compliance framework is properly integrated.
-The "obtained vs required" model is reflected in KPIs, charts, and table columns.
+Visible elements confirmed:
+- Sidebar, header, KPI cards, tier summary cards, charts all render correctly
+- 23 partners, 31% enablement, 175 gaps, 43 exams

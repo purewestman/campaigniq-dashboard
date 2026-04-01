@@ -1,16 +1,24 @@
 /*
  * Dashboard Header — "Soft Terrain" design
- * FY27 Partner SE Journey Compliance context
- * Uses the hero gradient background image subtly
+ * FY27 Global Reseller Tier Compliance
+ * Controlled search input for real-time partner filtering
  */
 
 import { motion } from "framer-motion";
-import { CalendarDays, Search, Bell } from "lucide-react";
+import { CalendarDays, Search, Bell, X } from "lucide-react";
 import { toast } from "sonner";
+import { useRef } from "react";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663495817764/8buha8yVxFDm5taq5VEv6A/hero-gradient-bg-BWMxims4BWChqKmniByfwP.webp";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+}
+
+export default function DashboardHeader({ searchQuery, onSearchChange }: DashboardHeaderProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -51,21 +59,47 @@ export default function DashboardHeader() {
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          {/* Search */}
+          {/* Search — controlled */}
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200"
             style={{
-              background: "oklch(0.99 0.003 85 / 0.80)",
-              borderColor: "oklch(0.92 0.01 85)",
+              background: searchQuery
+                ? "oklch(0.99 0.003 85 / 0.95)"
+                : "oklch(0.99 0.003 85 / 0.80)",
+              borderColor: searchQuery
+                ? "oklch(0.60 0.12 175 / 0.4)"
+                : "oklch(0.92 0.01 85)",
               backdropFilter: "blur(8px)",
+              boxShadow: searchQuery
+                ? "0 0 0 3px oklch(0.60 0.12 175 / 0.08)"
+                : "none",
             }}
           >
-            <Search className="w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search partners..."
-              className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none w-40"
+            <Search
+              className="w-4 h-4 shrink-0 transition-colors"
+              style={{
+                color: searchQuery ? "oklch(0.50 0.12 175)" : "oklch(0.55 0.02 55)",
+              }}
             />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search partners..."
+              className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none w-44"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  onSearchChange("");
+                  inputRef.current?.focus();
+                }}
+                className="p-0.5 rounded-md hover:bg-black/5 transition-colors"
+              >
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            )}
           </div>
 
           {/* Date range */}

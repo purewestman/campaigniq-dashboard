@@ -3,11 +3,13 @@
  * FY27 Global Reseller Program — Elite Zone B
  * Shows obtained vs required for each enablement category
  * Sortable columns, expandable detail rows with exams
+ * Gap override: mark individual gaps as manually complete with comments
  */
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { type Partner, type ComplianceFilter, ELITE_ZONE_B, TIER_CONFIG } from "@/lib/data";
+import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
 import {
   ArrowUpDown,
   MoreHorizontal,
@@ -19,8 +21,14 @@ import {
   Filter,
   Award,
   ShieldCheck,
+  CheckCircle2,
+  Undo2,
+  MessageSquare,
+  Send,
+  Clock,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type SortKey = "name" | "totalGaps" | "enablementScore" | "totalExams";
 
@@ -30,43 +38,230 @@ const tierIconMap: Record<string, React.ElementType> = {
   tier3: AlertTriangle,
 };
 
-/** Progress bar showing obtained / required for a single category */
-function RequirementBar({
+const categoryLabels: Record<GapCategory, string> = {
+  salesPro: "Sales Pro",
+  techPro: "Tech Pro",
+  bootcamp: "Bootcamp",
+  implSpec: "Impl Spec",
+};
+
+/** Progress bar with override toggle for a single requirement category */
+function RequirementBarWithOverride({
   label,
+  category,
   obtained,
   required,
+  partnerId,
 }: {
   label: string;
+  category: GapCategory;
   obtained: number;
   required: number;
+  partnerId: number;
 }) {
-  const pct = Math.min(100, Math.round((obtained / required) * 100));
-  const met = obtained >= required;
+  const { getOverride, addOverride, removeOverride } = useOverrides();
+  const override = getOverride(partnerId, category);
+  const [showComment, setShowComment] = useState(false);
+  const [comment, setComment] = useState("");
+
+  const gap = Math.max(0, required - obtained);
+  const isNaturallyMet = obtained >= required;
+  const isOverridden = !!override;
+  const effectiveMet = isNaturallyMet || isOverridden;
+
+  const effectiveObtained = isOverridden ? required : obtained;
+  const pct = Math.min(100, Math.round((effectiveObtained / required) * 100));
+
+  const handleMarkComplete = () => {
+    if (comment.trim() || !showComment) {
+      addOverride({
+        partnerId,
+        category,
+        comment: comment.trim() || "Manually marked as complete",
+        completedBy: "Admin",
+      });
+      setShowComment(false);
+      setComment("");
+      toast.success(`${label} gap marked as complete`, {
+        description: comment.trim() || "Override applied successfully.",
+      });
+    }
+  };
+
+  const handleUndo = () => {
+    removeOverride(partnerId, category);
+    toast("Override removed", {
+      description: `${label} gap restored to original status.`,
+    });
+  };
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-14 shrink-0 text-right">{label}</span>
-      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "oklch(0.93 0.008 85)" }}>
-        <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{
-            width: `${pct}%`,
-            background: met ? "oklch(0.60 0.12 175)" : pct > 0 ? "oklch(0.75 0.14 75)" : "oklch(0.62 0.19 15 / 0.3)",
-          }}
-        />
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground w-14 shrink-0 text-right">{label}</span>
+        <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "oklch(0.93 0.008 85)" }}>
+          <motion.div
+            className="h-full rounded-full"
+            initial={false}
+            animate={{
+              width: `${pct}%`,
+              backgroundColor: effectiveMet
+                ? "oklch(0.60 0.12 175)"
+                : pct > 0
+                ? "oklch(0.75 0.14 75)"
+                : "oklch(0.62 0.19 15 / 0.3)",
+            }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+        <span
+          className="text-[10px] font-semibold w-10 shrink-0"
+          style={{ color: effectiveMet ? "oklch(0.45 0.12 175)" : "oklch(0.55 0.02 55)" }}
+        >
+          {effectiveObtained}/{required}
+        </span>
+
+        {/* Override controls */}
+        {!isNaturallyMet && gap > 0 && (
+          <>
+            {isOverridden ? (
+              <button
+                onClick={handleUndo}
+                className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg transition-all duration-200 hover:scale-105"
+                style={{
+                  background: "oklch(0.60 0.12 175 / 0.10)",
+                  color: "oklch(0.45 0.12 175)",
+                }}
+                title="Undo override"
+              >
+                <Undo2 className="w-3 h-3" />
+                Undo
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowComment(!showComment)}
+                className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg transition-all duration-200 hover:scale-105"
+                style={{
+                  background: showComment ? "oklch(0.58 0.16 290 / 0.12)" : "oklch(0.93 0.008 85)",
+                  color: showComment ? "oklch(0.48 0.16 290)" : "oklch(0.55 0.02 55)",
+                }}
+                title="Mark gap as complete"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                Mark Complete
+              </button>
+            )}
+          </>
+        )}
+
+        {isNaturallyMet && (
+          <span
+            className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
+            style={{ background: "oklch(0.60 0.12 175 / 0.08)", color: "oklch(0.45 0.12 175)" }}
+          >
+            <CheckCircle2 className="w-3 h-3" />
+            Met
+          </span>
+        )}
       </div>
-      <span
-        className="text-[10px] font-semibold w-10 shrink-0"
-        style={{ color: met ? "oklch(0.45 0.12 175)" : "oklch(0.55 0.02 55)" }}
-      >
-        {obtained}/{required}
-      </span>
+
+      {/* Override badge */}
+      {isOverridden && override && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="ml-16 flex items-start gap-2 px-3 py-2 rounded-lg"
+          style={{
+            background: "oklch(0.60 0.12 175 / 0.05)",
+            border: "1px solid oklch(0.60 0.12 175 / 0.12)",
+          }}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold" style={{ color: "oklch(0.45 0.12 175)" }}>
+              Manually completed by {override.completedBy}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{override.comment}</p>
+            <p className="text-[9px] text-muted-foreground/60 mt-0.5 flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" />
+              {new Date(override.completedAt).toLocaleDateString("en-ZA", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Comment input for new override */}
+      <AnimatePresence>
+        {showComment && !isOverridden && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="ml-16"
+          >
+            <div
+              className="rounded-xl p-3 space-y-2"
+              style={{
+                background: "oklch(0.98 0.005 85)",
+                border: "1px solid oklch(0.92 0.01 85)",
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <MessageSquare className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Add comment (optional)
+                </span>
+              </div>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={`Why is the ${label} gap being marked as complete? e.g., "Verified completion via partner portal" or "Attended bootcamp on 15 Mar"`}
+                className="w-full text-[12px] text-foreground placeholder:text-muted-foreground/50 bg-white rounded-lg border px-3 py-2 outline-none resize-none transition-colors focus:border-[oklch(0.60_0.12_175_/_0.4)]"
+                style={{ borderColor: "oklch(0.92 0.01 85)", minHeight: 60 }}
+                rows={2}
+              />
+              <div className="flex items-center gap-2 justify-end">
+                <button
+                  onClick={() => {
+                    setShowComment(false);
+                    setComment("");
+                  }}
+                  className="text-[11px] font-medium px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleMarkComplete}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 hover:scale-[1.02]"
+                  style={{
+                    background: "oklch(0.60 0.12 175)",
+                    color: "white",
+                  }}
+                >
+                  <Send className="w-3 h-3" />
+                  Confirm Override
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 function ExpandedRow({ partner }: { partner: Partner }) {
   const reqs = partner.requirements;
+  const { getPartnerOverrides } = useOverrides();
+  const partnerOverrides = getPartnerOverrides(partner.id);
 
   return (
     <motion.tr
@@ -77,16 +272,54 @@ function ExpandedRow({ partner }: { partner: Partner }) {
     >
       <td colSpan={8} className="px-6 py-4" style={{ background: "oklch(0.97 0.01 85)" }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Obtained vs Required Breakdown */}
+          {/* Obtained vs Required Breakdown with Override Controls */}
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3 font-semibold">
-              Enablement Progress (Obtained / Required)
-            </p>
-            <div className="space-y-2.5">
-              <RequirementBar label="Sales Pro" obtained={reqs.salesPro.obtained} required={reqs.salesPro.required} />
-              <RequirementBar label="Tech Pro" obtained={reqs.techPro.obtained} required={reqs.techPro.required} />
-              <RequirementBar label="Bootcamp" obtained={reqs.bootcamp.obtained} required={reqs.bootcamp.required} />
-              <RequirementBar label="Impl Spec" obtained={reqs.implSpec.obtained} required={reqs.implSpec.required} />
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Enablement Progress (Obtained / Required)
+              </p>
+              {partnerOverrides.length > 0 && (
+                <span
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{
+                    background: "oklch(0.60 0.12 175 / 0.10)",
+                    color: "oklch(0.45 0.12 175)",
+                  }}
+                >
+                  <CheckCircle2 className="w-3 h-3" />
+                  {partnerOverrides.length} override{partnerOverrides.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            <div className="space-y-3">
+              <RequirementBarWithOverride
+                label="Sales Pro"
+                category="salesPro"
+                obtained={reqs.salesPro.obtained}
+                required={reqs.salesPro.required}
+                partnerId={partner.id}
+              />
+              <RequirementBarWithOverride
+                label="Tech Pro"
+                category="techPro"
+                obtained={reqs.techPro.obtained}
+                required={reqs.techPro.required}
+                partnerId={partner.id}
+              />
+              <RequirementBarWithOverride
+                label="Bootcamp"
+                category="bootcamp"
+                obtained={reqs.bootcamp.obtained}
+                required={reqs.bootcamp.required}
+                partnerId={partner.id}
+              />
+              <RequirementBarWithOverride
+                label="Impl Spec"
+                category="implSpec"
+                obtained={reqs.implSpec.obtained}
+                required={reqs.implSpec.required}
+                partnerId={partner.id}
+              />
             </div>
 
             <div className="mt-3 flex items-center gap-2">
@@ -199,12 +432,14 @@ interface PartnerTableProps {
   partners: Partner[];
   activeFilter: ComplianceFilter;
   onFilterChange: (filter: ComplianceFilter) => void;
+  searchQuery?: string;
 }
 
-export default function PartnerTable({ partners, activeFilter, onFilterChange }: PartnerTableProps) {
+export default function PartnerTable({ partners, activeFilter, onFilterChange, searchQuery }: PartnerTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { getOverrideCount } = useOverrides();
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -267,7 +502,8 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
           <div>
             <h3 className="text-[15px] font-bold text-foreground">Partner Tier Compliance</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
-              {partners.length} partner{partners.length !== 1 ? "s" : ""} — click a row to see obtained vs required breakdown
+              {partners.length} partner{partners.length !== 1 ? "s" : ""}
+              {searchQuery ? ` matching "${searchQuery}"` : ""} — click a row to see breakdown &amp; override gaps
             </p>
           </div>
 
@@ -326,6 +562,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
                 const tierStyle = TIER_CONFIG[partner.tier];
                 const TierIcon = tierIconMap[partner.tier] || Minus;
                 const isExpanded = expandedId === partner.id;
+                const overrideCount = getOverrideCount(partner.id);
                 const totalObtained =
                   Math.min(partner.requirements.salesPro.obtained, partner.requirements.salesPro.required) +
                   Math.min(partner.requirements.techPro.obtained, partner.requirements.techPro.required) +
@@ -354,9 +591,24 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
                         )}
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] font-semibold text-foreground">
-                          {partner.name}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-foreground">
+                            {partner.name}
+                          </span>
+                          {overrideCount > 0 && (
+                            <span
+                              className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{
+                                background: "oklch(0.60 0.12 175 / 0.10)",
+                                color: "oklch(0.45 0.12 175)",
+                              }}
+                              title={`${overrideCount} manual override${overrideCount !== 1 ? "s" : ""}`}
+                            >
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              {overrideCount}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3.5">
                         <span
@@ -450,7 +702,9 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
             ) : (
               <tr>
                 <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground text-[13px]">
-                  No partners match the current filter.
+                  {searchQuery
+                    ? `No partners matching "${searchQuery}" found.`
+                    : "No partners match the current filter."}
                 </td>
               </tr>
             )}
