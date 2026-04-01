@@ -1,6 +1,6 @@
 /*
  * KPI Cards — "Soft Terrain" design
- * FY27 Partner SE Journey Compliance metrics
+ * FY27 Partner SE Journey — updated with Exams Passed metric
  * Accepts filtered metrics from parent
  */
 
@@ -9,9 +9,10 @@ import {
   Building2,
   UserCheck,
   AlertTriangle,
-  Gauge,
+  Award,
   ArrowUpRight,
   ArrowDownRight,
+  Minus,
 } from "lucide-react";
 import { type KPIMetric } from "@/lib/data";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
@@ -20,7 +21,7 @@ const iconMap: Record<string, React.ElementType> = {
   partners: Building2,
   "compliant-ses": UserCheck,
   "se-gap": AlertTriangle,
-  compliance: Gauge,
+  exams: Award,
 };
 
 const gradientMap: Record<string, { from: string; to: string; iconBg: string }> = {
@@ -39,7 +40,7 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
     to: "oklch(0.62 0.19 15 / 0.02)",
     iconBg: "oklch(0.62 0.19 15 / 0.12)",
   },
-  compliance: {
+  exams: {
     from: "oklch(0.75 0.14 75 / 0.12)",
     to: "oklch(0.75 0.14 75 / 0.02)",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
@@ -50,7 +51,7 @@ const sparklineColorMap: Record<string, string> = {
   partners: "oklch(0.55 0.12 175)",
   "compliant-ses": "oklch(0.53 0.16 290)",
   "se-gap": "oklch(0.58 0.19 15)",
-  compliance: "oklch(0.70 0.14 75)",
+  exams: "oklch(0.70 0.14 75)",
 };
 
 function MiniSparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
@@ -83,8 +84,8 @@ function MiniSparkline({ data, color, id }: { data: number[]; color: string; id:
 }
 
 function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
-  const Icon = iconMap[metric.id] || Gauge;
-  const colors = gradientMap[metric.id] || gradientMap.partners;
+  const Icon = iconMap[metric.id] || Award;
+  const colors = gradientMap[metric.id] || gradientMap.exams;
   const sparkColor = sparklineColorMap[metric.id] || "oklch(0.55 0.12 175)";
 
   return (
@@ -128,19 +129,25 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
               background:
                 metric.trend === "up"
                   ? "oklch(0.60 0.12 175 / 0.10)"
-                  : "oklch(0.62 0.19 15 / 0.10)",
+                  : metric.trend === "down"
+                  ? "oklch(0.62 0.19 15 / 0.10)"
+                  : "oklch(0.55 0.02 55 / 0.10)",
               color:
                 metric.trend === "up"
                   ? "oklch(0.50 0.12 175)"
-                  : "oklch(0.55 0.19 15)",
+                  : metric.trend === "down"
+                  ? "oklch(0.55 0.19 15)"
+                  : "oklch(0.50 0.02 55)",
             }}
           >
             {metric.trend === "up" ? (
               <ArrowUpRight className="w-3 h-3" />
-            ) : (
+            ) : metric.trend === "down" ? (
               <ArrowDownRight className="w-3 h-3" />
+            ) : (
+              <Minus className="w-3 h-3" />
             )}
-            {Math.abs(metric.change)}%
+            {Math.abs(metric.change)}
           </span>
           <span className="text-[11px] text-muted-foreground">
             {metric.changeLabel}

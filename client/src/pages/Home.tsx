@@ -91,7 +91,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="pb-6 text-center">
             <p className="text-[11px] text-muted-foreground">
-              CampaignIQ &middot; FY27 Partner SE Journey Compliance Dashboard &middot; Data as of April 2026
+              CampaignIQ &middot; FY27 Partner SE Journey Gap Analysis &amp; Training Roadmap &middot; Data as of April 2026
             </p>
           </footer>
         </div>

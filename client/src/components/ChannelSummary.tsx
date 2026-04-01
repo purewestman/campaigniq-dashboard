@@ -1,17 +1,17 @@
 /*
  * Compliance Status Summary Cards — "Soft Terrain" design
- * Four cards: Compliant, Partial Progress, Need TSP, No Progress
+ * Four cards: Compliant, Partial Progress, Cross-Train, No Progress
  * Clickable to filter the entire dashboard by compliance tier
  */
 
 import { motion } from "framer-motion";
-import { gapDistribution, type ComplianceFilter } from "@/lib/data";
-import { CheckCircle2, Clock, BookOpen, XCircle, X } from "lucide-react";
+import { gapDistribution, partners, type ComplianceFilter } from "@/lib/data";
+import { CheckCircle2, Clock, Repeat2, XCircle, X } from "lucide-react";
 
 const gapIcons: Record<string, React.ElementType> = {
   Compliant: CheckCircle2,
   "Partial Progress": Clock,
-  "Need TSP": BookOpen,
+  "Cross-Train": Repeat2,
   "No Progress": XCircle,
 };
 
@@ -28,7 +28,7 @@ const gapStyles: Record<string, { gradient: string; iconBg: string; iconColor: s
     iconColor: "oklch(0.48 0.16 290)",
     activeRing: "oklch(0.53 0.16 290)",
   },
-  "Need TSP": {
+  "Cross-Train": {
     gradient: "linear-gradient(135deg, oklch(0.75 0.14 75 / 0.06), oklch(0.75 0.14 75 / 0.01))",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
     iconColor: "oklch(0.60 0.14 75)",
@@ -46,7 +46,7 @@ const gapStyles: Record<string, { gradient: string; iconBg: string; iconColor: s
 const categoryToFilter: Record<string, ComplianceFilter> = {
   Compliant: "compliant",
   "Partial Progress": "partial",
-  "Need TSP": "high-gap",
+  "Cross-Train": "high-gap",
   "No Progress": "high-gap",
 };
 
@@ -56,6 +56,8 @@ interface ComplianceSummaryProps {
 }
 
 export default function ComplianceSummary({ activeFilter, onFilterChange }: ComplianceSummaryProps) {
+  const totalPartners = partners.length;
+
   const handleClick = (category: string) => {
     const targetFilter = categoryToFilter[category];
     // Toggle: if already active, reset to "all"
@@ -165,7 +167,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                       Of Total
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      {Math.round((gap.total / 22) * 100)}%
+                      {totalPartners > 0 ? Math.round((gap.total / totalPartners) * 100) : 0}%
                     </p>
                   </div>
                 </div>

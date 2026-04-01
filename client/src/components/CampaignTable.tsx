@@ -1,6 +1,6 @@
 /*
  * Partner SE Journey Compliance Table — "Soft Terrain" design
- * Shows partners with SE compliance, gap counts, course progress, status badges
+ * Updated with exam/certification records in expanded detail rows
  * Sortable columns, alternating warm rows, expandable detail rows
  * Accepts filtered partners and filter controls from parent
  */
@@ -17,10 +17,12 @@ import {
   ChevronDown,
   ChevronUp,
   Filter,
+  Award,
+  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 
-type SortKey = "name" | "seGap" | "compliantSEs" | "spSEs" | "tspSEs";
+type SortKey = "name" | "seGap" | "compliantSEs" | "spSEs" | "tspSEs" | "totalExams";
 
 const statusConfig: Record<
   Partner["status"],
@@ -45,35 +47,6 @@ const statusConfig: Record<
     icon: XCircle,
   },
 };
-
-function GapBar({ value, max }: { value: number; max: number }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="w-16 h-1.5 rounded-full overflow-hidden"
-        style={{ background: "oklch(0.93 0.008 85)" }}
-      >
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="h-full rounded-full"
-          style={{
-            background:
-              pct > 60
-                ? "oklch(0.62 0.19 15)"
-                : pct > 30
-                ? "oklch(0.75 0.14 75)"
-                : "oklch(0.60 0.12 175)",
-          }}
-        />
-      </div>
-      <span className="text-[12px] font-semibold text-foreground">{value}</span>
-    </div>
-  );
-}
 
 function ComplianceIndicator({ compliant }: { compliant: number }) {
   return (
@@ -108,25 +81,30 @@ function ExpandedRow({ partner }: { partner: Partner }) {
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <td colSpan={8} className="px-6 py-4" style={{ background: "oklch(0.97 0.01 85)" }}>
+      <td colSpan={9} className="px-6 py-4" style={{ background: "oklch(0.97 0.01 85)" }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Gap Type */}
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Gap Type
             </p>
             <p className="text-[13px] text-foreground font-medium">{partner.gapType}</p>
           </div>
+
+          {/* Recommended Action */}
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Recommended Action
             </p>
             <p className="text-[13px] text-foreground leading-relaxed">{partner.action}</p>
           </div>
+
+          {/* Target Contacts */}
           <div className="md:col-span-2">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Target Contacts
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2">
               {partner.targetEmails.length > 0 ? (
                 partner.targetEmails.map((email) => (
                   <span
@@ -147,6 +125,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
               )}
             </div>
           </div>
+
+          {/* Course Progress */}
           <div className="md:col-span-2">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Course Progress
@@ -155,7 +135,7 @@ function ExpandedRow({ partner }: { partner: Partner }) {
               {[
                 { label: "Simply Pure", val: partner.spSEs },
                 { label: "TSP FY27", val: partner.tspSEs },
-                { label: "Overlap", val: partner.compliantSEs },
+                { label: "Overlap (Compliant)", val: partner.compliantSEs },
               ].map((g) => (
                 <span
                   key={g.label}
@@ -169,6 +149,57 @@ function ExpandedRow({ partner }: { partner: Partner }) {
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* Exam/Certification Records — NEW */}
+          <div className="md:col-span-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5" />
+              Certifications Earned ({partner.totalExams})
+            </p>
+            {partner.exams.length > 0 ? (
+              <div className="space-y-2.5">
+                {partner.exams.map((exam) => (
+                  <div
+                    key={exam.email}
+                    className="rounded-xl px-4 py-3 border"
+                    style={{
+                      background: "oklch(0.99 0.003 85)",
+                      borderColor: "oklch(0.93 0.01 85)",
+                    }}
+                  >
+                    <p
+                      className="text-[11px] font-semibold mb-1.5 flex items-center gap-1.5"
+                      style={{ color: "oklch(0.48 0.16 290)" }}
+                    >
+                      <ShieldCheck className="w-3 h-3" />
+                      {exam.email}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {exam.certifications.map((cert) => (
+                        <span
+                          key={`${exam.email}-${cert}`}
+                          className="text-[10px] px-2 py-0.5 rounded-md font-medium"
+                          style={{
+                            background: "oklch(0.75 0.14 75 / 0.10)",
+                            color: "oklch(0.55 0.14 75)",
+                          }}
+                        >
+                          {cert}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                className="rounded-xl px-4 py-3 text-[12px] text-muted-foreground italic"
+                style={{ background: "oklch(0.96 0.005 85)" }}
+              >
+                No certifications recorded yet. Encourage SEs to pursue FlashArray/FlashBlade exams.
+              </div>
+            )}
           </div>
         </div>
       </td>
@@ -186,8 +217,6 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
   const [sortKey, setSortKey] = useState<SortKey>("seGap");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  const maxGap = Math.max(...partners.map((p) => p.seGap), 1);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -211,12 +240,12 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
       : (bVal as number) - (aVal as number);
   });
 
-  // Count statuses in the current filtered set
-  const filteredStatusCounts = {
-    compliant: partners.filter((p) => p.status === "compliant").length,
-    partial: partners.filter((p) => p.status === "partial").length,
-    "high-gap": partners.filter((p) => p.status === "high-gap").length,
-  };
+  const filterButtons: { key: ComplianceFilter; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "compliant", label: "Compliant" },
+    { key: "partial", label: "Partial" },
+    { key: "high-gap", label: "High Gap" },
+  ];
 
   const SortHeader = ({
     label,
@@ -244,13 +273,6 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
     </th>
   );
 
-  const filterButtons: { key: ComplianceFilter; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "compliant", label: "Compliant" },
-    { key: "partial", label: "Partial" },
-    { key: "high-gap", label: "High Gap" },
-  ];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -263,7 +285,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
           <div>
             <h3 className="text-[15px] font-bold text-foreground">Partner SE Compliance</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
-              {partners.length} partner{partners.length !== 1 ? "s" : ""} — click a row to see details
+              {partners.length} partner{partners.length !== 1 ? "s" : ""} — click a row to see details and certifications
             </p>
           </div>
 
@@ -272,10 +294,6 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
             <Filter className="w-3.5 h-3.5 text-muted-foreground mr-1" />
             {filterButtons.map((btn) => {
               const isActive = activeFilter === btn.key;
-              const count =
-                btn.key === "all"
-                  ? null
-                  : filteredStatusCounts[btn.key as keyof typeof filteredStatusCounts];
 
               return (
                 <button
@@ -306,9 +324,6 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
                   }}
                 >
                   {btn.label}
-                  {count !== null && isActive && (
-                    <span className="ml-1 opacity-70">({count})</span>
-                  )}
                 </button>
               );
             })}
@@ -331,6 +346,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
               </th>
               <SortHeader label="SP SEs" sortKeyName="spSEs" align="right" />
               <SortHeader label="TSP SEs" sortKeyName="tspSEs" align="right" />
+              <SortHeader label="Exams" sortKeyName="totalExams" align="right" />
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -404,6 +420,22 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
                           {partner.tspSEs}
                         </span>
                       </td>
+                      <td className="px-4 py-3.5 text-right">
+                        {partner.totalExams > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                            style={{
+                              background: "oklch(0.75 0.14 75 / 0.12)",
+                              color: "oklch(0.55 0.14 75)",
+                            }}
+                          >
+                            <Award className="w-3 h-3" />
+                            {partner.totalExams}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3.5">
                         <button
                           className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
@@ -419,7 +451,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange }:
               })
             ) : (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground text-[13px]">
+                <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground text-[13px]">
                   No partners match the current filter.
                 </td>
               </tr>
