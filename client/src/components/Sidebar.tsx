@@ -1,6 +1,7 @@
 /*
  * Sidebar — "Soft Terrain" design
- * Dark teal-slate sidebar with FY27 SE Journey navigation
+ * Dark teal-slate sidebar with FY27 Tier Compliance navigation
+ * All nav items are now functional — no more "coming soon" toasts
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +19,6 @@ import {
   Shield,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
-import { toast } from "sonner";
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
@@ -39,15 +39,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse }: SidebarProps) {
-  const handleNavClick = (id: string) => {
-    onNavChange(id);
-    if (id !== "overview") {
-      toast("Feature coming soon", {
-        description: `The ${navItems.find((n) => n.id === id)?.label} section is under development.`,
-      });
-    }
-  };
-
   return (
     <motion.aside
       initial={false}
@@ -97,7 +88,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
           return (
             <button
               key={item.id}
-              onClick={() => handleNavClick(item.id)}
+              onClick={() => onNavChange(item.id)}
               className={`
                 relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
                 transition-all duration-200 group
