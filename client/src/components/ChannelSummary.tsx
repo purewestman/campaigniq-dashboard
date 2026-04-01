@@ -1,36 +1,36 @@
 /*
- * Gap Type Summary Cards — "Soft Terrain" design
- * Four cards showing gap categories: Bootcamp, Tech Pro, Sales Pro, Impl. Specialist
+ * Compliance Status Summary Cards — "Soft Terrain" design
+ * Four cards: Compliant, Partial Progress, Need TSP, No Progress
  */
 
 import { motion } from "framer-motion";
 import { gapDistribution } from "@/lib/data";
-import { GraduationCap, Cpu, Briefcase, Wrench } from "lucide-react";
+import { CheckCircle2, Clock, BookOpen, XCircle } from "lucide-react";
 
 const gapIcons: Record<string, React.ElementType> = {
-  Bootcamp: GraduationCap,
-  "Tech Pro": Cpu,
-  "Sales Pro": Briefcase,
-  "Impl. Specialist": Wrench,
+  Compliant: CheckCircle2,
+  "Partial Progress": Clock,
+  "Need TSP": BookOpen,
+  "No Progress": XCircle,
 };
 
 const gapStyles: Record<string, { gradient: string; iconBg: string; iconColor: string }> = {
-  Bootcamp: {
+  Compliant: {
     gradient: "linear-gradient(135deg, oklch(0.60 0.12 175 / 0.06), oklch(0.60 0.12 175 / 0.01))",
     iconBg: "oklch(0.60 0.12 175 / 0.12)",
     iconColor: "oklch(0.50 0.12 175)",
   },
-  "Tech Pro": {
+  "Partial Progress": {
     gradient: "linear-gradient(135deg, oklch(0.58 0.16 290 / 0.06), oklch(0.58 0.16 290 / 0.01))",
     iconBg: "oklch(0.58 0.16 290 / 0.12)",
     iconColor: "oklch(0.48 0.16 290)",
   },
-  "Sales Pro": {
+  "Need TSP": {
     gradient: "linear-gradient(135deg, oklch(0.75 0.14 75 / 0.06), oklch(0.75 0.14 75 / 0.01))",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
     iconColor: "oklch(0.60 0.14 75)",
   },
-  "Impl. Specialist": {
+  "No Progress": {
     gradient: "linear-gradient(135deg, oklch(0.62 0.19 15 / 0.06), oklch(0.62 0.19 15 / 0.01))",
     iconBg: "oklch(0.62 0.19 15 / 0.12)",
     iconColor: "oklch(0.52 0.19 15)",
@@ -41,8 +41,8 @@ export default function GapTypeSummary() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {gapDistribution.map((gap, i) => {
-        const Icon = gapIcons[gap.category] || GraduationCap;
-        const style = gapStyles[gap.category] || gapStyles.Bootcamp;
+        const Icon = gapIcons[gap.category] || CheckCircle2;
+        const style = gapStyles[gap.category] || gapStyles.Compliant;
 
         return (
           <motion.div
@@ -70,7 +70,7 @@ export default function GapTypeSummary() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Total Gaps
+                    Partners
                   </p>
                   <p className="text-2xl font-bold text-foreground">
                     {gap.total}
@@ -78,10 +78,10 @@ export default function GapTypeSummary() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                    Partners
+                    Of Total
                   </p>
                   <p className="text-2xl font-bold text-foreground">
-                    {gap.partnersAffected}
+                    {Math.round((gap.total / 22) * 100)}%
                   </p>
                 </div>
               </div>

@@ -1,11 +1,11 @@
 /*
  * Home Page — CampaignIQ Dashboard
  * "Soft Terrain" design: Organic Gradient Landscape
- * Partner Certification Readiness & Training Gap Analysis
+ * FY27 Partner SE Journey Compliance & Gap Analysis
  *
  * Layout: Fixed sidebar (left) + scrollable main content
- * Components: Header, KPI Cards, Gap Analysis Chart, Certification Donut,
- *             Gap Type Summary, Partner Table
+ * Components: Header, KPI Cards, Gap Analysis Chart, Journey Donut,
+ *             Compliance Summary, Partner Table
  */
 
 import { useState } from "react";
@@ -14,8 +14,8 @@ import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
 import KPICards from "@/components/KPICards";
 import GapAnalysisChart from "@/components/ChannelChart";
-import CertificationDonut from "@/components/BudgetDonut";
-import GapTypeSummary from "@/components/ChannelSummary";
+import JourneyDonut from "@/components/BudgetDonut";
+import ComplianceSummary from "@/components/ChannelSummary";
 import PartnerTable from "@/components/CampaignTable";
 
 export default function Home() {
@@ -48,22 +48,22 @@ export default function Home() {
             <KPICards />
           </section>
 
-          {/* Gap Type Summary Cards */}
+          {/* Compliance Status Summary Cards */}
           <section className="mb-6">
-            <GapTypeSummary />
+            <ComplianceSummary />
           </section>
 
-          {/* Charts Row: Gap Analysis (60%) + Certification Donut (40%) */}
+          {/* Charts Row: Gap Analysis (60%) + Journey Donut (40%) */}
           <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
             <div className="lg:col-span-3">
               <GapAnalysisChart />
             </div>
             <div className="lg:col-span-2">
-              <CertificationDonut />
+              <JourneyDonut />
             </div>
           </section>
 
-          {/* Partner Readiness Table */}
+          {/* Partner SE Compliance Table */}
           <section className="mb-8">
             <PartnerTable />
           </section>
@@ -71,7 +71,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="pb-6 text-center">
             <p className="text-[11px] text-muted-foreground">
-              CampaignIQ &middot; Partner Certification Readiness Dashboard &middot; Data as of April 2026
+              CampaignIQ &middot; FY27 Partner SE Journey Compliance Dashboard &middot; Data as of April 2026
             </p>
           </footer>
         </div>

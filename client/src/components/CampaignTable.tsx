@@ -1,7 +1,7 @@
 /*
- * Partner Comparison Table — "Soft Terrain" design
- * Shows all 19 partners with gap counts, exams passed, status badges
- * Sortable columns, alternating warm rows, pill badges
+ * Partner SE Journey Compliance Table — "Soft Terrain" design
+ * Shows all 22 partners with SE compliance, gap counts, course progress, status badges
+ * Sortable columns, alternating warm rows, expandable detail rows
  */
 
 import React from "react";
@@ -11,40 +11,33 @@ import {
   ArrowUpDown,
   MoreHorizontal,
   CheckCircle2,
-  AlertTriangle,
+  Clock,
   XCircle,
-  Award,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 import { useState } from "react";
 
-type SortKey = "name" | "totalGaps" | "examsPassed" | "certifiedPeople";
+type SortKey = "name" | "seGap" | "compliantSEs" | "spSEs" | "tspSEs";
 
 const statusConfig: Record<
   Partner["status"],
   { label: string; bg: string; color: string; icon: React.ElementType }
 > = {
-  certified: {
-    label: "Certified",
+  compliant: {
+    label: "Compliant",
     bg: "oklch(0.60 0.12 175 / 0.10)",
     color: "oklch(0.45 0.12 175)",
-    icon: Award,
-  },
-  "on-track": {
-    label: "On Track",
-    bg: "oklch(0.65 0.10 145 / 0.12)",
-    color: "oklch(0.48 0.10 145)",
     icon: CheckCircle2,
   },
-  "at-risk": {
-    label: "At Risk",
+  partial: {
+    label: "Partial",
     bg: "oklch(0.75 0.14 75 / 0.12)",
     color: "oklch(0.58 0.14 75)",
-    icon: AlertTriangle,
+    icon: Clock,
   },
-  critical: {
-    label: "Critical",
+  "high-gap": {
+    label: "High Gap",
     bg: "oklch(0.62 0.19 15 / 0.10)",
     color: "oklch(0.50 0.19 15)",
     icon: XCircle,
@@ -80,6 +73,25 @@ function GapBar({ value, max }: { value: number; max: number }) {
   );
 }
 
+function ComplianceIndicator({ compliant }: { compliant: number }) {
+  const dots = [0, 1, 2];
+  return (
+    <div className="flex items-center gap-1">
+      {dots.map((i) => (
+        <div
+          key={i}
+          className="w-3 h-3 rounded-full"
+          style={{
+            background: i < compliant ? "oklch(0.60 0.12 175)" : "oklch(0.92 0.008 85)",
+            border: i < compliant ? "none" : "1px solid oklch(0.88 0.01 85)",
+          }}
+        />
+      ))}
+      <span className="text-[11px] text-muted-foreground ml-1">{compliant}/3</span>
+    </div>
+  );
+}
+
 function ExpandedRow({ partner }: { partner: Partner }) {
   return (
     <motion.tr
@@ -89,7 +101,7 @@ function ExpandedRow({ partner }: { partner: Partner }) {
       style={{ background: "oklch(0.97 0.008 145 / 0.3)" }}
     >
       <td colSpan={8} className="px-6 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
               Recommended Action
@@ -100,40 +112,45 @@ function ExpandedRow({ partner }: { partner: Partner }) {
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
-              Contact Emails
+              Target Emails
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {partner.recommendedEmails.map((email) => (
-                <span
-                  key={email}
-                  className="text-[11px] px-2 py-1 rounded-lg font-medium"
-                  style={{
-                    background: "oklch(0.60 0.12 175 / 0.08)",
-                    color: "oklch(0.45 0.12 175)",
-                  }}
-                >
-                  {email}
+              {partner.targetEmails.length > 0 ? (
+                partner.targetEmails.map((email) => (
+                  <span
+                    key={email}
+                    className="text-[11px] px-2 py-1 rounded-lg font-medium"
+                    style={{
+                      background: "oklch(0.60 0.12 175 / 0.08)",
+                      color: "oklch(0.45 0.12 175)",
+                    }}
+                  >
+                    {email}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[11px] text-muted-foreground italic">
+                  No contacts available
                 </span>
-              ))}
+              )}
             </div>
           </div>
-          <div className="md:col-span-2">
+          <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">
-              Gap Breakdown
+              Course Progress
             </p>
             <div className="flex gap-3">
               {[
-                { label: "Bootcamp", val: partner.gaps.bootcamp },
-                { label: "Tech Pro", val: partner.gaps.techPro },
-                { label: "Sales Pro", val: partner.gaps.salesPro },
-                { label: "Impl. Spec", val: partner.gaps.implementationSpec },
+                { label: "Simply Pure", val: partner.spSEs },
+                { label: "TSP FY27", val: partner.tspSEs },
+                { label: "Overlap", val: partner.compliantSEs },
               ].map((g) => (
                 <span
                   key={g.label}
                   className="text-[11px] px-2.5 py-1 rounded-lg font-medium"
                   style={{
-                    background: g.val > 0 ? "oklch(0.62 0.19 15 / 0.08)" : "oklch(0.60 0.12 175 / 0.08)",
-                    color: g.val > 0 ? "oklch(0.50 0.19 15)" : "oklch(0.45 0.12 175)",
+                    background: g.val > 0 ? "oklch(0.60 0.12 175 / 0.08)" : "oklch(0.62 0.19 15 / 0.08)",
+                    color: g.val > 0 ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)",
                   }}
                 >
                   {g.label}: {g.val}
@@ -148,11 +165,11 @@ function ExpandedRow({ partner }: { partner: Partner }) {
 }
 
 export default function PartnerTable() {
-  const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
+  const [sortKey, setSortKey] = useState<SortKey>("seGap");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const maxGaps = Math.max(...partners.map((p) => p.totalGaps));
+  const maxGap = Math.max(...partners.map((p) => p.seGap));
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -212,13 +229,13 @@ export default function PartnerTable() {
       <div className="px-6 py-5 border-b border-border">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-[15px] font-bold text-foreground">Partner Readiness Overview</h3>
+            <h3 className="text-[15px] font-bold text-foreground">Partner SE Compliance</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
               {partners.length} partners — click a row to see details
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {(["certified", "on-track", "at-risk", "critical"] as const).map((status) => {
+            {(["compliant", "partial", "high-gap"] as const).map((status) => {
               const config = statusConfig[status];
               const count = statusCounts[status];
               return (
@@ -244,12 +261,12 @@ export default function PartnerTable() {
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
                 Status
               </th>
-              <SortHeader label="Total Gaps" sortKeyName="totalGaps" align="right" />
+              <SortHeader label="SE Gap" sortKeyName="seGap" align="right" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
-                Gap Level
+                Compliance
               </th>
-              <SortHeader label="Exams Passed" sortKeyName="examsPassed" align="right" />
-              <SortHeader label="Certified People" sortKeyName="certifiedPeople" align="right" />
+              <SortHeader label="SP SEs" sortKeyName="spSEs" align="right" />
+              <SortHeader label="TSP SEs" sortKeyName="tspSEs" align="right" />
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -299,27 +316,27 @@ export default function PartnerTable() {
                         className="text-[13px] font-bold"
                         style={{
                           color:
-                            partner.totalGaps === 0
+                            partner.seGap === 0
                               ? "oklch(0.48 0.12 175)"
-                              : partner.totalGaps <= 4
+                              : partner.seGap <= 2
                               ? "oklch(0.55 0.02 55)"
                               : "oklch(0.50 0.19 15)",
                         }}
                       >
-                        {partner.totalGaps}
+                        {partner.seGap}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <GapBar value={partner.totalGaps} max={maxGaps} />
+                      <ComplianceIndicator compliant={partner.compliantSEs} />
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <span className="text-[13px] font-semibold text-foreground">
-                        {partner.examsPassed}
+                        {partner.spSEs}
                       </span>
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <span className="text-[13px] text-foreground">
-                        {partner.certifiedPeople}
+                        {partner.tspSEs}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">

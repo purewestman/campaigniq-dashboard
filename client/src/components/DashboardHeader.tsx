@@ -1,6 +1,6 @@
 /*
  * Dashboard Header — "Soft Terrain" design
- * Partner Certification Readiness context
+ * FY27 Partner SE Journey Compliance context
  * Uses the hero gradient background image subtly
  */
 
@@ -42,10 +42,10 @@ export default function DashboardHeader() {
         {/* Left: Greeting */}
         <div>
           <h2 className="text-xl font-bold text-foreground tracking-tight">
-            Partner Certification Readiness
+            FY27 SE Journey Compliance
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Track partner certification gaps, training progress, and readiness across your ecosystem.
+            Track partner SE compliance gaps, Simply Pure &amp; TSP progress across your ecosystem.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export default function DashboardHeader() {
             onClick={() => toast("Feature coming soon", { description: "Date range picker is under development." })}
           >
             <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <span>April 2026</span>
+            <span>FY27 Q1</span>
           </button>
 
           {/* Notifications */}

@@ -1,6 +1,6 @@
 /*
- * Certification Category Donut — "Soft Terrain" design
- * Breakdown of exam types passed across all partners
+ * SE Journey Step Distribution Donut — "Soft Terrain" design
+ * Shows how far each partner has progressed along the 6-step SE Journey
  */
 
 import { motion } from "framer-motion";
@@ -29,14 +29,16 @@ function CustomTooltip({ active, payload }: any) {
     >
       <p className="text-[12px] font-semibold text-foreground">{data.category}</p>
       <p className="text-[12px] text-muted-foreground mt-1">
-        {data.count} certifications ({data.percentage}%)
+        {data.count} partner{data.count !== 1 ? "s" : ""} ({data.percentage}%)
       </p>
     </div>
   );
 }
 
-export default function CertificationDonut() {
-  const totalCerts = certCategories.reduce((sum, item) => sum + item.count, 0);
+export default function JourneyDonut() {
+  const totalPartners = certCategories.reduce((sum, item) => sum + item.count, 0);
+  const displayCategories = certCategories.filter((c) => c.count > 0);
+  const displayColors = displayCategories.map((c) => c.color);
 
   return (
     <motion.div
@@ -46,9 +48,9 @@ export default function CertificationDonut() {
       className="terrain-card p-6"
     >
       <div className="mb-4">
-        <h3 className="text-[15px] font-bold text-foreground">Certifications by Type</h3>
+        <h3 className="text-[15px] font-bold text-foreground">SE Journey Progress</h3>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          Distribution of exams passed across categories
+          Furthest step reached by each partner
         </p>
       </div>
 
@@ -56,7 +58,7 @@ export default function CertificationDonut() {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={certCategories}
+              data={displayCategories}
               cx="50%"
               cy="50%"
               innerRadius={65}
@@ -68,8 +70,8 @@ export default function CertificationDonut() {
               animationDuration={1200}
               animationBegin={300}
             >
-              {certCategories.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {displayCategories.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={displayColors[index % displayColors.length]} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
@@ -79,19 +81,19 @@ export default function CertificationDonut() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-[11px] text-muted-foreground font-medium">Total</p>
-            <p className="text-xl font-bold text-foreground">{totalCerts}</p>
-            <p className="text-[10px] text-muted-foreground">certs</p>
+            <p className="text-xl font-bold text-foreground">{totalPartners}</p>
+            <p className="text-[10px] text-muted-foreground">partners</p>
           </div>
         </div>
       </div>
 
       <div className="mt-3 space-y-2">
-        {certCategories.map((item, i) => (
+        {certCategories.map((item) => (
           <div key={item.category} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ background: COLORS[i] }}
+                style={{ background: item.color }}
               />
               <span className="text-[12px] text-muted-foreground">{item.category}</span>
             </div>

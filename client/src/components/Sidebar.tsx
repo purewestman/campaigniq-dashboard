@@ -1,6 +1,6 @@
 /*
  * Sidebar — "Soft Terrain" design
- * Dark teal-slate sidebar with certification navigation
+ * Dark teal-slate sidebar with FY27 SE Journey navigation
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Route,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ const iconMap: Record<string, React.ElementType> = {
   Award,
   FileBarChart,
   Settings,
+  Route,
 };
 
 interface SidebarProps {
@@ -77,7 +79,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                 CampaignIQ
               </h1>
               <p className="text-[10px] text-white/40 -mt-0.5 whitespace-nowrap">
-                Partner Certification
+                FY27 SE Journey
               </p>
             </motion.div>
           )}

@@ -1,6 +1,6 @@
 /*
- * CampaignIQ Dashboard — Partner Certification Readiness & Training Gap Analysis
- * Real data from the Partner Certification document
+ * CampaignIQ Dashboard — FY27 Partner SE Journey Compliance & Gap Analysis
+ * Real data from the FY27 Partner SE Journey document
  * "Soft Terrain" design: muted teal, violet, rose, amber palette
  */
 
@@ -19,18 +19,15 @@ export interface KPIMetric {
 export interface Partner {
   id: number;
   name: string;
-  gaps: {
-    salesPro: number;
-    techPro: number;
-    implementationSpec: number;
-    bootcamp: number;
-  };
-  totalGaps: number;
-  examsPassed: number;
-  certifiedPeople: number;
+  compliantSEs: number;
+  seGap: number;
+  spSEs: number; // Simply Pure completions
+  tspSEs: number; // TSP completions
+  gapType: string;
   action: string;
-  recommendedEmails: string[];
-  status: "on-track" | "at-risk" | "critical" | "certified";
+  targetEmails: string[];
+  status: "compliant" | "partial" | "high-gap";
+  journeyStep: number; // furthest step reached (1-6)
 }
 
 export interface GapCategory {
@@ -40,7 +37,7 @@ export interface GapCategory {
   partnersAffected: number;
 }
 
-export interface CertCategory {
+export interface StatusCategory {
   category: string;
   count: number;
   percentage: number;
@@ -57,321 +54,403 @@ export interface NavItem {
 // ─── Partners Data ──────────────────────────────────────────
 
 export const partners: Partner[] = [
+  // ✅ Compliant (Goal Met)
   {
     id: 1,
-    name: "Data Sciences Corporation",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
-    totalGaps: 2,
-    examsPassed: 19,
-    certifiedPeople: 8,
-    action: "Target your top Implementation Specialists to attend the Bootcamp.",
-    recommendedEmails: ["nelson.lopes@datasciences.co.za", "rukaya.najam@datasciences.co.za"],
-    status: "on-track",
+    name: "AXIZ (PTY) LTD",
+    compliantSEs: 3,
+    seGap: 0,
+    spSEs: 3,
+    tspSEs: 3,
+    gapType: "None",
+    action: "Fully compliant. Advance SEs to Step 3 (Bootcamp) and beyond.",
+    targetEmails: ["adolph.strydom@axiz.com", "jen.gouws@axiz.com", "leriza.debruyn@axiz.com"],
+    status: "compliant",
+    journeyStep: 2,
   },
+  // 🟡 Partial Progress (1 or 2 SEs Compliant)
   {
     id: 2,
-    name: "AXIZ (PTY) LTD",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
-    totalGaps: 2,
-    examsPassed: 8,
-    certifiedPeople: 3,
-    action: "Send your top SEs to the Bootcamp.",
-    recommendedEmails: ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
-    status: "on-track",
+    name: "Data Sciences Corporation",
+    compliantSEs: 2,
+    seGap: 1,
+    spSEs: 4,
+    tspSEs: 2,
+    gapType: "Need TSP",
+    action: "Target morne.groenewald or rudolf.vandergryp to take TSP FY27.",
+    targetEmails: ["morne.groenewald@datasciences.co.za", "rudolf.vandergryp@datasciences.co.za"],
+    status: "partial",
+    journeyStep: 5,
   },
   {
     id: 3,
-    name: "FIRST TECHNOLOGY KZN",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
-    totalGaps: 2,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Send your top SEs to the Bootcamp.",
-    recommendedEmails: ["nonjabulot@ftechkzn.co.za", "steliosk@ftechkzn.co.za"],
-    status: "at-risk",
+    name: "NEC XON SYSTEMS",
+    compliantSEs: 2,
+    seGap: 1,
+    spSEs: 3,
+    tspSEs: 2,
+    gapType: "Need TSP",
+    action: "One more SE needs to complete TSP FY27 to reach compliance.",
+    targetEmails: ["peter.mcguigan@nec.xon.co.za", "conrad.vanniekerk@nec.xon.co.za"],
+    status: "partial",
+    journeyStep: 2,
   },
   {
     id: 4,
-    name: "Netsync Network Solutions",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 2 },
-    totalGaps: 2,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Send your top SEs to the Bootcamp.",
-    recommendedEmails: ["bbeggs@netsync.com", "lovalles@netsync.com"],
-    status: "at-risk",
+    name: "FIRST TECHNOLOGY KZN",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 3,
+    tspSEs: 1,
+    gapType: "Need TSP",
+    action: "Target ramiror and nonjabulot to take TSP FY27.",
+    targetEmails: ["ramiror@ftechkzn.co.za", "nonjabulot@ftechkzn.co.za"],
+    status: "partial",
+    journeyStep: 5,
   },
   {
     id: 5,
-    name: "INTELLITECH SYSTEMS",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 3,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Have your top Tech Pros take the Implementation exam.",
-    recommendedEmails: ["collen@intellitechsystems.co.za", "kavi@intellitechsystems.co.za"],
-    status: "critical",
+    name: "NTT DATA South Africa",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 2,
+    tspSEs: 1,
+    gapType: "Need TSP",
+    action: "Two more SEs need both SP and TSP FY27 overlap.",
+    targetEmails: ["riaan.taylor@global.ntt"],
+    status: "partial",
+    journeyStep: 2,
   },
   {
     id: 6,
     name: "iOCO Infrastructure Services",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 3,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Many have taken the prep courses; they just need to officially pass the Implementation exam.",
-    recommendedEmails: ["jacques.dejager@ioco.tech", "johan.grove@ioco.tech"],
-    status: "at-risk",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 3,
+    tspSEs: 1,
+    gapType: "Need TSP",
+    action: "Target johan.grove or jacques.dejager to take TSP FY27.",
+    targetEmails: ["johan.grove@ioco.tech", "jacques.dejager@ioco.tech"],
+    status: "partial",
+    journeyStep: 5,
   },
   {
     id: 7,
-    name: "NTT DATA South Africa",
-    gaps: { salesPro: 3, techPro: 2, implementationSpec: 0, bootcamp: 2 },
-    totalGaps: 7,
-    examsPassed: 14,
-    certifiedPeople: 8,
-    action: "Cross-train current engineers to fill the Sales/Tech Pro gaps and send your top SEs to Bootcamp.",
-    recommendedEmails: ["kayode.fatoki@global.ntt", "kagiso.mathuloe@global.ntt", "morne.frans@dimensiondata.com"],
-    status: "at-risk",
+    name: "ITgility",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Need both",
+    action: "Two more SEs need to complete both SP and TSP FY27.",
+    targetEmails: ["jamesb@itgility.co.za", "envorp@itgility.co.za"],
+    status: "partial",
+    journeyStep: 2,
   },
   {
     id: 8,
-    name: "Netstream Technology",
-    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 4,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Have Mike finish the Tech Pro, and send your top SEs to certify.",
-    recommendedEmails: ["molivere@netstreamtechinc.com", "jcannon@netstreamtechinc.com", "dbrandt@netstreamtechinc.com"],
-    status: "critical",
+    name: "Global Indirect Markets",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Need both",
+    action: "Two more SEs need to complete both SP and TSP FY27.",
+    targetEmails: ["dylan.leeming@globalindirectmarkets.com", "eric.corbin@globalindirectmarkets.com"],
+    status: "partial",
+    journeyStep: 2,
   },
   {
     id: 9,
-    name: "NEC XON SYSTEMS",
-    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 4,
-    examsPassed: 3,
-    certifiedPeople: 1,
-    action: "Have Monique take the Tech Pro path. Send top engineers to Bootcamp.",
-    recommendedEmails: ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za", "merwe.erasmus@nec.xon.co.za"],
-    status: "at-risk",
+    name: "Netsync Network Solutions",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Need both",
+    action: "Two more SEs need to complete both SP and TSP FY27.",
+    targetEmails: ["david.goss@netsync.com"],
+    status: "partial",
+    journeyStep: 2,
   },
   {
     id: 10,
-    name: "AltronDigital Business",
-    gaps: { salesPro: 0, techPro: 1, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 4,
-    examsPassed: 6,
-    certifiedPeople: 3,
-    action: "Have Robert finish the Tech Pro.",
-    recommendedEmails: ["robert.mlombile@altron.com", "zane.maphalle@altron.com", "adrian.pillay@altron.com"],
-    status: "at-risk",
+    name: "Technology Corporate Mgmt",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Need both",
+    action: "Two more SEs need both courses. Dierk Lobbecke and Vishnu Naidoo have advanced certs.",
+    targetEmails: ["dierk.lobbecke@tcm.co.za", "vishnu.naidoo@tcm.co.za"],
+    status: "partial",
+    journeyStep: 6,
   },
   {
     id: 11,
-    name: "SITHABILE TECHNOLOGY",
-    gaps: { salesPro: 0, techPro: 2, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 5,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Target Damon and Bryce for Tech Pro.",
-    recommendedEmails: ["damon.engelsman@sithabile.co.za", "bryce.tatham@sithabile.co.za"],
-    status: "critical",
+    name: "Triple H Technology Group",
+    compliantSEs: 1,
+    seGap: 2,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Need both",
+    action: "Two more SEs need to complete both SP and TSP FY27.",
+    targetEmails: ["justined@triplehgroup.co.za", "roxyk@triplehgroup.co.za"],
+    status: "partial",
+    journeyStep: 2,
   },
+  // 🔴 High Gap (0 SEs Compliant)
   {
     id: 12,
-    name: "Lekonakonetsi Consulting",
-    gaps: { salesPro: 2, techPro: 0, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 5,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Target Bandile and Siphamandla for the Sales Pro path.",
-    recommendedEmails: ["bandile@lcsholdings.co.za", "siphamandla@lcsholdings.co.za"],
-    status: "critical",
+    name: "Netstream Technology",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 9,
+    tspSEs: 0,
+    gapType: "Need TSP",
+    action: "Heavy SP bench — 9 SEs have Simply Pure but 0 have TSP. Assign TSP FY27 immediately.",
+    targetEmails: ["molivere@netstreamtechinc.com", "jcannon@netstreamtechinc.com"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 13,
-    name: "Triple H Technology Group",
-    gaps: { salesPro: 0, techPro: 3, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 6,
-    examsPassed: 1,
-    certifiedPeople: 1,
-    action: "Target Justine and Roxy for the Tech Pro path.",
-    recommendedEmails: ["justined@triplehgroup.co.za", "roxyk@triplehgroup.co.za"],
-    status: "critical",
+    name: "AltronDigital Business",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 3,
+    tspSEs: 0,
+    gapType: "Need TSP",
+    action: "Target zane.maphalle and mpho.mpya to take TSP FY27.",
+    targetEmails: ["zane.maphalle@altron.com", "mpho.mpya@altron.com"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 14,
-    name: "Storage Technology (Nexio)",
-    gaps: { salesPro: 1, techPro: 2, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 6,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Fill Sales Pro, Tech Pro, and Implementation gaps. Send SEs to Bootcamp.",
-    recommendedEmails: ["rvanstaden@nexio.co.za", "cbaptiste@nexio.co.za"],
-    status: "critical",
+    name: "Storage Technology / Nexio",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 3,
+    tspSEs: 0,
+    gapType: "Need TSP",
+    action: "3 SEs have SP but 0 have TSP. Assign TSP FY27 to close the gap.",
+    targetEmails: ["rvanstaden@nexio.co.za", "cbaptiste@nexio.co.za"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 15,
-    name: "ITgility",
-    gaps: { salesPro: 3, techPro: 3, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 9,
-    examsPassed: 1,
-    certifiedPeople: 1,
-    action: "Fill Sales Pro, Tech Pro, and Implementation gaps.",
-    recommendedEmails: ["jamesb@itgility.co.za", "envorp@itgility.co.za"],
-    status: "critical",
+    name: "NetStor",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 2,
+    tspSEs: 0,
+    gapType: "Need TSP",
+    action: "2 SEs have SP but 0 have TSP. Assign TSP FY27.",
+    targetEmails: ["bellini@netstor.com.br", "rodolpho@netstor.com.br"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 16,
-    name: "FIRST TECHNOLOGY GROUP",
-    gaps: { salesPro: 5, techPro: 3, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 11,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
-    recommendedEmails: ["calvinm@firsttech.co.za", "simonevh@firsttech.co.za"],
-    status: "critical",
+    name: "SITHABILE",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 1,
+    tspSEs: 0,
+    gapType: "Need TSP",
+    action: "1 SE has SP but 0 have TSP. Assign TSP FY27.",
+    targetEmails: ["damon.engelsman@sithabile.co.za", "bryce.tatham@sithabile.co.za"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 17,
-    name: "Global Indirect Markets",
-    gaps: { salesPro: 5, techPro: 3, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 11,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
-    recommendedEmails: ["dylan.leeming@globalindirectmarkets.com", "eric.corbin@globalindirectmarkets.com"],
-    status: "critical",
+    name: "FIRST TECHNOLOGY GROUP",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 1,
+    tspSEs: 1,
+    gapType: "Cross-train",
+    action: "Simone has SP, Calvin has TSP — cross-train each to achieve overlap.",
+    targetEmails: ["calvinm@firsttech.co.za", "simonevh@firsttech.co.za"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 18,
-    name: "NetStor",
-    gaps: { salesPro: 3, techPro: 3, implementationSpec: 1, bootcamp: 2 },
-    totalGaps: 9,
-    examsPassed: 0,
-    certifiedPeople: 0,
-    action: "Significant gaps across all categories. Prioritize Sales Pro and Tech Pro.",
-    recommendedEmails: ["bellini@netstor.com.br", "rodolpho@netstor.com.br"],
-    status: "critical",
+    name: "INTELLITECH SYSTEMS",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 1,
+    tspSEs: 2,
+    gapType: "Cross-train",
+    action: "Shahirah has SP, Kavi and Collen have TSP — cross-train to achieve overlap.",
+    targetEmails: ["collen@intellitechsystems.co.za", "kavi@intellitechsystems.co.za"],
+    status: "high-gap",
+    journeyStep: 1,
   },
   {
     id: 19,
-    name: "Technology Corporate Mgmt",
-    gaps: { salesPro: 0, techPro: 0, implementationSpec: 0, bootcamp: 0 },
-    totalGaps: 0,
-    examsPassed: 3,
-    certifiedPeople: 2,
-    action: "Bonus listing — already certified from new exam data.",
-    recommendedEmails: ["dierk.lobbecke@tcm.co.za", "vishnu.naidoo@tcm.co.za"],
-    status: "certified",
+    name: "ETS INNOVATIONS",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 0,
+    tspSEs: 0,
+    gapType: "No progress",
+    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
+    targetEmails: [],
+    status: "high-gap",
+    journeyStep: 0,
+  },
+  {
+    id: 20,
+    name: "Lekonakonetsi",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 0,
+    tspSEs: 0,
+    gapType: "No progress",
+    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
+    targetEmails: [],
+    status: "high-gap",
+    journeyStep: 0,
+  },
+  {
+    id: 21,
+    name: "Netsource One",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 0,
+    tspSEs: 0,
+    gapType: "No progress",
+    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
+    targetEmails: [],
+    status: "high-gap",
+    journeyStep: 0,
+  },
+  {
+    id: 22,
+    name: "BCX",
+    compliantSEs: 0,
+    seGap: 3,
+    spSEs: 0,
+    tspSEs: 0,
+    gapType: "No progress",
+    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
+    targetEmails: [],
+    status: "high-gap",
+    journeyStep: 0,
   },
 ];
 
 // ─── KPI Cards ──────────────────────────────────────────────
 
 const totalPartners = partners.length;
-const totalExamsPassed = partners.reduce((s, p) => s + p.examsPassed, 0);
-const totalGaps = partners.reduce((s, p) => s + p.totalGaps, 0);
-const certifiedPartners = partners.filter((p) => p.status === "on-track" || p.status === "certified").length;
-const readinessScore = Math.round((certifiedPartners / totalPartners) * 100);
+const compliantPartners = partners.filter((p) => p.status === "compliant").length;
+const totalSEGap = partners.reduce((s, p) => s + p.seGap, 0);
+const totalCompliantSEs = partners.reduce((s, p) => s + p.compliantSEs, 0);
+const requiredSEs = totalPartners * 3;
+const complianceRate = Math.round((totalCompliantSEs / requiredSEs) * 100);
 
 export const kpiMetrics: KPIMetric[] = [
   {
     id: "partners",
     label: "Total Partners",
     value: totalPartners.toString(),
-    change: 3,
-    changeLabel: "new this quarter",
+    change: 4,
+    changeLabel: "new this FY",
     trend: "up",
-    sparkline: [14, 15, 15, 16, 17, 18, 19],
+    sparkline: [16, 17, 18, 19, 20, 21, 22],
   },
   {
-    id: "certs-passed",
-    label: "Certifications Passed",
-    value: totalExamsPassed.toString(),
-    change: 12,
-    changeLabel: "vs last quarter",
+    id: "compliant-ses",
+    label: "Compliant SEs",
+    value: totalCompliantSEs.toString(),
+    change: 15,
+    changeLabel: "of 66 required",
     trend: "up",
-    sparkline: [32, 36, 40, 42, 45, 50, 55],
+    sparkline: [5, 7, 9, 10, 12, 13, 15],
   },
   {
-    id: "open-gaps",
-    label: "Open Gaps",
-    value: totalGaps.toString(),
-    change: -8,
-    changeLabel: "vs last quarter",
+    id: "se-gap",
+    label: "SE Gap (Needed)",
+    value: totalSEGap.toString(),
+    change: -6,
+    changeLabel: "vs last month",
     trend: "down",
-    sparkline: [98, 95, 92, 90, 88, 86, 83],
+    sparkline: [60, 58, 56, 55, 53, 52, 51],
   },
   {
-    id: "readiness",
-    label: "Readiness Score",
-    value: `${readinessScore}%`,
+    id: "compliance",
+    label: "Compliance Rate",
+    value: `${complianceRate}%`,
     change: 5,
     changeLabel: "vs last quarter",
     trend: "up",
-    sparkline: [10, 11, 12, 13, 14, 15, 16],
+    sparkline: [12, 14, 16, 18, 20, 21, 23],
   },
 ];
 
-// ─── Gap Distribution (for bar chart) ───────────────────────
+// ─── Compliance Status Distribution (for summary cards) ─────
 
 export const gapDistribution = [
   {
-    category: "Bootcamp",
-    total: partners.reduce((s, p) => s + p.gaps.bootcamp, 0),
-    partnersAffected: partners.filter((p) => p.gaps.bootcamp > 0).length,
+    category: "Compliant",
+    total: compliantPartners,
+    partnersAffected: compliantPartners,
   },
   {
-    category: "Tech Pro",
-    total: partners.reduce((s, p) => s + p.gaps.techPro, 0),
-    partnersAffected: partners.filter((p) => p.gaps.techPro > 0).length,
+    category: "Partial Progress",
+    total: partners.filter((p) => p.status === "partial").length,
+    partnersAffected: partners.filter((p) => p.status === "partial").length,
   },
   {
-    category: "Sales Pro",
-    total: partners.reduce((s, p) => s + p.gaps.salesPro, 0),
-    partnersAffected: partners.filter((p) => p.gaps.salesPro > 0).length,
+    category: "Need TSP",
+    total: partners.filter((p) => p.gapType === "Need TSP").length,
+    partnersAffected: partners.filter((p) => p.gapType === "Need TSP").length,
   },
   {
-    category: "Impl. Specialist",
-    total: partners.reduce((s, p) => s + p.gaps.implementationSpec, 0),
-    partnersAffected: partners.filter((p) => p.gaps.implementationSpec > 0).length,
+    category: "No Progress",
+    total: partners.filter((p) => p.gapType === "No progress" || p.gapType === "Cross-train").length,
+    partnersAffected: partners.filter((p) => p.gapType === "No progress" || p.gapType === "Cross-train").length,
   },
 ];
 
 // ─── Gap by partner (for stacked bar chart) ─────────────────
 
 export const partnerGapBreakdown = partners
-  .filter((p) => p.totalGaps > 0)
-  .sort((a, b) => b.totalGaps - a.totalGaps)
+  .filter((p) => p.seGap > 0)
+  .sort((a, b) => b.seGap - a.seGap)
   .map((p) => ({
-    partner: p.name.length > 20 ? p.name.substring(0, 18) + "…" : p.name,
+    partner: p.name.length > 22 ? p.name.substring(0, 20) + "…" : p.name,
     fullName: p.name,
-    Bootcamp: p.gaps.bootcamp,
-    "Tech Pro": p.gaps.techPro,
-    "Sales Pro": p.gaps.salesPro,
-    "Impl. Spec": p.gaps.implementationSpec,
+    "SE Gap": p.seGap,
+    "Has SP Only": Math.max(p.spSEs - p.compliantSEs, 0),
+    "Has TSP Only": Math.max(p.tspSEs - p.compliantSEs, 0),
   }));
 
-// ─── Certification Category Breakdown (donut) ───────────────
+// ─── SE Journey Step Distribution (donut) ───────────────────
 
-export const certCategories: CertCategory[] = [
-  { category: "FlashArray Architect", count: 14, percentage: 25, color: "oklch(0.60 0.12 175)" },
-  { category: "FlashBlade Architect", count: 10, percentage: 18, color: "oklch(0.58 0.16 290)" },
-  { category: "Implementation Specialist", count: 12, percentage: 22, color: "oklch(0.75 0.14 75)" },
-  { category: "Support Specialist", count: 5, percentage: 9, color: "oklch(0.62 0.19 15)" },
-  { category: "Platform Positioning", count: 8, percentage: 15, color: "oklch(0.65 0.10 145)" },
-  { category: "Platform Solutions", count: 6, percentage: 11, color: "oklch(0.55 0.08 200)" },
+const stepCounts = [0, 1, 2, 3, 4, 5, 6].map(
+  (step) => partners.filter((p) => p.journeyStep === step).length
+);
+
+export const certCategories: StatusCategory[] = [
+  { category: "Not Started (Step 0)", count: stepCounts[0], percentage: Math.round((stepCounts[0] / totalPartners) * 100), color: "oklch(0.62 0.19 15)" },
+  { category: "Simply Pure (Step 1)", count: stepCounts[1], percentage: Math.round((stepCounts[1] / totalPartners) * 100), color: "oklch(0.75 0.14 75)" },
+  { category: "SP + TSP (Step 2)", count: stepCounts[2], percentage: Math.round((stepCounts[2] / totalPartners) * 100), color: "oklch(0.58 0.16 290)" },
+  { category: "Electives (Step 5)", count: stepCounts[5], percentage: Math.round((stepCounts[5] / totalPartners) * 100), color: "oklch(0.60 0.12 175)" },
+  { category: "Certifications (Step 6)", count: stepCounts[6], percentage: Math.round((stepCounts[6] / totalPartners) * 100), color: "oklch(0.55 0.08 200)" },
 ];
 
 // ─── Status Distribution ────────────────────────────────────
 
 export const statusCounts = {
-  "on-track": partners.filter((p) => p.status === "on-track").length,
-  "at-risk": partners.filter((p) => p.status === "at-risk").length,
-  critical: partners.filter((p) => p.status === "critical").length,
-  certified: partners.filter((p) => p.status === "certified").length,
+  compliant: partners.filter((p) => p.status === "compliant").length,
+  partial: partners.filter((p) => p.status === "partial").length,
+  "high-gap": partners.filter((p) => p.status === "high-gap").length,
 };
 
 // ─── Sidebar Navigation ────────────────────────────────────
@@ -379,8 +458,8 @@ export const statusCounts = {
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
   { id: "partners", label: "Partners", icon: "Building2", badge: totalPartners },
+  { id: "journey", label: "SE Journey", icon: "Route" },
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
-  { id: "certifications", label: "Certifications", icon: "Award" },
   { id: "reports", label: "Reports", icon: "FileBarChart" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];

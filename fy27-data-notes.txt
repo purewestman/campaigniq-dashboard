@@ -1,0 +1,65 @@
+FY27 Partner SE Journey Compliance & Gap Analysis — Data Extraction
+====================================================================
+
+CONTEXT: FY27 SE Journey requires 3 SEs per company to complete BOTH:
+  Step 1: Simply Pure for Partners FY27 (SP)
+  Step 2: Technical Sales Professional FY27 (TSP)
+
+COMPLIANCE STATUS CATEGORIES:
+  ✅ Compliant (Goal Met) — 3+ SEs have both SP + TSP
+  🟡 Partial Progress — 1-2 SEs have both, need more
+  🔴 High Gap — 0 SEs have both courses overlap
+
+PARTNER DATA:
+==============
+
+COMPLIANT (1 partner):
+1. AXIZ (PTY) LTD — 3/3 compliant SEs (Adolph Strydom, Jen Gouws, Leriza DeBruyn), Gap: 0
+
+PARTIAL PROGRESS (9 partners):
+2. Data Sciences Corporation — 2/3 compliant SEs (Freddie Kgari, James Glashoff), Gap: 1
+3. NEC XON SYSTEMS — 2/3 compliant SEs (Peter McGuigan, Conrad Van Niekerk), Gap: 1
+4. FIRST TECHNOLOGY KWAZULU NATAL — 1/3 compliant (Stelios Kyriakides), Gap: 2
+5. NTT DATA South Africa / Dimension Data — 1/3 compliant (Riaan Taylor), Gap: 2
+6. iOCO Infrastructure Services — 1/3 compliant (Harvey Leibowitz), Gap: 2
+7. ITgility — 1/3 compliant (James Barnardt), Gap: 2
+8. Global Indirect Markets — 1/3 compliant (Dylan Leeming), Gap: 2
+9. Netsync Network Solutions — 1/3 compliant (David Goss), Gap: 2
+10. Technology Corporate Management — 1/3 compliant (Dierk Lobbecke), Gap: 2
+11. Triple H Technology Group — 1/3 compliant (Justine de Sousa), Gap: 2
+
+HIGH GAP (11 partners):
+Heavy SP Benches (need TSP):
+12. Netstream Technology — 9 SEs have SP, 0 have TSP, Gap: 3
+13. AltronDigital Business — 3 SEs have SP, 0 have TSP, Gap: 3
+14. Storage Technology Services/Nexio — 3 SEs have SP, 0 have TSP, Gap: 3
+15. NetStor — 2 SEs have SP, 0 have TSP, Gap: 3
+16. SITHABILE — 1 SE has SP, 0 have TSP, Gap: 3
+
+Cross-Training Needed:
+17. FIRST TECHNOLOGY GROUP — Simone has SP, Calvin has TSP, Gap: 3
+18. INTELLITECH SYSTEMS — Shahirah has SP, Kavi+Collen have TSP, Gap: 3
+
+No Progress:
+19. ETS INNOVATIONS — 0 completions, Gap: 3
+20. Lekonakonetsi — 0 completions, Gap: 3
+21. Netsource One — 0 completions, Gap: 3
+22. BCX — 0 completions, Gap: 3
+
+TOTAL: 22 partners
+
+KPI DERIVATION:
+- Total Partners: 22
+- Compliant Partners: 1 (4.5%)
+- Total SE Gap: 0+1+1+2+2+2+2+2+2+2+2+3+3+3+3+3+3+3+3+3+3+3 = 51 SEs needed
+- Compliant SEs: 3+2+2+1+1+1+1+1+1+1+1+0+0+0+0+0+0+0+0+0+0+0 = 15 SEs compliant
+- Required total: 22*3 = 66
+- Compliance Rate: 15/66 = 22.7%
+
+SE JOURNEY STEPS (for advanced view):
+Step 1: Simply Pure FY27
+Step 2: TSP FY27
+Step 3: Bootcamp (1-day in-person)
+Step 4: Architecture ("How to Build an Enterprise Data Cloud")
+Step 5: Electives (Partner Academy Training Catalogue)
+Step 6: Certifications (pinnacle certs)

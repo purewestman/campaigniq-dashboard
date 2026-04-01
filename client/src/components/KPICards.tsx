@@ -1,13 +1,13 @@
 /*
  * KPI Cards — "Soft Terrain" design
- * Partner Certification Readiness metrics
- * Total Partners, Certifications Passed, Open Gaps, Readiness Score
+ * FY27 Partner SE Journey Compliance metrics
+ * Total Partners, Compliant SEs, SE Gap, Compliance Rate
  */
 
 import { motion } from "framer-motion";
 import {
   Building2,
-  Award,
+  UserCheck,
   AlertTriangle,
   Gauge,
   ArrowUpRight,
@@ -18,9 +18,9 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const iconMap: Record<string, React.ElementType> = {
   partners: Building2,
-  "certs-passed": Award,
-  "open-gaps": AlertTriangle,
-  readiness: Gauge,
+  "compliant-ses": UserCheck,
+  "se-gap": AlertTriangle,
+  compliance: Gauge,
 };
 
 const gradientMap: Record<string, { from: string; to: string; iconBg: string }> = {
@@ -29,17 +29,17 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
     to: "oklch(0.60 0.12 175 / 0.02)",
     iconBg: "oklch(0.60 0.12 175 / 0.12)",
   },
-  "certs-passed": {
+  "compliant-ses": {
     from: "oklch(0.58 0.16 290 / 0.12)",
     to: "oklch(0.58 0.16 290 / 0.02)",
     iconBg: "oklch(0.58 0.16 290 / 0.12)",
   },
-  "open-gaps": {
+  "se-gap": {
     from: "oklch(0.62 0.19 15 / 0.12)",
     to: "oklch(0.62 0.19 15 / 0.02)",
     iconBg: "oklch(0.62 0.19 15 / 0.12)",
   },
-  readiness: {
+  compliance: {
     from: "oklch(0.75 0.14 75 / 0.12)",
     to: "oklch(0.75 0.14 75 / 0.02)",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
@@ -48,9 +48,9 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
 
 const sparklineColorMap: Record<string, string> = {
   partners: "oklch(0.55 0.12 175)",
-  "certs-passed": "oklch(0.53 0.16 290)",
-  "open-gaps": "oklch(0.58 0.19 15)",
-  readiness: "oklch(0.70 0.14 75)",
+  "compliant-ses": "oklch(0.53 0.16 290)",
+  "se-gap": "oklch(0.58 0.19 15)",
+  compliance: "oklch(0.70 0.14 75)",
 };
 
 function MiniSparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
