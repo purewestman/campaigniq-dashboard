@@ -1,13 +1,13 @@
 /*
  * KPI Cards — "Soft Terrain" design
- * FY27 Partner SE Journey — updated with Exams Passed metric
- * Accepts filtered metrics from parent
+ * FY27 Global Reseller Program Tier Compliance
+ * Displays: Total Partners, Enablement Score, Total Gaps, Exams Passed
  */
 
 import { motion } from "framer-motion";
 import {
   Building2,
-  UserCheck,
+  Target,
   AlertTriangle,
   Award,
   ArrowUpRight,
@@ -19,8 +19,8 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const iconMap: Record<string, React.ElementType> = {
   partners: Building2,
-  "compliant-ses": UserCheck,
-  "se-gap": AlertTriangle,
+  enablement: Target,
+  gaps: AlertTriangle,
   exams: Award,
 };
 
@@ -30,12 +30,12 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
     to: "oklch(0.60 0.12 175 / 0.02)",
     iconBg: "oklch(0.60 0.12 175 / 0.12)",
   },
-  "compliant-ses": {
+  enablement: {
     from: "oklch(0.58 0.16 290 / 0.12)",
     to: "oklch(0.58 0.16 290 / 0.02)",
     iconBg: "oklch(0.58 0.16 290 / 0.12)",
   },
-  "se-gap": {
+  gaps: {
     from: "oklch(0.62 0.19 15 / 0.12)",
     to: "oklch(0.62 0.19 15 / 0.02)",
     iconBg: "oklch(0.62 0.19 15 / 0.12)",
@@ -49,8 +49,8 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
 
 const sparklineColorMap: Record<string, string> = {
   partners: "oklch(0.55 0.12 175)",
-  "compliant-ses": "oklch(0.53 0.16 290)",
-  "se-gap": "oklch(0.58 0.19 15)",
+  enablement: "oklch(0.53 0.16 290)",
+  gaps: "oklch(0.58 0.19 15)",
   exams: "oklch(0.70 0.14 75)",
 };
 
@@ -87,6 +87,10 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
   const Icon = iconMap[metric.id] || Award;
   const colors = gradientMap[metric.id] || gradientMap.exams;
   const sparkColor = sparklineColorMap[metric.id] || "oklch(0.55 0.12 175)";
+
+  // For "gaps" metric, trend down is positive (closing gaps)
+  const isPositiveTrend =
+    metric.id === "gaps" ? metric.trend === "down" : metric.trend === "up";
 
   return (
     <motion.div
@@ -126,18 +130,12 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
           <span
             className="inline-flex items-center gap-0.5 text-[12px] font-semibold px-2 py-0.5 rounded-full"
             style={{
-              background:
-                metric.trend === "up"
-                  ? "oklch(0.60 0.12 175 / 0.10)"
-                  : metric.trend === "down"
-                  ? "oklch(0.62 0.19 15 / 0.10)"
-                  : "oklch(0.55 0.02 55 / 0.10)",
-              color:
-                metric.trend === "up"
-                  ? "oklch(0.50 0.12 175)"
-                  : metric.trend === "down"
-                  ? "oklch(0.55 0.19 15)"
-                  : "oklch(0.50 0.02 55)",
+              background: isPositiveTrend
+                ? "oklch(0.60 0.12 175 / 0.10)"
+                : "oklch(0.62 0.19 15 / 0.10)",
+              color: isPositiveTrend
+                ? "oklch(0.50 0.12 175)"
+                : "oklch(0.55 0.19 15)",
             }}
           >
             {metric.trend === "up" ? (

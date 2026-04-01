@@ -1,7 +1,7 @@
 /*
- * SE Journey Step Distribution Donut — "Soft Terrain" design
- * Shows how far each partner has progressed along the 6-step SE Journey
- * Accepts filtered data from parent
+ * Enablement Requirements Donut — "Soft Terrain" design
+ * Shows how many partners meet each Elite Zone B requirement category
+ * FY27 Global Reseller Program Tier Compliance
  */
 
 import { motion } from "framer-motion";
@@ -28,20 +28,23 @@ function CustomTooltip({ active, payload }: any) {
     >
       <p className="text-[12px] font-semibold text-foreground">{data.category}</p>
       <p className="text-[12px] text-muted-foreground mt-1">
-        {data.count} partner{data.count !== 1 ? "s" : ""} ({data.percentage}%)
+        {data.count} partner{data.count !== 1 ? "s" : ""} meeting requirement ({data.percentage}%)
       </p>
     </div>
   );
 }
 
-interface JourneyDonutProps {
+interface EnablementDonutProps {
   data: StatusCategory[];
 }
 
-export default function JourneyDonut({ data }: JourneyDonutProps) {
-  const totalPartners = data.reduce((sum, item) => sum + item.count, 0);
+export default function EnablementDonut({ data }: EnablementDonutProps) {
+  const totalPartners = data.length > 0 ? Math.max(...data.map((d) => Math.round((d.count / d.percentage) * 100))) || 23 : 0;
   const displayCategories = data.filter((c) => c.count > 0);
   const displayColors = displayCategories.map((c) => c.color);
+
+  // If no categories have any partners meeting them, show all with zero
+  const hasData = displayCategories.length > 0;
 
   return (
     <motion.div
@@ -51,13 +54,13 @@ export default function JourneyDonut({ data }: JourneyDonutProps) {
       className="terrain-card p-6"
     >
       <div className="mb-4">
-        <h3 className="text-[15px] font-bold text-foreground">SE Journey Progress</h3>
+        <h3 className="text-[15px] font-bold text-foreground">Requirement Compliance</h3>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          Furthest step reached by each partner
+          Partners meeting each Elite Zone B requirement
         </p>
       </div>
 
-      {totalPartners > 0 ? (
+      {hasData ? (
         <>
           <div className="relative h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -85,9 +88,9 @@ export default function JourneyDonut({ data }: JourneyDonutProps) {
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
-                <p className="text-[11px] text-muted-foreground font-medium">Total</p>
-                <p className="text-xl font-bold text-foreground">{totalPartners}</p>
-                <p className="text-[10px] text-muted-foreground">partners</p>
+                <p className="text-[11px] text-muted-foreground font-medium">Categories</p>
+                <p className="text-xl font-bold text-foreground">4</p>
+                <p className="text-[10px] text-muted-foreground">required</p>
               </div>
             </div>
           </div>
@@ -109,8 +112,8 @@ export default function JourneyDonut({ data }: JourneyDonutProps) {
                   <span
                     className="text-[10px] font-medium px-1.5 py-0.5 rounded-md"
                     style={{
-                      background: "oklch(0.95 0.008 85)",
-                      color: "oklch(0.55 0.02 55)",
+                      background: item.percentage >= 50 ? "oklch(0.60 0.12 175 / 0.10)" : "oklch(0.62 0.19 15 / 0.10)",
+                      color: item.percentage >= 50 ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)",
                     }}
                   >
                     {item.percentage}%

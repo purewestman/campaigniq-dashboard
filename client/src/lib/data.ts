@@ -1,12 +1,12 @@
 /*
- * CampaignIQ Dashboard — FY27 Partner Certification Gap Analysis & Performance Status
- * Updated data from the comprehensive FY27 document with exam records
+ * CampaignIQ Dashboard — FY27 Global Reseller Program Tier Compliance
+ * Elite Zone B (South Africa) enablement requirements vs obtained
  * "Soft Terrain" design: muted teal, violet, rose, amber palette
  */
 
 // ─── Types ──────────────────────────────────────────────────
 
-export type ComplianceFilter = "all" | "compliant" | "partial" | "high-gap";
+export type ComplianceFilter = "all" | "tier1" | "tier2" | "tier3";
 
 export interface KPIMetric {
   id: string;
@@ -23,27 +23,26 @@ export interface ExamRecord {
   certifications: string[];
 }
 
+/** Elite Zone B requirements: 5 SP, 3 TSP, 2 Bootcamp, 1 Impl Spec */
+export interface EliteRequirements {
+  salesPro: { required: number; obtained: number };
+  techPro: { required: number; obtained: number };
+  bootcamp: { required: number; obtained: number };
+  implSpec: { required: number; obtained: number };
+}
+
 export interface Partner {
   id: number;
   name: string;
-  compliantSEs: number;
-  seGap: number;
-  spSEs: number;
-  tspSEs: number;
-  gapType: string;
+  tier: "tier1" | "tier2" | "tier3";
+  tierLabel: string;
+  requirements: EliteRequirements;
+  totalGaps: number;
+  enablementScore: number; // percentage of requirements met
   action: string;
   targetEmails: string[];
-  status: "compliant" | "partial" | "high-gap";
-  journeyStep: number;
   exams: ExamRecord[];
   totalExams: number;
-}
-
-export interface GapCategory {
-  category: string;
-  count: number;
-  color: string;
-  partnersAffected: number;
 }
 
 export interface StatusCategory {
@@ -60,413 +59,262 @@ export interface NavItem {
   badge?: number;
 }
 
+// ─── Elite Zone B Requirements ──────────────────────────────
+
+export const ELITE_ZONE_B = {
+  salesPro: 5,
+  techPro: 3,
+  bootcamp: 2,
+  implSpec: 1,
+  total: 11,
+};
+
+// ─── Tier Definitions ───────────────────────────────────────
+
+export const TIER_CONFIG = {
+  tier1: {
+    label: "Top Performers",
+    description: "Met Course & Cert Baseline; Only Missing Bootcamp",
+    bg: "oklch(0.60 0.12 175 / 0.10)",
+    color: "oklch(0.45 0.12 175)",
+    gradient: "linear-gradient(135deg, oklch(0.60 0.12 175 / 0.06), oklch(0.60 0.12 175 / 0.01))",
+    iconBg: "oklch(0.60 0.12 175 / 0.12)",
+    iconColor: "oklch(0.50 0.12 175)",
+    activeRing: "oklch(0.55 0.12 175)",
+  },
+  tier2: {
+    label: "Mid-Tier",
+    description: "Missing Implementation Specialist & Bootcamp",
+    bg: "oklch(0.75 0.14 75 / 0.12)",
+    color: "oklch(0.58 0.14 75)",
+    gradient: "linear-gradient(135deg, oklch(0.75 0.14 75 / 0.06), oklch(0.75 0.14 75 / 0.01))",
+    iconBg: "oklch(0.75 0.14 75 / 0.12)",
+    iconColor: "oklch(0.60 0.14 75)",
+    activeRing: "oklch(0.65 0.14 75)",
+  },
+  tier3: {
+    label: "Falling Behind",
+    description: "Heavy Course & Certification Gaps",
+    bg: "oklch(0.62 0.19 15 / 0.10)",
+    color: "oklch(0.50 0.19 15)",
+    gradient: "linear-gradient(135deg, oklch(0.62 0.19 15 / 0.06), oklch(0.62 0.19 15 / 0.01))",
+    iconBg: "oklch(0.62 0.19 15 / 0.12)",
+    iconColor: "oklch(0.52 0.19 15)",
+    activeRing: "oklch(0.57 0.19 15)",
+  },
+};
+
+// ─── Helper to compute gaps ─────────────────────────────────
+
+function computeGaps(reqs: EliteRequirements): number {
+  return (
+    Math.max(0, reqs.salesPro.required - reqs.salesPro.obtained) +
+    Math.max(0, reqs.techPro.required - reqs.techPro.obtained) +
+    Math.max(0, reqs.bootcamp.required - reqs.bootcamp.obtained) +
+    Math.max(0, reqs.implSpec.required - reqs.implSpec.obtained)
+  );
+}
+
+function computeScore(reqs: EliteRequirements): number {
+  const obtained =
+    Math.min(reqs.salesPro.obtained, reqs.salesPro.required) +
+    Math.min(reqs.techPro.obtained, reqs.techPro.required) +
+    Math.min(reqs.bootcamp.obtained, reqs.bootcamp.required) +
+    Math.min(reqs.implSpec.obtained, reqs.implSpec.required);
+  return Math.round((obtained / ELITE_ZONE_B.total) * 100);
+}
+
+function makePartner(
+  id: number,
+  name: string,
+  tier: Partner["tier"],
+  sp: number,
+  tsp: number,
+  boot: number,
+  impl: number,
+  action: string,
+  emails: string[],
+  exams: ExamRecord[] = []
+): Partner {
+  const requirements: EliteRequirements = {
+    salesPro: { required: ELITE_ZONE_B.salesPro, obtained: sp },
+    techPro: { required: ELITE_ZONE_B.techPro, obtained: tsp },
+    bootcamp: { required: ELITE_ZONE_B.bootcamp, obtained: boot },
+    implSpec: { required: ELITE_ZONE_B.implSpec, obtained: impl },
+  };
+  const totalExams = exams.reduce((s, e) => s + e.certifications.length, 0);
+  return {
+    id,
+    name,
+    tier,
+    tierLabel: TIER_CONFIG[tier].label,
+    requirements,
+    totalGaps: computeGaps(requirements),
+    enablementScore: computeScore(requirements),
+    action,
+    targetEmails: emails,
+    exams,
+    totalExams,
+  };
+}
+
 // ─── Partners Data ──────────────────────────────────────────
 
 export const partners: Partner[] = [
-  // ✅ Tier 1: Goals Met (8 partners)
-  {
-    id: 1,
-    name: "Data Sciences Corporation",
-    compliantSEs: 5,
-    seGap: 0,
-    spSEs: 18,
-    tspSEs: 5,
-    gapType: "None",
-    action: "Fully compliant with 5 SEs. Register SEs for SE Bootcamp (Step 3) to continue the journey.",
-    targetEmails: ["morne.groenewald@datasciences.co.za", "rudolf.vandergryp@datasciences.co.za"],
-    status: "compliant",
-    journeyStep: 6,
-    exams: [
-      { email: "jp.marais@datasciences.co.za", certifications: ["Certified FlashArray Support Specialist"] },
-      { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
-      { email: "antony@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
-      { email: "mekeal.beepath@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
-      { email: "irtond@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
-      { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Platform Positioning Certificate", "FlashArray Architect Associate", "FlashArray Architect Professional", "FlashBlade Architect Professional", "Platform Solutions Associate"] },
-      { email: "koos.hattingh@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
-      { email: "mndeni.msibi@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
-      { email: "rukaya.najam@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
-      { email: "nelson.lopes@datasciences.co.za", certifications: ["FlashArray Architect Professional"] },
-      { email: "kenny.thiart@datasciences.co.za", certifications: ["FlashArray Architect Professional", "FlashBlade Architect Professional"] },
-    ],
-    totalExams: 17,
-  },
-  {
-    id: 2,
-    name: "AXIZ (PTY) LTD",
-    compliantSEs: 3,
-    seGap: 0,
-    spSEs: 3,
-    tspSEs: 3,
-    gapType: "None",
-    action: "Fully compliant. Register SEs for SE Bootcamp (Step 3) to continue the journey.",
-    targetEmails: ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
-    status: "compliant",
-    journeyStep: 2,
-    exams: [
-      { email: "lerato.mabunda@axiz.com", certifications: ["Platform Positioning Certificate"] },
-      { email: "adolph.strydom@axiz.com", certifications: ["Platform Positioning Exam", "Certified Architect Associate FlashArray", "FlashArray Implementation Specialist", "FlashBlade Architect Associate", "Platform Solutions Associate"] },
-      { email: "oscar.ronander@axiz.com", certifications: ["Platform Positioning Exam"] },
-    ],
-    totalExams: 7,
-  },
-  {
-    id: 3,
-    name: "NTT DATA / Dimension Data",
-    compliantSEs: 3,
-    seGap: 0,
-    spSEs: 6,
-    tspSEs: 3,
-    gapType: "None",
-    action: "Fully compliant via Ryan Daniels, Riaan Taylor, and Rudi Fischer. Proceed to SE Bootcamp.",
-    targetEmails: ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"],
-    status: "compliant",
-    journeyStep: 6,
-    exams: [
-      { email: "kayode.fatoki@global.ntt", certifications: ["Certified FlashArray Support Specialist"] },
-      { email: "angelo.campbell@global.ntt", certifications: ["Certified FlashArray Support Specialist"] },
-      { email: "morne.frans@dimensiondata.com", certifications: ["FlashBlade Architect Associate"] },
-    ],
-    totalExams: 3,
-  },
-  {
-    id: 4,
-    name: "NEC XON SYSTEMS",
-    compliantSEs: 3,
-    seGap: 0,
-    spSEs: 4,
-    tspSEs: 3,
-    gapType: "None",
-    action: "Fully compliant via Peter McGuigan, Merwe Erasmus, and Conrad Van Niekerk. Proceed to SE Bootcamp.",
-    targetEmails: ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"],
-    status: "compliant",
-    journeyStep: 6,
-    exams: [
-      { email: "merwe.erasmus@nec.xon.co.za", certifications: ["FlashArray Architect Associate", "FlashArray Architect Professional", "FlashBlade Architect Associate"] },
-    ],
-    totalExams: 3,
-  },
-  {
-    id: 5,
-    name: "FIRST TECHNOLOGY KZN",
-    compliantSEs: 3,
-    seGap: 0,
-    spSEs: 11,
-    tspSEs: 3,
-    gapType: "None",
-    action: "Fully compliant with 3 SEs. Proceed to SE Bootcamp.",
-    targetEmails: ["nonjabulot@ftechkzn.co.za", "steliosk@ftechkzn.co.za"],
-    status: "compliant",
-    journeyStep: 2,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 6,
-    name: "iOCO Infrastructure Services",
-    compliantSEs: 6,
-    seGap: 0,
-    spSEs: 8,
-    tspSEs: 6,
-    gapType: "None",
-    action: "Fully compliant with 6 SEs — highest in the ecosystem. Proceed to SE Bootcamp and certifications.",
-    targetEmails: ["jacques.dejager@ioco.tech", "johan.grove@ioco.tech"],
-    status: "compliant",
-    journeyStep: 6,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 7,
-    name: "Netsync Network Solutions",
-    compliantSEs: 5,
-    seGap: 0,
-    spSEs: 30,
-    tspSEs: 5,
-    gapType: "None",
-    action: "Fully compliant with 5+ SEs. Proceed to SE Bootcamp.",
-    targetEmails: ["bbeggs@netsync.com", "lovalles@netsync.com"],
-    status: "compliant",
-    journeyStep: 2,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 8,
-    name: "Netstream Technology",
-    compliantSEs: 3,
-    seGap: 0,
-    spSEs: 4,
-    tspSEs: 3,
-    gapType: "None",
-    action: "Fully compliant with 3 SEs. Proceed to SE Bootcamp.",
-    targetEmails: ["jcannon@netstreamtechinc.com", "dbrandt@netstreamtechinc.com"],
-    status: "compliant",
-    journeyStep: 2,
-    exams: [],
-    totalExams: 0,
-  },
+  // 🌟 Tier 1: Top Performers (4 partners) — Only missing Bootcamp
+  makePartner(1, "Data Sciences Corporation", "tier1", 6, 5, 0, 2, "Gap of 2 Bootcamp Attendees only. Compliant with >5 Sales Pros, >3 Tech Pros, and >1 Implementation Specialists. Send 2 engineers to in-person SE Bootcamp.", ["morne.groenewald@datasciences.co.za", "rudolf.vandergryp@datasciences.co.za"], [
+    { email: "jp.marais@datasciences.co.za", certifications: ["Certified FlashArray Support Specialist"] },
+    { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
+    { email: "antony@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
+    { email: "mekeal.beepath@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
+    { email: "irtond@datasciences.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
+    { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Platform Positioning Certificate", "FlashArray Architect Associate", "FlashArray Architect Professional", "FlashBlade Architect Professional", "Platform Solutions Associate"] },
+    { email: "koos.hattingh@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
+    { email: "mndeni.msibi@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
+    { email: "rukaya.najam@datasciences.co.za", certifications: ["FlashArray Architect Associate"] },
+    { email: "nelson.lopes@datasciences.co.za", certifications: ["FlashArray Architect Professional"] },
+    { email: "kenny.thiart@datasciences.co.za", certifications: ["FlashArray Architect Professional", "FlashBlade Architect Professional"] },
+  ]),
+  makePartner(2, "AXIZ (PTY) LTD", "tier1", 6, 3, 0, 1, "Gap of 2 Bootcamp Attendees only. Compliant with >5 Sales Pros, >3 Tech Pros, and 1 Implementation Specialist.", ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"], [
+    { email: "lerato.mabunda@axiz.com", certifications: ["Platform Positioning Certificate"] },
+    { email: "adolph.strydom@axiz.com", certifications: ["Platform Positioning Exam", "Certified Architect Associate FlashArray", "FlashArray Implementation Specialist", "FlashBlade Architect Associate", "Platform Solutions Associate"] },
+    { email: "oscar.ronander@axiz.com", certifications: ["Platform Positioning Exam"] },
+  ]),
+  makePartner(3, "NTT DATA / Dimension Data", "tier1", 6, 4, 0, 2, "Gap of 2 Bootcamp Attendees only. Compliant with >5 Sales Pros, >3 Tech Pros, and >1 Implementation Specialists.", ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"], [
+    { email: "kayode.fatoki@global.ntt", certifications: ["Certified FlashArray Support Specialist", "Certified FlashArray Implementation Specialist"] },
+    { email: "angelo.campbell@global.ntt", certifications: ["Certified FlashArray Support Specialist", "FlashArray Implementation Specialist"] },
+    { email: "mannes.nijeboer@global.ntt", certifications: ["Certified FlashBlade Implementation Specialist"] },
+    { email: "kamalan.naraidoo@global.ntt", certifications: ["Certified FlashBlade Implementation Specialist"] },
+    { email: "morne.frans@dimensiondata.com", certifications: ["FlashBlade Architect Associate"] },
+  ]),
+  makePartner(4, "Technology Corporate Mgmt (TCM)", "tier1", 5, 3, 0, 1, "Gap of 2 Bootcamp Attendees only. Compliant with >5 Sales Pros, 3 Tech Pros, and 1 Implementation Specialist.", ["colin.smith@tcm.co.za", "vishnu.naidoo@tcm.co.za"], [
+    { email: "dierk.lobbecke@tcm.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
+    { email: "vishnu.naidoo@tcm.co.za", certifications: ["Platform Positioning Certificate", "Platform Solutions Associate"] },
+  ]),
 
-  // ⚠️ Tier 2: Partial Progress (4 partners)
-  {
-    id: 9,
-    name: "Altron Digital Business",
-    compliantSEs: 1,
-    seGap: 2,
-    spSEs: 4,
-    tspSEs: 2,
-    gapType: "Need TSP overlap",
-    action: "Have Mpho Mpya and Paulina Moagi complete the TSP module to close the gap.",
-    targetEmails: ["robert.mlombile@altron.com", "zane.maphalle@altron.com"],
-    status: "partial",
-    journeyStep: 5,
-    exams: [
-      { email: "williamrobert.souter@altron.com", certifications: ["Platform Positioning Certificate"] },
-      { email: "zane.maphalle@altron.com", certifications: ["Platform Positioning Exam", "FlashArray Architect Associate", "FlashBlade Architect Associate", "Platform Solutions Associate"] },
-      { email: "johan.westman@altron.com", certifications: ["Platform Positioning Exam"] },
-    ],
-    totalExams: 6,
-  },
-  {
-    id: 10,
-    name: "Technology Corporate Mgmt (TCM)",
-    compliantSEs: 1,
-    seGap: 2,
-    spSEs: 3,
-    tspSEs: 2,
-    gapType: "Cross-train",
-    action: "Have other active engineers cross-train on the FY27 baseline courses to hit the 3-SE compliance metric.",
-    targetEmails: ["colin.smith@tcm.co.za", "vishnu.naidoo@tcm.co.za"],
-    status: "partial",
-    journeyStep: 5,
-    exams: [
-      { email: "dierk.lobbecke@tcm.co.za", certifications: ["Certified FlashArray Implementation Specialist"] },
-      { email: "vishnu.naidoo@tcm.co.za", certifications: ["Platform Positioning Certificate", "Platform Solutions Associate"] },
-    ],
-    totalExams: 3,
-  },
-  {
-    id: 11,
-    name: "Global Indirect Markets",
-    compliantSEs: 1,
-    seGap: 2,
-    spSEs: 2,
-    tspSEs: 1,
-    gapType: "Need TSP overlap",
-    action: "Target eric.corbin to complete TSP FY27 to create the required overlap.",
-    targetEmails: ["eric.corbin@globalindirectmarkets.com"],
-    status: "partial",
-    journeyStep: 2,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 12,
-    name: "ITgility",
-    compliantSEs: 1,
-    seGap: 2,
-    spSEs: 2,
-    tspSEs: 1,
-    gapType: "Need TSP + new SE",
-    action: "2 SEs need TSP FY27 plus 1 new SE needs both courses. Only James Barnardt has both.",
-    targetEmails: ["envorp@itgility.co.za", "feliciat@itgility.co.za"],
-    status: "partial",
-    journeyStep: 2,
-    exams: [
-      { email: "jamesb@itgility.co.za", certifications: ["Platform Positioning Certificate"] },
-    ],
-    totalExams: 1,
-  },
+  // 🟡 Tier 2: Mid-Tier (4 partners) — Missing Impl Specialist & Bootcamp
+  makePartner(5, "iOCO Infrastructure Services", "tier2", 6, 4, 0, 0, "Need 1 Implementation Specialist and 2 Bootcamp Attendees. Have a top engineer pass the Implementation Specialist exam.", ["jacques.dejager@ioco.tech", "johan.grove@ioco.tech"]),
+  makePartner(6, "FIRST TECHNOLOGY KZN", "tier2", 6, 4, 0, 0, "Need 1 Implementation Specialist and 2 Bootcamp Attendees. Have a top engineer pass the Implementation Specialist exam.", ["nonjabulot@ftechkzn.co.za", "steliosk@ftechkzn.co.za"]),
+  makePartner(7, "Netsync Network Solutions", "tier2", 6, 3, 0, 0, "Need 1 Implementation Specialist and 2 Bootcamp Attendees. Several engineers have taken prep courses; push them to pass the exam.", ["bbeggs@netsync.com", "lovalles@netsync.com"]),
+  makePartner(8, "NEC XON SYSTEMS", "tier2", 5, 3, 0, 0, "Need 1 Implementation Specialist and 2 Bootcamp Attendees. Have Merwe Erasmus or Peter McGuigan pass the exam.", ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"], [
+    { email: "merwe.erasmus@nec.xon.co.za", certifications: ["FlashArray Architect Associate", "FlashArray Architect Professional", "FlashBlade Architect Associate"] },
+  ]),
 
-  // 🛑 Tier 3: Stalled / High Gap (7 partners)
-  {
-    id: 13,
-    name: "Triple H Technology Group",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 1,
-    tspSEs: 1,
-    gapType: "Cross-train",
-    action: "Cross-train Justine de Sousa, Kiewiet Kritzinger, and Frederik Strydom to create the required overlap.",
-    targetEmails: ["frederiks@triplehgroup.co.za"],
-    status: "high-gap",
-    journeyStep: 1,
-    exams: [
-      { email: "frederiks@triplehgroup.co.za", certifications: ["FlashArray Architect Associate"] },
-    ],
-    totalExams: 1,
-  },
-  {
-    id: 14,
-    name: "INTELLITECH SYSTEMS",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 1,
-    tspSEs: 2,
-    gapType: "Cross-train",
-    action: "Heavy Tech Pro bench — mandate they take Simply Pure. Cross-train to create overlap.",
-    targetEmails: ["collen@intellitechsystems.co.za", "kavi@intellitechsystems.co.za"],
-    status: "high-gap",
-    journeyStep: 1,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 15,
-    name: "FIRST TECHNOLOGY GROUP",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 1,
-    tspSEs: 1,
-    gapType: "Cross-train",
-    action: "Cross-train Simone and Calvin to create the overlap.",
-    targetEmails: ["calvinm@firsttech.co.za", "simonevh@firsttech.co.za"],
-    status: "high-gap",
-    journeyStep: 1,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 16,
-    name: "Storage Technology Services (Nexio)",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 0,
-    tspSEs: 1,
-    gapType: "Need SP + cross-train",
-    action: "Have Charmaine and Tinyiko complete the Tech Pro path. Start Simply Pure immediately.",
-    targetEmails: [],
-    status: "high-gap",
-    journeyStep: 1,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 17,
-    name: "SITHABILE TECHNOLOGY SERVICES",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 0,
-    tspSEs: 0,
-    gapType: "No progress",
-    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
-    targetEmails: [],
-    status: "high-gap",
-    journeyStep: 0,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 18,
-    name: "NetStor",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 0,
-    tspSEs: 0,
-    gapType: "No progress",
-    action: "Zero completions. Start with Simply Pure FY27 and TSP FY27 immediately.",
-    targetEmails: [],
-    status: "high-gap",
-    journeyStep: 0,
-    exams: [],
-    totalExams: 0,
-  },
-  {
-    id: 19,
-    name: "ETS INNOVATIONS & Lekonakonetsi",
-    compliantSEs: 0,
-    seGap: 3,
-    spSEs: 0,
-    tspSEs: 0,
-    gapType: "No progress",
-    action: "Zero completions. Target engineers to start the FY27 path from scratch.",
-    targetEmails: [],
-    status: "high-gap",
-    journeyStep: 0,
-    exams: [],
-    totalExams: 0,
-  },
+  // 🔴 Tier 3: Falling Behind (15 partners) — Heavy Course & Cert Gaps
+  makePartner(9, "Altron Digital Business", "tier3", 1, 2, 0, 0, "Gap of 4 Sales Pros, 1 Tech Pro, 1 Impl Specialist, 2 Bootcamp. Push more engineers through Sales Pro and Tech Pro paths.", ["robert.mlombile@altron.com", "zane.maphalle@altron.com"], [
+    { email: "williamrobert.souter@altron.com", certifications: ["Platform Positioning Certificate"] },
+    { email: "zane.maphalle@altron.com", certifications: ["Platform Positioning Exam", "FlashArray Architect Associate", "FlashBlade Architect Associate", "Platform Solutions Associate"] },
+  ]),
+  makePartner(10, "ITgility", "tier3", 2, 1, 0, 0, "Gap of 3 Sales Pros, 2 Tech Pros, 1 Impl Specialist, 2 Bootcamp.", ["envorp@itgility.co.za", "feliciat@itgility.co.za"], [
+    { email: "jamesb@itgility.co.za", certifications: ["Platform Positioning Certificate"] },
+  ]),
+  makePartner(11, "Global Indirect Markets", "tier3", 1, 1, 0, 0, "Gap of 4 Sales Pros, 2 Tech Pros, 1 Impl Specialist, 2 Bootcamp.", ["eric.corbin@globalindirectmarkets.com"]),
+  makePartner(12, "Triple H Technology Group", "tier3", 2, 0, 0, 0, "Gap of 3 Sales Pros, 3 Tech Pros, 1 Impl Specialist, 2 Bootcamp. Cross-train Justine, Kiewiet, and Frederik.", ["frederiks@triplehgroup.co.za"], [
+    { email: "frederiks@triplehgroup.co.za", certifications: ["FlashArray Architect Associate"] },
+  ]),
+  makePartner(13, "Netstream Technology", "tier3", 0, 0, 0, 0, "Gap of 5 Sales Pros, 3 Tech Pros, 1 Impl Specialist, 2 Bootcamp. Zero recorded FY27 completions.", ["jcannon@netstreamtechinc.com", "dbrandt@netstreamtechinc.com"]),
+  makePartner(14, "INTELLITECH SYSTEMS", "tier3", 0, 0, 0, 0, "High gap across all metrics. Require total enablement plan addressing the 5 Sales Pro and 3 Tech Pro minimums.", ["collen@intellitechsystems.co.za", "kavi@intellitechsystems.co.za"]),
+  makePartner(15, "FIRST TECHNOLOGY GROUP", "tier3", 0, 0, 0, 0, "High gap across all metrics. Cross-train Simone and Calvin to start the FY27 path.", ["calvinm@firsttech.co.za", "simonevh@firsttech.co.za"]),
+  makePartner(16, "Storage Technology Svcs (Nexio)", "tier3", 0, 0, 0, 0, "High gap across all metrics. Have Charmaine and Tinyiko complete the Tech Pro path.", []),
+  makePartner(17, "SITHABILE TECHNOLOGY SERVICES", "tier3", 0, 0, 0, 0, "High gap across all metrics. Zero completions — start from scratch.", []),
+  makePartner(18, "NetStor", "tier3", 0, 0, 0, 0, "High gap across all metrics. Zero completions — start from scratch.", []),
+  makePartner(19, "ETS INNOVATIONS", "tier3", 0, 0, 0, 0, "High gap across all metrics. Target engineers to start the FY27 path from scratch.", []),
+  makePartner(20, "Lekonakonetsi Consulting", "tier3", 0, 0, 0, 0, "High gap across all metrics. Target engineers to start the FY27 path from scratch.", []),
+  makePartner(21, "BCX", "tier3", 0, 0, 0, 0, "Gap of 5 Sales Pros, 3 Tech Pros, 1 Impl Specialist, 2 Bootcamp. Only Carla Clara has minor progress (Module 1 and Partner Program Training).", []),
+  makePartner(22, "Netsource One", "tier3", 0, 0, 0, 0, "Gap of 5 Sales Pros, 3 Tech Pros, 1 Impl Specialist, 2 Bootcamp. Only Jacob Beck and Conner Williams have started minor modules.", []),
+  makePartner(23, "NEXION Networks Pty Ltd", "tier3", 0, 0, 0, 0, "Gap of 5 Sales Pros, 3 Tech Pros, 1 Impl Specialist, 2 Bootcamp. Only Rex Tan has taken the Simply Pure course.", []),
 ];
 
 // ─── Filter helpers ─────────────────────────────────────────
 
 export function filterPartners(filter: ComplianceFilter): Partner[] {
   if (filter === "all") return partners;
-  return partners.filter((p) => p.status === filter);
+  return partners.filter((p) => p.tier === filter);
 }
 
 export function getFilteredGapBreakdown(filtered: Partner[]) {
   return filtered
-    .filter((p) => p.seGap > 0)
-    .sort((a, b) => b.seGap - a.seGap)
+    .filter((p) => p.totalGaps > 0)
+    .sort((a, b) => b.totalGaps - a.totalGaps)
     .map((p) => ({
-      partner: p.name.length > 22 ? p.name.substring(0, 20) + "…" : p.name,
+      partner: p.name.length > 20 ? p.name.substring(0, 18) + "…" : p.name,
       fullName: p.name,
-      "SE Gap": p.seGap,
-      "Has SP Only": Math.max(p.spSEs - p.compliantSEs, 0),
-      "Has TSP Only": Math.max(p.tspSEs - p.compliantSEs, 0),
+      "Sales Pro Gap": Math.max(0, p.requirements.salesPro.required - p.requirements.salesPro.obtained),
+      "Tech Pro Gap": Math.max(0, p.requirements.techPro.required - p.requirements.techPro.obtained),
+      "Bootcamp Gap": Math.max(0, p.requirements.bootcamp.required - p.requirements.bootcamp.obtained),
+      "Impl Spec Gap": Math.max(0, p.requirements.implSpec.required - p.requirements.implSpec.obtained),
     }));
 }
 
-export function getFilteredJourneySteps(filtered: Partner[]): StatusCategory[] {
+export function getFilteredEnablementDistribution(filtered: Partner[]): StatusCategory[] {
   const total = filtered.length;
   if (total === 0) return [];
-  const stepCounts = [0, 1, 2, 3, 4, 5, 6].map(
-    (step) => filtered.filter((p) => p.journeyStep === step).length
-  );
+
+  const spMet = filtered.filter((p) => p.requirements.salesPro.obtained >= p.requirements.salesPro.required).length;
+  const tspMet = filtered.filter((p) => p.requirements.techPro.obtained >= p.requirements.techPro.required).length;
+  const bootMet = filtered.filter((p) => p.requirements.bootcamp.obtained >= p.requirements.bootcamp.required).length;
+  const implMet = filtered.filter((p) => p.requirements.implSpec.obtained >= p.requirements.implSpec.required).length;
+
   return [
-    { category: "Not Started (Step 0)", count: stepCounts[0], percentage: Math.round((stepCounts[0] / total) * 100), color: "oklch(0.62 0.19 15)" },
-    { category: "Simply Pure (Step 1)", count: stepCounts[1], percentage: Math.round((stepCounts[1] / total) * 100), color: "oklch(0.75 0.14 75)" },
-    { category: "SP + TSP (Step 2)", count: stepCounts[2], percentage: Math.round((stepCounts[2] / total) * 100), color: "oklch(0.58 0.16 290)" },
-    { category: "Electives (Step 5)", count: stepCounts[5], percentage: Math.round((stepCounts[5] / total) * 100), color: "oklch(0.60 0.12 175)" },
-    { category: "Certifications (Step 6)", count: stepCounts[6], percentage: Math.round((stepCounts[6] / total) * 100), color: "oklch(0.55 0.08 200)" },
+    { category: "Sales Pro (5 req)", count: spMet, percentage: Math.round((spMet / total) * 100), color: "oklch(0.60 0.12 175)" },
+    { category: "Tech Pro (3 req)", count: tspMet, percentage: Math.round((tspMet / total) * 100), color: "oklch(0.58 0.16 290)" },
+    { category: "Bootcamp (2 req)", count: bootMet, percentage: Math.round((bootMet / total) * 100), color: "oklch(0.75 0.14 75)" },
+    { category: "Impl Specialist (1 req)", count: implMet, percentage: Math.round((implMet / total) * 100), color: "oklch(0.62 0.19 15)" },
   ];
 }
 
 export function getFilteredKPIs(filtered: Partner[]): KPIMetric[] {
   const total = filtered.length;
-  const compliantSEs = filtered.reduce((s, p) => s + p.compliantSEs, 0);
-  const seGap = filtered.reduce((s, p) => s + p.seGap, 0);
+  const totalObtained = filtered.reduce(
+    (s, p) =>
+      s +
+      Math.min(p.requirements.salesPro.obtained, p.requirements.salesPro.required) +
+      Math.min(p.requirements.techPro.obtained, p.requirements.techPro.required) +
+      Math.min(p.requirements.bootcamp.obtained, p.requirements.bootcamp.required) +
+      Math.min(p.requirements.implSpec.obtained, p.requirements.implSpec.required),
+    0
+  );
+  const totalRequired = total * ELITE_ZONE_B.total;
+  const avgScore = total > 0 ? Math.round(filtered.reduce((s, p) => s + p.enablementScore, 0) / total) : 0;
+  const totalGaps = filtered.reduce((s, p) => s + p.totalGaps, 0);
   const totalExams = filtered.reduce((s, p) => s + p.totalExams, 0);
-  const required = total * 3;
-  const rate = required > 0 ? Math.round((compliantSEs / required) * 100) : 0;
 
   return [
     {
       id: "partners",
       label: "Total Partners",
       value: total.toString(),
-      change: 8,
+      change: 4,
       changeLabel: "new since last update",
       trend: "up",
-      sparkline: [8, 9, 10, 11, 14, 17, total],
+      sparkline: [11, 14, 17, 19, 21, 22, total],
     },
     {
-      id: "compliant-ses",
-      label: "Compliant SEs",
-      value: compliantSEs.toString(),
-      change: compliantSEs,
-      changeLabel: `of ${required} required`,
-      trend: "up",
-      sparkline: [5, 9, 14, 18, 22, 27, compliantSEs],
+      id: "enablement",
+      label: "Enablement Score",
+      value: `${avgScore}%`,
+      change: avgScore,
+      changeLabel: `${totalObtained} of ${totalRequired} items met`,
+      trend: avgScore >= 50 ? "up" : "down",
+      sparkline: [15, 22, 30, 35, 40, 45, avgScore],
     },
     {
-      id: "se-gap",
-      label: "SE Gap (Remaining)",
-      value: seGap.toString(),
-      change: -22,
+      id: "gaps",
+      label: "Total Gaps",
+      value: totalGaps.toString(),
+      change: -15,
       changeLabel: "closed since last update",
       trend: "down",
-      sparkline: [51, 45, 40, 35, 32, 30, seGap],
+      sparkline: [120, 110, 100, 90, 80, 75, totalGaps],
     },
     {
       id: "exams",
       label: "Exams Passed",
       value: totalExams.toString(),
-      change: 3,
+      change: 5,
       changeLabel: "new certifications",
       trend: "up",
-      sparkline: [15, 20, 25, 28, 32, 36, totalExams],
+      sparkline: [15, 20, 25, 30, 35, 38, totalExams],
     },
   ];
 }
@@ -474,51 +322,37 @@ export function getFilteredKPIs(filtered: Partner[]): KPIMetric[] {
 // ─── Computed Aggregates ────────────────────────────────────
 
 const totalPartners = partners.length;
-const compliantPartners = partners.filter((p) => p.status === "compliant").length;
-const totalSEGap = partners.reduce((s, p) => s + p.seGap, 0);
-const totalCompliantSEs = partners.reduce((s, p) => s + p.compliantSEs, 0);
 const totalExamsPassed = partners.reduce((s, p) => s + p.totalExams, 0);
-const requiredSEs = totalPartners * 3;
 
-// ─── Compliance Status Distribution (for summary cards) ─────
+// ─── Tier Distribution (for summary cards) ──────────────────
 
-export const gapDistribution = [
+export const tierDistribution = [
   {
-    category: "Compliant",
-    total: compliantPartners,
-    partnersAffected: compliantPartners,
+    tier: "tier1" as const,
+    label: "Top Performers",
+    count: partners.filter((p) => p.tier === "tier1").length,
+    description: "Only missing Bootcamp",
   },
   {
-    category: "Partial Progress",
-    total: partners.filter((p) => p.status === "partial").length,
-    partnersAffected: partners.filter((p) => p.status === "partial").length,
+    tier: "tier2" as const,
+    label: "Mid-Tier",
+    count: partners.filter((p) => p.tier === "tier2").length,
+    description: "Missing Impl Spec + Bootcamp",
   },
   {
-    category: "Cross-Train",
-    total: partners.filter((p) => p.gapType.includes("Cross-train") || p.gapType.includes("cross-train")).length,
-    partnersAffected: partners.filter((p) => p.gapType.includes("Cross-train") || p.gapType.includes("cross-train")).length,
-  },
-  {
-    category: "No Progress",
-    total: partners.filter((p) => p.gapType === "No progress").length,
-    partnersAffected: partners.filter((p) => p.gapType === "No progress").length,
+    tier: "tier3" as const,
+    label: "Falling Behind",
+    count: partners.filter((p) => p.tier === "tier3").length,
+    description: "Heavy course & cert gaps",
   },
 ];
-
-// ─── Status Distribution ────────────────────────────────────
-
-export const statusCounts = {
-  compliant: partners.filter((p) => p.status === "compliant").length,
-  partial: partners.filter((p) => p.status === "partial").length,
-  "high-gap": partners.filter((p) => p.status === "high-gap").length,
-};
 
 // ─── Sidebar Navigation ────────────────────────────────────
 
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
   { id: "partners", label: "Partners", icon: "Building2", badge: totalPartners },
-  { id: "journey", label: "SE Journey", icon: "Route" },
+  { id: "tiers", label: "Tier Compliance", icon: "Shield" },
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassed },
   { id: "reports", label: "Reports", icon: "FileBarChart" },

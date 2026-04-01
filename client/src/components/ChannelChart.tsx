@@ -1,7 +1,7 @@
 /*
- * SE Compliance Gap by Partner — "Soft Terrain" design
- * Horizontal stacked bar chart showing SE gaps, SP-only, TSP-only per partner
- * Accepts filtered data from parent
+ * Enablement Gap by Partner — "Soft Terrain" design
+ * Horizontal stacked bar chart: Sales Pro, Tech Pro, Bootcamp, Impl Spec gaps
+ * FY27 Global Reseller Program Tier Compliance
  */
 
 import { motion } from "framer-motion";
@@ -17,14 +17,16 @@ import {
 } from "recharts";
 
 const gapColors: Record<string, string> = {
-  "SE Gap": "oklch(0.62 0.19 15)",
-  "Has SP Only": "oklch(0.60 0.12 175)",
-  "Has TSP Only": "oklch(0.58 0.16 290)",
+  "Sales Pro Gap": "oklch(0.58 0.16 290)",
+  "Tech Pro Gap": "oklch(0.60 0.12 175)",
+  "Bootcamp Gap": "oklch(0.75 0.14 75)",
+  "Impl Spec Gap": "oklch(0.62 0.19 15)",
 };
 
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const fullName = payload[0]?.payload?.fullName || label;
+  const totalGap = payload.reduce((s: number, e: any) => s + (e.value || 0), 0);
 
   return (
     <div
@@ -34,24 +36,27 @@ function CustomTooltip({ active, payload, label }: any) {
         borderColor: "oklch(0.92 0.01 85)",
       }}
     >
-      <p className="text-[12px] font-semibold text-foreground mb-2">{fullName}</p>
-      {payload.map((entry: any) => (
-        <div key={entry.dataKey} className="flex items-center gap-2 mb-1">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ background: entry.fill }}
-          />
-          <span className="text-[11px] text-muted-foreground">{entry.dataKey}:</span>
-          <span className="text-[11px] font-semibold text-foreground">{entry.value}</span>
-        </div>
-      ))}
+      <p className="text-[12px] font-semibold text-foreground mb-1">{fullName}</p>
+      <p className="text-[11px] text-muted-foreground mb-2">Total gap: {totalGap} of 11 required</p>
+      {payload.map((entry: any) =>
+        entry.value > 0 ? (
+          <div key={entry.dataKey} className="flex items-center gap-2 mb-1">
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ background: entry.fill }}
+            />
+            <span className="text-[11px] text-muted-foreground">{entry.dataKey}:</span>
+            <span className="text-[11px] font-semibold text-foreground">{entry.value}</span>
+          </div>
+        ) : null
+      )}
     </div>
   );
 }
 
 function CustomLegend({ payload }: any) {
   return (
-    <div className="flex items-center justify-center gap-5 mt-3">
+    <div className="flex items-center justify-center gap-5 mt-3 flex-wrap">
       {payload?.map((entry: any) => (
         <div key={entry.value} className="flex items-center gap-1.5">
           <span
@@ -71,9 +76,10 @@ interface GapAnalysisChartProps {
   data: {
     partner: string;
     fullName: string;
-    "SE Gap": number;
-    "Has SP Only": number;
-    "Has TSP Only": number;
+    "Sales Pro Gap": number;
+    "Tech Pro Gap": number;
+    "Bootcamp Gap": number;
+    "Impl Spec Gap": number;
   }[];
 }
 
@@ -89,9 +95,9 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
     >
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-[15px] font-bold text-foreground">SE Compliance Gap by Partner</h3>
+          <h3 className="text-[15px] font-bold text-foreground">Enablement Gap by Partner</h3>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            SEs needed to reach 3-SE baseline across all partners
+            Elite Zone B requirements: 5 Sales Pro, 3 Tech Pro, 2 Bootcamp, 1 Impl Specialist
           </p>
         </div>
         <div
@@ -135,34 +141,16 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "oklch(0.95 0.008 85 / 0.5)" }} />
               <Legend content={<CustomLegend />} />
-              <Bar
-                dataKey="SE Gap"
-                stackId="gaps"
-                fill={gapColors["SE Gap"]}
-                radius={[0, 0, 0, 0]}
-                animationDuration={1000}
-              />
-              <Bar
-                dataKey="Has SP Only"
-                stackId="gaps"
-                fill={gapColors["Has SP Only"]}
-                animationDuration={1000}
-                animationBegin={200}
-              />
-              <Bar
-                dataKey="Has TSP Only"
-                stackId="gaps"
-                fill={gapColors["Has TSP Only"]}
-                radius={[0, 4, 4, 0]}
-                animationDuration={1000}
-                animationBegin={400}
-              />
+              <Bar dataKey="Sales Pro Gap" stackId="gaps" fill={gapColors["Sales Pro Gap"]} radius={[0, 0, 0, 0]} animationDuration={1000} />
+              <Bar dataKey="Tech Pro Gap" stackId="gaps" fill={gapColors["Tech Pro Gap"]} animationDuration={1000} animationBegin={200} />
+              <Bar dataKey="Bootcamp Gap" stackId="gaps" fill={gapColors["Bootcamp Gap"]} animationDuration={1000} animationBegin={400} />
+              <Bar dataKey="Impl Spec Gap" stackId="gaps" fill={gapColors["Impl Spec Gap"]} radius={[0, 4, 4, 0]} animationDuration={1000} animationBegin={600} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       ) : (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-[13px]">
-          All partners in this selection are compliant — no gaps to display.
+          All partners in this selection meet Elite Zone B requirements — no gaps to display.
         </div>
       )}
     </motion.div>

@@ -1,14 +1,16 @@
-FY27 SE Journey Dashboard - Screenshot Review (April 2026)
-==========================================================
+Screenshot Review — FY27 Global Reseller Tier Compliance Update
+================================================================
 
-All components rendering correctly:
-- Sidebar: CampaignIQ branding with "FY27 SE Journey" subtitle, 6 nav items, Partners badge showing 22
-- Header: "FY27 SE Journey Compliance" title, correct subtitle, FY27 Q1 date button
-- KPI Cards: Total Partners (22), Compliant SEs (15), SE Gap (51), Compliance Rate (23%) - all with sparklines
-- Compliance Summary: Compliant (1, 5%), Partial Progress (10, 45%), Need TSP (10, 45%), No Progress (6, 27%)
-- SE Compliance Gap chart: Visible with Netstream Technology and Storage Technology bars
-- SE Journey Progress donut: Visible with segments
+Dashboard renders correctly with zero TypeScript errors.
 
-TypeScript: No errors
-LSP: No errors
-Layout: Clean, responsive, all data from FY27 document correctly displayed
+Visible elements:
+1. Sidebar: CampaignIQ / FY27 Tier Compliance branding, nav items with Shield icon for Tier Compliance, badges (23 partners, 43 certifications)
+2. Header: "FY27 Global Reseller Tier Compliance" title, Elite Zone B subtitle, search bar, FY27 Q1 date
+3. KPI Cards: Total Partners (23), Enablement Score (31%), Total Gaps (175), Exams Passed (43)
+4. Tier Summary Cards: Top Performers (4, 17%), Mid-Tier (4, 17%), Falling Behind (15, 65%)
+5. Enablement Gap by Partner chart: visible with stacked bars for Sales Pro, Tech Pro, Bootcamp, Impl Spec
+6. Requirement Compliance donut: visible with 4 categories
+7. Partner table: visible below (scrolled out of view)
+
+All components render cleanly. The tier compliance framework is properly integrated.
+The "obtained vs required" model is reflected in KPIs, charts, and table columns.

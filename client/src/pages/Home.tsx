@@ -1,7 +1,7 @@
 /*
  * Home Page — CampaignIQ Dashboard
  * "Soft Terrain" design: Organic Gradient Landscape
- * FY27 Partner SE Journey Compliance & Gap Analysis
+ * FY27 Global Reseller Program Tier Compliance — Elite Zone B
  *
  * Layout: Fixed sidebar (left) + scrollable main content
  * Filter state is lifted here and passed to all child components
@@ -13,7 +13,7 @@ import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
 import KPICards from "@/components/KPICards";
 import GapAnalysisChart from "@/components/ChannelChart";
-import JourneyDonut from "@/components/BudgetDonut";
+import EnablementDonut from "@/components/BudgetDonut";
 import ComplianceSummary from "@/components/ChannelSummary";
 import PartnerTable from "@/components/CampaignTable";
 import {
@@ -21,7 +21,7 @@ import {
   filterPartners,
   getFilteredKPIs,
   getFilteredGapBreakdown,
-  getFilteredJourneySteps,
+  getFilteredEnablementDistribution,
 } from "@/lib/data";
 
 export default function Home() {
@@ -33,7 +33,7 @@ export default function Home() {
   const filteredPartners = useMemo(() => filterPartners(complianceFilter), [complianceFilter]);
   const filteredKPIs = useMemo(() => getFilteredKPIs(filteredPartners), [filteredPartners]);
   const filteredGapData = useMemo(() => getFilteredGapBreakdown(filteredPartners), [filteredPartners]);
-  const filteredJourneySteps = useMemo(() => getFilteredJourneySteps(filteredPartners), [filteredPartners]);
+  const filteredEnablement = useMemo(() => getFilteredEnablementDistribution(filteredPartners), [filteredPartners]);
 
   return (
     <div className="min-h-screen flex" style={{ background: "oklch(0.975 0.008 85)" }}>
@@ -61,7 +61,7 @@ export default function Home() {
             <KPICards metrics={filteredKPIs} />
           </section>
 
-          {/* Compliance Status Summary Cards (clickable filter) */}
+          {/* Tier Compliance Summary Cards (clickable filter) */}
           <section className="mb-6">
             <ComplianceSummary
               activeFilter={complianceFilter}
@@ -69,17 +69,17 @@ export default function Home() {
             />
           </section>
 
-          {/* Charts Row: Gap Analysis (60%) + Journey Donut (40%) */}
+          {/* Charts Row: Gap Analysis (60%) + Enablement Donut (40%) */}
           <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
             <div className="lg:col-span-3">
               <GapAnalysisChart data={filteredGapData} />
             </div>
             <div className="lg:col-span-2">
-              <JourneyDonut data={filteredJourneySteps} />
+              <EnablementDonut data={filteredEnablement} />
             </div>
           </section>
 
-          {/* Partner SE Compliance Table */}
+          {/* Partner Tier Compliance Table */}
           <section className="mb-8">
             <PartnerTable
               partners={filteredPartners}
@@ -91,7 +91,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="pb-6 text-center">
             <p className="text-[11px] text-muted-foreground">
-              CampaignIQ &middot; FY27 Partner Certification Gap Analysis &amp; Performance Status &middot; Data as of April 2026
+              CampaignIQ &middot; FY27 Global Reseller Program Tier Compliance &middot; Elite Zone B (South Africa) &middot; Data as of April 2026
             </p>
           </footer>
         </div>

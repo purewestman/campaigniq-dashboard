@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Zap,
   Route,
+  Shield,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ const iconMap: Record<string, React.ElementType> = {
   FileBarChart,
   Settings,
   Route,
+  Shield,
 };
 
 interface SidebarProps {
@@ -79,7 +81,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                 CampaignIQ
               </h1>
               <p className="text-[10px] text-white/40 -mt-0.5 whitespace-nowrap">
-                FY27 SE Journey
+                FY27 Tier Compliance
               </p>
             </motion.div>
           )}

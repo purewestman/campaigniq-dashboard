@@ -1,53 +1,18 @@
 /*
- * Compliance Status Summary Cards — "Soft Terrain" design
- * Four cards: Compliant, Partial Progress, Cross-Train, No Progress
- * Clickable to filter the entire dashboard by compliance tier
+ * Tier Compliance Summary Cards — "Soft Terrain" design
+ * Three cards: Top Performers, Mid-Tier, Falling Behind
+ * Clickable to filter the entire dashboard by tier
+ * FY27 Global Reseller Program Tier Compliance
  */
 
 import { motion } from "framer-motion";
-import { gapDistribution, partners, type ComplianceFilter } from "@/lib/data";
-import { CheckCircle2, Clock, Repeat2, XCircle, X } from "lucide-react";
+import { tierDistribution, partners, TIER_CONFIG, type ComplianceFilter } from "@/lib/data";
+import { Trophy, Minus, AlertTriangle, X } from "lucide-react";
 
-const gapIcons: Record<string, React.ElementType> = {
-  Compliant: CheckCircle2,
-  "Partial Progress": Clock,
-  "Cross-Train": Repeat2,
-  "No Progress": XCircle,
-};
-
-const gapStyles: Record<string, { gradient: string; iconBg: string; iconColor: string; activeRing: string }> = {
-  Compliant: {
-    gradient: "linear-gradient(135deg, oklch(0.60 0.12 175 / 0.06), oklch(0.60 0.12 175 / 0.01))",
-    iconBg: "oklch(0.60 0.12 175 / 0.12)",
-    iconColor: "oklch(0.50 0.12 175)",
-    activeRing: "oklch(0.55 0.12 175)",
-  },
-  "Partial Progress": {
-    gradient: "linear-gradient(135deg, oklch(0.58 0.16 290 / 0.06), oklch(0.58 0.16 290 / 0.01))",
-    iconBg: "oklch(0.58 0.16 290 / 0.12)",
-    iconColor: "oklch(0.48 0.16 290)",
-    activeRing: "oklch(0.53 0.16 290)",
-  },
-  "Cross-Train": {
-    gradient: "linear-gradient(135deg, oklch(0.75 0.14 75 / 0.06), oklch(0.75 0.14 75 / 0.01))",
-    iconBg: "oklch(0.75 0.14 75 / 0.12)",
-    iconColor: "oklch(0.60 0.14 75)",
-    activeRing: "oklch(0.65 0.14 75)",
-  },
-  "No Progress": {
-    gradient: "linear-gradient(135deg, oklch(0.62 0.19 15 / 0.06), oklch(0.62 0.19 15 / 0.01))",
-    iconBg: "oklch(0.62 0.19 15 / 0.12)",
-    iconColor: "oklch(0.52 0.19 15)",
-    activeRing: "oklch(0.57 0.19 15)",
-  },
-};
-
-// Map summary card categories to the ComplianceFilter values
-const categoryToFilter: Record<string, ComplianceFilter> = {
-  Compliant: "compliant",
-  "Partial Progress": "partial",
-  "Cross-Train": "high-gap",
-  "No Progress": "high-gap",
+const tierIcons: Record<string, React.ElementType> = {
+  tier1: Trophy,
+  tier2: Minus,
+  tier3: AlertTriangle,
 };
 
 interface ComplianceSummaryProps {
@@ -58,13 +23,11 @@ interface ComplianceSummaryProps {
 export default function ComplianceSummary({ activeFilter, onFilterChange }: ComplianceSummaryProps) {
   const totalPartners = partners.length;
 
-  const handleClick = (category: string) => {
-    const targetFilter = categoryToFilter[category];
-    // Toggle: if already active, reset to "all"
-    if (activeFilter === targetFilter) {
+  const handleClick = (tier: ComplianceFilter) => {
+    if (activeFilter === tier) {
       onFilterChange("all");
     } else {
-      onFilterChange(targetFilter);
+      onFilterChange(tier);
     }
   };
 
@@ -84,8 +47,8 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
         >
           <span className="text-[12px] font-medium text-foreground">
             Filtering by:{" "}
-            <span className="font-bold capitalize">
-              {activeFilter === "high-gap" ? "High Gap" : activeFilter}
+            <span className="font-bold">
+              {TIER_CONFIG[activeFilter as keyof typeof TIER_CONFIG]?.label || activeFilter}
             </span>
           </span>
           <button
@@ -99,20 +62,19 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {gapDistribution.map((gap, i) => {
-          const Icon = gapIcons[gap.category] || CheckCircle2;
-          const style = gapStyles[gap.category] || gapStyles.Compliant;
-          const filterVal = categoryToFilter[gap.category];
-          const isActive = activeFilter === filterVal;
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {tierDistribution.map((item, i) => {
+          const Icon = tierIcons[item.tier] || Minus;
+          const style = TIER_CONFIG[item.tier];
+          const isActive = activeFilter === item.tier;
 
           return (
             <motion.button
-              key={gap.category}
+              key={item.tier}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 + i * 0.08, duration: 0.4 }}
-              onClick={() => handleClick(gap.category)}
+              onClick={() => handleClick(item.tier)}
               className="terrain-card p-5 relative overflow-hidden text-left transition-all duration-200 group"
               style={{
                 outline: isActive ? `2px solid ${style.activeRing}` : "2px solid transparent",
@@ -137,7 +99,10 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                   >
                     <Icon className="w-4 h-4" style={{ color: style.iconColor }} />
                   </div>
-                  <h4 className="text-[14px] font-bold text-foreground">{gap.category}</h4>
+                  <div>
+                    <h4 className="text-[14px] font-bold text-foreground">{item.label}</h4>
+                    <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                  </div>
                   {isActive && (
                     <motion.span
                       initial={{ scale: 0 }}
@@ -159,7 +124,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                       Partners
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      {gap.total}
+                      {item.count}
                     </p>
                   </div>
                   <div>
@@ -167,7 +132,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                       Of Total
                     </p>
                     <p className="text-2xl font-bold text-foreground">
-                      {totalPartners > 0 ? Math.round((gap.total / totalPartners) * 100) : 0}%
+                      {totalPartners > 0 ? Math.round((item.count / totalPartners) * 100) : 0}%
                     </p>
                   </div>
                 </div>
