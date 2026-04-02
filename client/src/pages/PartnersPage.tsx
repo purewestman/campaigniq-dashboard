@@ -1,13 +1,18 @@
 /*
  * Partners Page — CampaignIQ Dashboard
  * "Soft Terrain" design
- * Full partner directory with search, tier badges, contact info, and enablement progress
+ * Full partner directory with search, tier badges, contact info, enablement progress,
+ * and admin "Modify" button to update gap counts with justification comments.
+ * Uses modifiedPartners from ModificationContext so edits propagate to all tabs.
  */
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { partners, TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
+import ModifyGapModal from "@/components/ModifyGapModal";
+import type { Partner } from "@/lib/data";
 import {
   Search,
   Building2,
@@ -22,6 +27,7 @@ import {
   Users,
   Target,
   X,
+  Pencil,
 } from "lucide-react";
 
 const tierIcons: Record<string, React.ElementType> = {
@@ -34,10 +40,12 @@ export default function PartnersPage() {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
+  const [modifyPartner, setModifyPartner] = useState<Partner | null>(null);
   const { getOverrideCount } = useOverrides();
+  const { modifiedPartners, getModification } = useModifications();
 
   const filtered = useMemo(() => {
-    let result = partners;
+    let result = modifiedPartners;
     if (tierFilter !== "all") {
       result = result.filter((p) => p.tier === tierFilter);
     }
@@ -50,14 +58,14 @@ export default function PartnersPage() {
       );
     }
     return result;
-  }, [search, tierFilter]);
+  }, [search, tierFilter, modifiedPartners]);
 
   const tierCounts = useMemo(() => ({
-    all: partners.length,
-    tier1: partners.filter((p) => p.tier === "tier1").length,
-    tier2: partners.filter((p) => p.tier === "tier2").length,
-    tier3: partners.filter((p) => p.tier === "tier3").length,
-  }), []);
+    all: modifiedPartners.length,
+    tier1: modifiedPartners.filter((p) => p.tier === "tier1").length,
+    tier2: modifiedPartners.filter((p) => p.tier === "tier2").length,
+    tier3: modifiedPartners.filter((p) => p.tier === "tier3").length,
+  }), [modifiedPartners]);
 
   return (
     <div className="space-y-6">
@@ -68,7 +76,7 @@ export default function PartnersPage() {
           Partner Directory
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
-          {partners.length} registered partners in the FY27 Elite Zone B program
+          {modifiedPartners.length} registered partners in the FY27 Elite Zone B program
         </p>
       </div>
 
@@ -131,6 +139,7 @@ export default function PartnersPage() {
             const TierIcon = tierIcons[partner.tier] || Minus;
             const isExpanded = expandedId === partner.id;
             const overrides = getOverrideCount(partner.id);
+            const modification = getModification(partner.id);
             const totalObtained =
               Math.min(partner.requirements.salesPro.obtained, partner.requirements.salesPro.required) +
               Math.min(partner.requirements.techPro.obtained, partner.requirements.techPro.required) +
@@ -145,9 +154,17 @@ export default function PartnersPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.03, duration: 0.3 }}
-                className="terrain-card p-5 cursor-pointer hover:shadow-lg transition-shadow"
+                className="terrain-card p-5 cursor-pointer hover:shadow-lg transition-shadow relative"
                 onClick={() => setExpandedId(isExpanded ? null : partner.id)}
               >
+                {/* Modified indicator stripe */}
+                {modification && (
+                  <div
+                    className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
+                    style={{ background: "oklch(0.58 0.16 290)" }}
+                  />
+                )}
+
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -155,6 +172,15 @@ export default function PartnersPage() {
                       <h3 className="text-[14px] font-bold text-foreground leading-tight">
                         {partner.name}
                       </h3>
+                      {modification && (
+                        <span
+                          className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: "oklch(0.58 0.16 290 / 0.10)", color: "oklch(0.42 0.16 290)" }}
+                        >
+                          <Pencil className="w-2.5 h-2.5" />
+                          Modified
+                        </span>
+                      )}
                       {overrides > 0 && (
                         <span
                           className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
@@ -267,6 +293,34 @@ export default function PartnersPage() {
                         </div>
                       </div>
 
+                      {/* Last Modification Comment */}
+                      {modification && (
+                        <div
+                          className="px-3 py-2.5 rounded-lg"
+                          style={{
+                            background: "oklch(0.58 0.16 290 / 0.04)",
+                            border: "1px solid oklch(0.58 0.16 290 / 0.12)",
+                          }}
+                        >
+                          <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "oklch(0.42 0.16 290)" }}>
+                            Last Modification
+                          </p>
+                          <p className="text-[12px] text-foreground/80 italic leading-relaxed">
+                            "{modification.comment}"
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            — {modification.modifiedBy},{" "}
+                            {new Date(modification.modifiedAt).toLocaleDateString("en-ZA", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      )}
+
                       {/* Action */}
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
@@ -296,6 +350,23 @@ export default function PartnersPage() {
                           </div>
                         </div>
                       )}
+
+                      {/* Modify Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModifyPartner(partner);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
+                        style={{
+                          background: "oklch(0.50 0.12 175)",
+                          color: "white",
+                          boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)",
+                        }}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        Modify Gaps
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -311,6 +382,15 @@ export default function PartnersPage() {
           <p className="text-[14px] font-medium text-muted-foreground">No partners found</p>
           <p className="text-[12px] text-muted-foreground/60 mt-1">Try adjusting your search or filter criteria.</p>
         </div>
+      )}
+
+      {/* Modify Gap Modal */}
+      {modifyPartner && (
+        <ModifyGapModal
+          partner={modifyPartner}
+          isOpen={!!modifyPartner}
+          onClose={() => setModifyPartner(null)}
+        />
       )}
     </div>
   );

@@ -6,7 +6,8 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { partners, TIER_CONFIG } from "@/lib/data";
+import { TIER_CONFIG } from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
 import {
   Award,
   Search,
@@ -40,6 +41,8 @@ interface FlatExam {
 }
 
 export default function CertificationsPage() {
+  const { modifiedPartners: partners } = useModifications();
+
   const [search, setSearch] = useState("");
   const [expandedPartner, setExpandedPartner] = useState<number | null>(null);
 

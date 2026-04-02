@@ -2,20 +2,20 @@
  * Gap Analysis Page — CampaignIQ Dashboard
  * "Soft Terrain" design
  * Detailed gap breakdown with heatmap, category analysis, and actionable partner recommendations
+ * Uses modifiedPartners so admin edits propagate here
  */
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { partners, TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import {
   AlertTriangle,
   TrendingDown,
-  Target,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
-  ArrowUpRight,
 } from "lucide-react";
 import {
   BarChart,
@@ -40,6 +40,7 @@ const GAP_COLORS = {
 export default function GapAnalysisPage() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const { getOverrideCount } = useOverrides();
+  const { modifiedPartners } = useModifications();
 
   const gapSummary = useMemo(() => {
     const categories = [
@@ -50,15 +51,15 @@ export default function GapAnalysisPage() {
     ];
 
     return categories.map((cat) => {
-      const totalGap = partners.reduce((s, p) => {
+      const totalGap = modifiedPartners.reduce((s, p) => {
         const req = p.requirements[cat.key as keyof typeof p.requirements];
         return s + Math.max(0, req.required - req.obtained);
       }, 0);
-      const partnersWithGap = partners.filter((p) => {
+      const partnersWithGap = modifiedPartners.filter((p) => {
         const req = p.requirements[cat.key as keyof typeof p.requirements];
         return req.obtained < req.required;
       });
-      const partnersMet = partners.filter((p) => {
+      const partnersMet = modifiedPartners.filter((p) => {
         const req = p.requirements[cat.key as keyof typeof p.requirements];
         return req.obtained >= req.required;
       });
@@ -75,7 +76,7 @@ export default function GapAnalysisPage() {
         }),
       };
     });
-  }, []);
+  }, [modifiedPartners]);
 
   const totalGaps = gapSummary.reduce((s, c) => s + c.totalGap, 0);
 
@@ -86,7 +87,7 @@ export default function GapAnalysisPage() {
   }));
 
   const heatmapData = useMemo(() => {
-    return partners
+    return modifiedPartners
       .map((p) => ({
         id: p.id,
         name: p.name.length > 22 ? p.name.substring(0, 20) + "…" : p.name,
@@ -99,7 +100,7 @@ export default function GapAnalysisPage() {
         total: p.totalGaps,
       }))
       .sort((a, b) => b.total - a.total);
-  }, []);
+  }, [modifiedPartners]);
 
   const getHeatColor = (gap: number, max: number) => {
     if (gap === 0) return "oklch(0.60 0.12 175 / 0.12)";
@@ -116,7 +117,7 @@ export default function GapAnalysisPage() {
           Gap Analysis
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
-          {totalGaps} total gaps across {partners.length} partners — detailed breakdown by category
+          {totalGaps} total gaps across {modifiedPartners.length} partners — detailed breakdown by category
         </p>
       </div>
 
@@ -153,13 +154,13 @@ export default function GapAnalysisPage() {
                   <div
                     className="h-full rounded-full"
                     style={{
-                      width: `${Math.round((cat.partnersMet / partners.length) * 100)}%`,
+                      width: `${Math.round((cat.partnersMet / modifiedPartners.length) * 100)}%`,
                       background: cat.color,
                     }}
                   />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  {cat.partnersMet}/{partners.length} met
+                  {cat.partnersMet}/{modifiedPartners.length} met
                 </span>
               </div>
 
@@ -291,7 +292,7 @@ export default function GapAnalysisPage() {
                       <div className="terrain-card px-3 py-2 shadow-lg">
                         <p className="text-[11px] font-bold text-foreground">{d.name}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {d.value} gaps ({Math.round((d.value / totalGaps) * 100)}%)
+                          {d.value} gaps ({totalGaps > 0 ? Math.round((d.value / totalGaps) * 100) : 0}%)
                         </p>
                       </div>
                     );

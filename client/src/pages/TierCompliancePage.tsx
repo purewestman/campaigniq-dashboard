@@ -2,11 +2,13 @@
  * Tier Compliance Page — CampaignIQ Dashboard
  * "Soft Terrain" design
  * Visual tier breakdown with requirements matrix, progress tracking, and tier movement indicators
+ * Uses modifiedPartners so admin edits propagate here
  */
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { partners, TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
 import {
   Shield,
   Trophy,
@@ -34,9 +36,11 @@ const tierIcons: Record<string, React.ElementType> = {
 };
 
 export default function TierCompliancePage() {
+  const { modifiedPartners } = useModifications();
+
   const tierData = useMemo(() => {
     return (["tier1", "tier2", "tier3"] as const).map((tier) => {
-      const p = partners.filter((x) => x.tier === tier);
+      const p = modifiedPartners.filter((x) => x.tier === tier);
       const config = TIER_CONFIG[tier];
       const avgScore = p.length > 0
         ? Math.round(p.reduce((s, x) => s + x.enablementScore, 0) / p.length)
@@ -53,11 +57,11 @@ export default function TierCompliancePage() {
         config,
       };
     });
-  }, []);
+  }, [modifiedPartners]);
 
   const requirementMatrix = useMemo(() => {
     return (["tier1", "tier2", "tier3"] as const).map((tier) => {
-      const p = partners.filter((x) => x.tier === tier);
+      const p = modifiedPartners.filter((x) => x.tier === tier);
       return {
         tier,
         label: TIER_CONFIG[tier].label,
@@ -79,10 +83,10 @@ export default function TierCompliancePage() {
         },
       };
     });
-  }, []);
+  }, [modifiedPartners]);
 
   const barData = useMemo(() => {
-    return partners
+    return [...modifiedPartners]
       .sort((a, b) => b.enablementScore - a.enablementScore)
       .map((p) => ({
         name: p.name.length > 18 ? p.name.substring(0, 16) + "…" : p.name,
@@ -90,7 +94,7 @@ export default function TierCompliancePage() {
         score: p.enablementScore,
         tier: p.tier,
       }));
-  }, []);
+  }, [modifiedPartners]);
 
   return (
     <div className="space-y-6">

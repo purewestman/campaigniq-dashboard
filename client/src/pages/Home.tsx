@@ -5,6 +5,7 @@
  *
  * Layout: Fixed sidebar (left) + scrollable main content
  * Sidebar navigation renders different page views via activeNav state
+ * Uses modifiedPartners from ModificationContext so admin edits propagate everywhere
  */
 
 import { useState, useMemo } from "react";
@@ -21,14 +22,8 @@ import TierCompliancePage from "@/pages/TierCompliancePage";
 import GapAnalysisPage from "@/pages/GapAnalysisPage";
 import CertificationsPage from "@/pages/CertificationsPage";
 import ReportsPage from "@/pages/ReportsPage";
-import {
-  type ComplianceFilter,
-  filterPartners,
-  getFilteredKPIs,
-  getFilteredGapBreakdown,
-  getFilteredEnablementDistribution,
-  partners as allPartners,
-} from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
+import { type ComplianceFilter } from "@/lib/data";
 import { Settings } from "lucide-react";
 
 export default function Home() {
@@ -37,9 +32,17 @@ export default function Home() {
   const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const {
+    modifiedPartners,
+    filterModifiedPartners,
+    getModifiedKPIs,
+    getModifiedGapBreakdown,
+    getModifiedEnablementDistribution,
+  } = useModifications();
+
   // Combined filtering: tier filter first, then search query
   const filteredPartners = useMemo(() => {
-    let result = filterPartners(complianceFilter);
+    let result = filterModifiedPartners(complianceFilter);
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter(
@@ -51,11 +54,11 @@ export default function Home() {
       );
     }
     return result;
-  }, [complianceFilter, searchQuery]);
+  }, [complianceFilter, searchQuery, filterModifiedPartners]);
 
-  const filteredKPIs = useMemo(() => getFilteredKPIs(filteredPartners), [filteredPartners]);
-  const filteredGapData = useMemo(() => getFilteredGapBreakdown(filteredPartners), [filteredPartners]);
-  const filteredEnablement = useMemo(() => getFilteredEnablementDistribution(filteredPartners), [filteredPartners]);
+  const filteredKPIs = useMemo(() => getModifiedKPIs(filteredPartners), [filteredPartners, getModifiedKPIs]);
+  const filteredGapData = useMemo(() => getModifiedGapBreakdown(filteredPartners), [filteredPartners, getModifiedGapBreakdown]);
+  const filteredEnablement = useMemo(() => getModifiedEnablementDistribution(filteredPartners), [filteredPartners, getModifiedEnablementDistribution]);
 
   // Render page content based on active navigation
   const renderPageContent = () => {
@@ -114,7 +117,7 @@ export default function Home() {
               >
                 <span className="text-[12px] text-foreground">
                   Showing <span className="font-bold">{filteredPartners.length}</span> of{" "}
-                  <span className="font-bold">{allPartners.length}</span> partners matching{" "}
+                  <span className="font-bold">{modifiedPartners.length}</span> partners matching{" "}
                   <span className="font-bold">"{searchQuery.trim()}"</span>
                   {complianceFilter !== "all" && (
                     <span className="text-muted-foreground"> in filtered view</span>

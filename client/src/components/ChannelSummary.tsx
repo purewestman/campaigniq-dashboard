@@ -3,10 +3,13 @@
  * Three cards: Top Performers, Mid-Tier, Falling Behind
  * Clickable to filter the entire dashboard by tier
  * FY27 Global Reseller Program Tier Compliance
+ * Uses modifiedPartners so admin edits are reflected
  */
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { tierDistribution, partners, TIER_CONFIG, type ComplianceFilter } from "@/lib/data";
+import { TIER_CONFIG, type ComplianceFilter } from "@/lib/data";
+import { useModifications } from "@/contexts/ModificationContext";
 import { Trophy, Minus, AlertTriangle, X } from "lucide-react";
 
 const tierIcons: Record<string, React.ElementType> = {
@@ -21,7 +24,30 @@ interface ComplianceSummaryProps {
 }
 
 export default function ComplianceSummary({ activeFilter, onFilterChange }: ComplianceSummaryProps) {
-  const totalPartners = partners.length;
+  const { modifiedPartners } = useModifications();
+
+  const tierDistribution = useMemo(() => [
+    {
+      tier: "tier1" as const,
+      label: "Top Performers",
+      count: modifiedPartners.filter((p) => p.tier === "tier1").length,
+      description: "Only missing Bootcamp",
+    },
+    {
+      tier: "tier2" as const,
+      label: "Mid-Tier",
+      count: modifiedPartners.filter((p) => p.tier === "tier2").length,
+      description: "Missing Impl Spec + Bootcamp",
+    },
+    {
+      tier: "tier3" as const,
+      label: "Falling Behind",
+      count: modifiedPartners.filter((p) => p.tier === "tier3").length,
+      description: "Heavy course & cert gaps",
+    },
+  ], [modifiedPartners]);
+
+  const totalPartners = modifiedPartners.length;
 
   const handleClick = (tier: ComplianceFilter) => {
     if (activeFilter === tier) {
