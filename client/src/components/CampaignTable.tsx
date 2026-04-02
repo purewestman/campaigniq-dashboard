@@ -1,6 +1,6 @@
 /*
  * Partner Tier Compliance Table — "Soft Terrain" design
- * FY27 Global Reseller Program — Elite Zone B
+ * FY27 Global Reseller Program — 4-tier architecture
  * Shows obtained vs required for each enablement category
  * Sortable columns, expandable detail rows with exams
  * Gap override: mark individual gaps as manually complete with comments
@@ -8,18 +8,25 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { type Partner, type ComplianceFilter, ELITE_ZONE_B, TIER_CONFIG } from "@/lib/data";
+import {
+  type Partner,
+  type ComplianceFilter,
+  type ProgramTier,
+  TIER_DEFINITIONS,
+  PROGRAM_TIERS,
+} from "@/lib/data";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
 import {
   ArrowUpDown,
   MoreHorizontal,
-  Trophy,
+  Crown,
+  Shield,
+  Star,
+  Award,
   Minus,
-  AlertTriangle,
   ChevronDown,
   ChevronUp,
   Filter,
-  Award,
   ShieldCheck,
   CheckCircle2,
   Undo2,
@@ -32,10 +39,11 @@ import { toast } from "sonner";
 
 type SortKey = "name" | "totalGaps" | "enablementScore" | "totalExams";
 
-const tierIconMap: Record<string, React.ElementType> = {
-  tier1: Trophy,
-  tier2: Minus,
-  tier3: AlertTriangle,
+const tierIconMap: Record<ProgramTier, React.ElementType> = {
+  ambassador: Crown,
+  elite: Shield,
+  preferred: Star,
+  authorized: Award,
 };
 
 const categoryLabels: Record<GapCategory, string> = {
@@ -61,222 +69,203 @@ function RequirementBarWithOverride({
 }) {
   const { getOverride, addOverride, removeOverride } = useOverrides();
   const override = getOverride(partnerId, category);
+  const gap = Math.max(0, required - obtained);
+  const pct = required > 0 ? Math.min(100, Math.round((obtained / required) * 100)) : 100;
+  const isComplete = obtained >= required || !!override;
+
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
 
-  const gap = Math.max(0, required - obtained);
-  const isNaturallyMet = obtained >= required;
-  const isOverridden = !!override;
-  const effectiveMet = isNaturallyMet || isOverridden;
-
-  const effectiveObtained = isOverridden ? required : obtained;
-  const pct = Math.min(100, Math.round((effectiveObtained / required) * 100));
-
   const handleMarkComplete = () => {
-    if (comment.trim() || !showComment) {
-      addOverride({
-        partnerId,
-        category,
-        comment: comment.trim() || "Manually marked as complete",
-        completedBy: "Admin",
-      });
-      setShowComment(false);
-      setComment("");
-      toast.success(`${label} gap marked as complete`, {
-        description: comment.trim() || "Override applied successfully.",
-      });
-    }
+    addOverride({ partnerId, category, comment: comment.trim(), completedBy: "Admin" });
+    setShowComment(false);
+    setComment("");
+    toast.success(`${label} marked as complete`);
   };
 
   const handleUndo = () => {
     removeOverride(partnerId, category);
-    toast("Override removed", {
-      description: `${label} gap restored to original status.`,
-    });
+    toast.info(`${label} override removed`);
   };
 
   return (
-    <div className="space-y-1.5">
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] font-medium text-foreground">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">
+            {obtained}/{required}
+          </span>
+          {gap > 0 && !override && (
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{
+                background: "oklch(0.62 0.19 15 / 0.10)",
+                color: "oklch(0.50 0.19 15)",
+              }}
+            >
+              {gap} gap{gap !== 1 ? "s" : ""}
+            </span>
+          )}
+          {override && (
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
+              style={{
+                background: "oklch(0.60 0.12 175 / 0.10)",
+                color: "oklch(0.45 0.12 175)",
+              }}
+            >
+              <CheckCircle2 className="w-2.5 h-2.5" />
+              Overridden
+            </span>
+          )}
+        </div>
+      </div>
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground w-14 shrink-0 text-right">{label}</span>
-        <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "oklch(0.93 0.008 85)" }}>
-          <motion.div
-            className="h-full rounded-full"
-            initial={false}
-            animate={{
-              width: `${pct}%`,
-              backgroundColor: effectiveMet
+        <div
+          className="flex-1 h-2 rounded-full overflow-hidden"
+          style={{ background: "oklch(0.93 0.008 85)" }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${override ? 100 : pct}%`,
+              background: isComplete
                 ? "oklch(0.60 0.12 175)"
-                : pct > 0
+                : pct >= 50
                 ? "oklch(0.75 0.14 75)"
-                : "oklch(0.62 0.19 15 / 0.3)",
+                : "oklch(0.62 0.19 15)",
             }}
-            transition={{ duration: 0.5 }}
           />
         </div>
-        <span
-          className="text-[10px] font-semibold w-10 shrink-0"
-          style={{ color: effectiveMet ? "oklch(0.45 0.12 175)" : "oklch(0.55 0.02 55)" }}
-        >
-          {effectiveObtained}/{required}
-        </span>
-
-        {/* Override controls */}
-        {!isNaturallyMet && gap > 0 && (
-          <>
-            {isOverridden ? (
-              <button
-                onClick={handleUndo}
-                className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg transition-all duration-200 hover:scale-105"
-                style={{
-                  background: "oklch(0.60 0.12 175 / 0.10)",
-                  color: "oklch(0.45 0.12 175)",
-                }}
-                title="Undo override"
-              >
-                <Undo2 className="w-3 h-3" />
-                Undo
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowComment(!showComment)}
-                className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg transition-all duration-200 hover:scale-105"
-                style={{
-                  background: showComment ? "oklch(0.58 0.16 290 / 0.12)" : "oklch(0.93 0.008 85)",
-                  color: showComment ? "oklch(0.48 0.16 290)" : "oklch(0.55 0.02 55)",
-                }}
-                title="Mark gap as complete"
-              >
-                <CheckCircle2 className="w-3 h-3" />
-                Mark Complete
-              </button>
-            )}
-          </>
-        )}
-
-        {isNaturallyMet && (
-          <span
-            className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
-            style={{ background: "oklch(0.60 0.12 175 / 0.08)", color: "oklch(0.45 0.12 175)" }}
+        {/* Override / Undo buttons */}
+        {gap > 0 && !override && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowComment(!showComment);
+            }}
+            className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:scale-105"
+            style={{
+              background: "oklch(0.60 0.12 175 / 0.08)",
+              color: "oklch(0.45 0.12 175)",
+            }}
+            title="Mark as complete"
           >
             <CheckCircle2 className="w-3 h-3" />
-            Met
-          </span>
+          </button>
+        )}
+        {override && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUndo();
+            }}
+            className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:scale-105"
+            style={{
+              background: "oklch(0.62 0.19 15 / 0.08)",
+              color: "oklch(0.50 0.19 15)",
+            }}
+            title="Undo override"
+          >
+            <Undo2 className="w-3 h-3" />
+          </button>
         )}
       </div>
 
-      {/* Override badge */}
-      {isOverridden && override && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="ml-16 flex items-start gap-2 px-3 py-2 rounded-lg"
-          style={{
-            background: "oklch(0.60 0.12 175 / 0.05)",
-            border: "1px solid oklch(0.60 0.12 175 / 0.12)",
-          }}
-        >
-          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "oklch(0.50 0.12 175)" }} />
-          <div className="flex-1">
-            <p className="text-[10px] font-semibold" style={{ color: "oklch(0.45 0.12 175)" }}>
-              Manually completed by {override.completedBy}
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{override.comment}</p>
-            <p className="text-[9px] text-muted-foreground/60 mt-0.5 flex items-center gap-1">
-              <Clock className="w-2.5 h-2.5" />
-              {new Date(override.completedAt).toLocaleDateString("en-ZA", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Comment input for new override */}
+      {/* Comment input for override */}
       <AnimatePresence>
-        {showComment && !isOverridden && (
+        {showComment && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="ml-16"
+            className="mt-2 overflow-hidden"
           >
             <div
-              className="rounded-xl p-3 space-y-2"
+              className="flex items-center gap-2 p-2 rounded-lg border"
               style={{
-                background: "oklch(0.98 0.005 85)",
-                border: "1px solid oklch(0.92 0.01 85)",
+                background: "oklch(0.99 0.003 85)",
+                borderColor: "oklch(0.92 0.01 85)",
               }}
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                <MessageSquare className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Add comment (optional)
-                </span>
-              </div>
-              <textarea
+              <MessageSquare className="w-3 h-3 text-muted-foreground shrink-0" />
+              <input
+                type="text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder={`Why is the ${label} gap being marked as complete? e.g., "Verified completion via partner portal" or "Attended bootcamp on 15 Mar"`}
-                className="w-full text-[12px] text-foreground placeholder:text-muted-foreground/50 bg-white rounded-lg border px-3 py-2 outline-none resize-none transition-colors focus:border-[oklch(0.60_0.12_175_/_0.4)]"
-                style={{ borderColor: "oklch(0.92 0.01 85)", minHeight: 60 }}
-                rows={2}
+                placeholder="Justification (optional)..."
+                className="flex-1 text-[11px] bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleMarkComplete();
+                }}
               />
-              <div className="flex items-center gap-2 justify-end">
-                <button
-                  onClick={() => {
-                    setShowComment(false);
-                    setComment("");
-                  }}
-                  className="text-[11px] font-medium px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleMarkComplete}
-                  className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 hover:scale-[1.02]"
-                  style={{
-                    background: "oklch(0.60 0.12 175)",
-                    color: "white",
-                  }}
-                >
-                  <Send className="w-3 h-3" />
-                  Confirm Override
-                </button>
-              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMarkComplete();
+                }}
+                className="p-1 rounded-md transition-colors"
+                style={{
+                  background: "oklch(0.60 0.12 175 / 0.12)",
+                  color: "oklch(0.45 0.12 175)",
+                }}
+              >
+                <Send className="w-3 h-3" />
+              </button>
             </div>
+            {override && override.comment && (
+              <div className="mt-1 flex items-start gap-1.5 text-[10px] text-muted-foreground">
+                <Clock className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>
+                  Overridden {new Date(override.completedAt).toLocaleDateString()} — {override.comment}
+                </span>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Show existing override comment */}
+      {override && override.comment && !showComment && (
+        <div className="mt-1 flex items-start gap-1.5 text-[10px] text-muted-foreground">
+          <Clock className="w-3 h-3 mt-0.5 shrink-0" />
+          <span>
+            Overridden {new Date(override.completedAt).toLocaleDateString()} — {override.comment}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
+/** Expanded detail row for a partner */
 function ExpandedRow({ partner }: { partner: Partner }) {
-  const reqs = partner.requirements;
   const { getPartnerOverrides } = useOverrides();
   const partnerOverrides = getPartnerOverrides(partner.id);
+  const reqs = partner.requirements;
 
   return (
     <motion.tr
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.25 }}
+      transition={{ duration: 0.3 }}
     >
-      <td colSpan={8} className="px-6 py-4" style={{ background: "oklch(0.97 0.01 85)" }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Obtained vs Required Breakdown with Override Controls */}
+      <td colSpan={8} className="px-0 py-0">
+        <div
+          className="px-8 py-5 grid grid-cols-1 md:grid-cols-2 gap-6"
+          style={{
+            background: "linear-gradient(135deg, oklch(0.97 0.01 85), oklch(0.98 0.005 200 / 0.3))",
+            borderTop: "1px solid oklch(0.92 0.01 85)",
+          }}
+        >
+          {/* Enablement Requirements */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2 mb-3">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                Enablement Progress (Obtained / Required)
+                Enablement Requirements ({TIER_DEFINITIONS[partner.programTier].label})
               </p>
               {partnerOverrides.length > 0 && (
                 <span
@@ -461,9 +450,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
 
   const filterButtons: { key: ComplianceFilter; label: string }[] = [
     { key: "all", label: "All" },
-    { key: "tier1", label: "Top Performers" },
-    { key: "tier2", label: "Mid-Tier" },
-    { key: "tier3", label: "Falling Behind" },
+    ...PROGRAM_TIERS.map((tier) => ({
+      key: tier as ComplianceFilter,
+      label: TIER_DEFINITIONS[tier].shortLabel,
+    })),
   ];
 
   const SortHeader = ({
@@ -508,11 +498,11 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
           </div>
 
           {/* Filter pill buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Filter className="w-3.5 h-3.5 text-muted-foreground mr-1" />
             {filterButtons.map((btn) => {
               const isActive = activeFilter === btn.key;
-              const tierStyle = btn.key !== "all" ? TIER_CONFIG[btn.key as keyof typeof TIER_CONFIG] : null;
+              const tierStyle = btn.key !== "all" ? TIER_DEFINITIONS[btn.key as ProgramTier] : null;
 
               return (
                 <button
@@ -559,10 +549,15 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
           <tbody>
             {sorted.length > 0 ? (
               sorted.map((partner, i) => {
-                const tierStyle = TIER_CONFIG[partner.tier];
-                const TierIcon = tierIconMap[partner.tier] || Minus;
+                const tierDef = TIER_DEFINITIONS[partner.programTier];
+                const TierIcon = tierIconMap[partner.programTier];
                 const isExpanded = expandedId === partner.id;
                 const overrideCount = getOverrideCount(partner.id);
+                const totalRequired =
+                  partner.requirements.salesPro.required +
+                  partner.requirements.techPro.required +
+                  partner.requirements.bootcamp.required +
+                  partner.requirements.implSpec.required;
                 const totalObtained =
                   Math.min(partner.requirements.salesPro.obtained, partner.requirements.salesPro.required) +
                   Math.min(partner.requirements.techPro.obtained, partner.requirements.techPro.required) +
@@ -613,10 +608,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                       <td className="px-4 py-3.5">
                         <span
                           className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full"
-                          style={{ background: tierStyle.bg, color: tierStyle.color }}
+                          style={{ background: tierDef.bg, color: tierDef.color }}
                         >
                           <TierIcon className="w-3 h-3" />
-                          {partner.tierLabel}
+                          {tierDef.shortLabel}
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-right">
@@ -651,7 +646,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                             />
                           </div>
                           <span className="text-[11px] text-muted-foreground">
-                            {totalObtained}/{ELITE_ZONE_B.total}
+                            {totalObtained}/{totalRequired}
                           </span>
                         </div>
                       </td>

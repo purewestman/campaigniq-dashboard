@@ -1,39 +1,46 @@
 /*
- * Partners Page — CampaignIQ Dashboard
+ * Partners Page — PEI Dashboard
  * "Soft Terrain" design
- * Full partner directory with search, tier badges, contact info, enablement progress,
+ * 4-tier architecture: Authorized → Preferred → Elite → Ambassador
+ * Full partner directory with search, tier badges, contact info, enablement + business progress,
  * and admin "Modify" button to update gap counts with justification comments.
- * Uses modifiedPartners from ModificationContext so edits propagate to all tabs.
  */
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TIER_CONFIG, ELITE_ZONE_B } from "@/lib/data";
+import {
+  TIER_DEFINITIONS,
+  PROGRAM_TIERS,
+  type ProgramTier,
+  type Partner,
+} from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import ModifyGapModal from "@/components/ModifyGapModal";
-import type { Partner } from "@/lib/data";
 import {
   Search,
   Building2,
-  Trophy,
-  Minus,
-  AlertTriangle,
-  Mail,
+  Shield,
+  Star,
   Award,
+  Crown,
+  Mail,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
+  XCircle,
   Users,
   Target,
   X,
   Pencil,
+  DollarSign,
 } from "lucide-react";
 
-const tierIcons: Record<string, React.ElementType> = {
-  tier1: Trophy,
-  tier2: Minus,
-  tier3: AlertTriangle,
+const tierIcons: Record<ProgramTier, React.ElementType> = {
+  authorized: Shield,
+  preferred: Star,
+  elite: Award,
+  ambassador: Crown,
 };
 
 export default function PartnersPage() {
@@ -47,7 +54,7 @@ export default function PartnersPage() {
   const filtered = useMemo(() => {
     let result = modifiedPartners;
     if (tierFilter !== "all") {
-      result = result.filter((p) => p.tier === tierFilter);
+      result = result.filter((p) => p.programTier === tierFilter);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -60,12 +67,13 @@ export default function PartnersPage() {
     return result;
   }, [search, tierFilter, modifiedPartners]);
 
-  const tierCounts = useMemo(() => ({
-    all: modifiedPartners.length,
-    tier1: modifiedPartners.filter((p) => p.tier === "tier1").length,
-    tier2: modifiedPartners.filter((p) => p.tier === "tier2").length,
-    tier3: modifiedPartners.filter((p) => p.tier === "tier3").length,
-  }), [modifiedPartners]);
+  const tierCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: modifiedPartners.length };
+    PROGRAM_TIERS.forEach((tier) => {
+      counts[tier] = modifiedPartners.filter((p) => p.programTier === tier).length;
+    });
+    return counts;
+  }, [modifiedPartners]);
 
   return (
     <div className="space-y-6">
@@ -76,7 +84,7 @@ export default function PartnersPage() {
           Partner Directory
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
-          {modifiedPartners.length} registered partners in the FY27 Elite Zone B program
+          {modifiedPartners.length} registered partners in the FY27 Global Reseller Program
         </p>
       </div>
 
@@ -104,11 +112,12 @@ export default function PartnersPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {(["all", "tier1", "tier2", "tier3"] as const).map((t) => {
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {(["all", ...PROGRAM_TIERS] as const).map((t) => {
             const isActive = tierFilter === t;
-            const label = t === "all" ? "All" : TIER_CONFIG[t].label;
-            const count = tierCounts[t];
+            const label = t === "all" ? "All" : TIER_DEFINITIONS[t as ProgramTier].label;
+            const count = tierCounts[t] || 0;
+            const def = t !== "all" ? TIER_DEFINITIONS[t as ProgramTier] : null;
             return (
               <button
                 key={t}
@@ -116,10 +125,10 @@ export default function PartnersPage() {
                 className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all"
                 style={{
                   background: isActive
-                    ? t !== "all" ? TIER_CONFIG[t].bg : "oklch(0.22 0.02 200 / 0.10)"
+                    ? def ? def.bg : "oklch(0.22 0.02 200 / 0.10)"
                     : "transparent",
                   color: isActive
-                    ? t !== "all" ? TIER_CONFIG[t].color : "oklch(0.22 0.02 200)"
+                    ? def ? def.color : "oklch(0.22 0.02 200)"
                     : "oklch(0.55 0.02 55)",
                   border: isActive ? "1px solid currentColor" : "1px solid transparent",
                 }}
@@ -135,11 +144,12 @@ export default function PartnersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
           {filtered.map((partner, i) => {
-            const tierStyle = TIER_CONFIG[partner.tier];
-            const TierIcon = tierIcons[partner.tier] || Minus;
+            const def = TIER_DEFINITIONS[partner.programTier];
+            const TierIcon = tierIcons[partner.programTier];
             const isExpanded = expandedId === partner.id;
-            const overrides = getOverrideCount(partner.id);
+            const overrideCount = getOverrideCount(partner.id);
             const modification = getModification(partner.id);
+            const tierReq = def.enablement;
             const totalObtained =
               Math.min(partner.requirements.salesPro.obtained, partner.requirements.salesPro.required) +
               Math.min(partner.requirements.techPro.obtained, partner.requirements.techPro.required) +
@@ -159,61 +169,64 @@ export default function PartnersPage() {
               >
                 {/* Modified indicator stripe */}
                 {modification && (
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-                    style={{ background: "oklch(0.58 0.16 290)" }}
-                  />
+                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: "oklch(0.58 0.16 290)" }} />
                 )}
 
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-[14px] font-bold text-foreground leading-tight">
-                        {partner.name}
-                      </h3>
+                      <h3 className="text-[14px] font-bold text-foreground leading-tight">{partner.name}</h3>
                       {modification && (
-                        <span
-                          className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "oklch(0.58 0.16 290 / 0.10)", color: "oklch(0.42 0.16 290)" }}
-                        >
-                          <Pencil className="w-2.5 h-2.5" />
-                          Modified
+                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.58 0.16 290 / 0.10)", color: "oklch(0.42 0.16 290)" }}>
+                          <Pencil className="w-2.5 h-2.5" /> Modified
                         </span>
                       )}
-                      {overrides > 0 && (
-                        <span
-                          className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "oklch(0.60 0.12 175 / 0.10)", color: "oklch(0.45 0.12 175)" }}
-                        >
-                          <CheckCircle2 className="w-2.5 h-2.5" />
-                          {overrides}
+                      {overrideCount > 0 && (
+                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.60 0.12 175 / 0.10)", color: "oklch(0.45 0.12 175)" }}>
+                          <CheckCircle2 className="w-2.5 h-2.5" /> {overrideCount}
                         </span>
                       )}
                     </div>
-                    <span
-                      className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
-                      style={{ background: tierStyle.bg, color: tierStyle.color }}
-                    >
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ background: def.bg, color: def.color }}>
                       <TierIcon className="w-3 h-3" />
-                      {partner.tierLabel}
+                      {def.label}
                     </span>
                   </div>
                   <div className="text-right">
                     <p
                       className="text-xl font-bold"
                       style={{
-                        color: partner.enablementScore >= 80
-                          ? "oklch(0.45 0.12 175)"
-                          : partner.enablementScore >= 40
-                          ? "oklch(0.58 0.14 75)"
-                          : "oklch(0.50 0.19 15)",
+                        color: partner.enablementScore >= 80 ? "oklch(0.45 0.12 175)" : partner.enablementScore >= 40 ? "oklch(0.58 0.14 75)" : "oklch(0.50 0.19 15)",
                       }}
                     >
                       {partner.enablementScore}%
                     </p>
-                    <p className="text-[10px] text-muted-foreground">{totalObtained}/{ELITE_ZONE_B.total} met</p>
+                    <p className="text-[10px] text-muted-foreground">{totalObtained}/{tierReq.total} met</p>
                   </div>
+                </div>
+
+                {/* Compliance Badges */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
+                    background: partner.enablementCompliant ? "oklch(0.60 0.12 175 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
+                    color: partner.enablementCompliant ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)",
+                  }}>
+                    {partner.enablementCompliant ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                    Enablement
+                  </span>
+                  <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
+                    background: partner.businessCompliant ? "oklch(0.58 0.16 290 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
+                    color: partner.businessCompliant ? "oklch(0.42 0.16 290)" : "oklch(0.50 0.19 15)",
+                  }}>
+                    {partner.businessCompliant ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                    Business
+                  </span>
+                  {partner.overallCompliant && (
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.45 0.12 175 / 0.10)", color: "oklch(0.35 0.12 175)" }}>
+                      <Shield className="w-2.5 h-2.5" /> Compliant
+                    </span>
+                  )}
                 </div>
 
                 {/* Progress Bar */}
@@ -222,29 +235,16 @@ export default function PartnersPage() {
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${partner.enablementScore}%`,
-                      background: partner.enablementScore >= 80
-                        ? "oklch(0.60 0.12 175)"
-                        : partner.enablementScore >= 40
-                        ? "oklch(0.75 0.14 75)"
-                        : "oklch(0.62 0.19 15)",
+                      background: partner.enablementScore >= 80 ? "oklch(0.60 0.12 175)" : partner.enablementScore >= 40 ? "oklch(0.75 0.14 75)" : "oklch(0.62 0.19 15)",
                     }}
                   />
                 </div>
 
                 {/* Stats Row */}
                 <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Target className="w-3 h-3" />
-                    {partner.totalGaps} gaps
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Award className="w-3 h-3" />
-                    {partner.totalExams} exams
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-3 h-3" />
-                    {partner.targetEmails.length} contacts
-                  </span>
+                  <span className="flex items-center gap-1"><Target className="w-3 h-3" /> {partner.totalGaps} gaps</span>
+                  <span className="flex items-center gap-1"><Award className="w-3 h-3" /> {partner.totalExams} exams</span>
+                  <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {partner.targetEmails.length} contacts</span>
                   {isExpanded ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
                 </div>
 
@@ -261,9 +261,9 @@ export default function PartnersPage() {
                       {/* Requirements Breakdown */}
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                          Requirements Breakdown
+                          Enablement Requirements
                         </p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-4 gap-2">
                           {([
                             { label: "Sales Pro", key: "salesPro" as const },
                             { label: "Tech Pro", key: "techPro" as const },
@@ -273,18 +273,9 @@ export default function PartnersPage() {
                             const req = partner.requirements[key];
                             const met = req.obtained >= req.required;
                             return (
-                              <div
-                                key={key}
-                                className="px-3 py-2 rounded-lg text-center"
-                                style={{
-                                  background: met ? "oklch(0.60 0.12 175 / 0.06)" : "oklch(0.62 0.19 15 / 0.04)",
-                                }}
-                              >
+                              <div key={key} className="px-3 py-2 rounded-lg text-center" style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}>
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
-                                <p
-                                  className="text-[14px] font-bold"
-                                  style={{ color: met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}
-                                >
+                                <p className="text-[14px] font-bold" style={{ color: req.required === 0 ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
                                   {req.obtained}/{req.required}
                                 </p>
                               </div>
@@ -293,57 +284,61 @@ export default function PartnersPage() {
                         </div>
                       </div>
 
+                      {/* Business Metrics */}
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                          Business Metrics
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {([
+                            { label: "Bookings USD", value: partner.businessMetrics.bookingsUSD, threshold: def.businessMetrics.bookingsUSD, format: (v: number) => `$${v >= 1000000 ? (v / 1000000).toFixed(1) + "M" : (v / 1000).toFixed(0) + "K"}` },
+                            { label: "Unique Customers", value: partner.businessMetrics.uniqueCustomers, threshold: def.businessMetrics.uniqueCustomers, format: (v: number) => v.toString() },
+                            { label: "PDS (Installs)", value: partner.businessMetrics.partnerDeliveredServices, threshold: def.businessMetrics.partnerDeliveredServices, format: (v: number) => v.toString() },
+                          ]).map(({ label, value, threshold, format }) => {
+                            const met = value !== null && threshold !== null && value >= threshold;
+                            const na = threshold === null;
+                            return (
+                              <div key={label} className="px-3 py-2 rounded-lg text-center" style={{ background: na ? "oklch(0.97 0.005 85 / 0.6)" : met ? "oklch(0.60 0.12 175 / 0.06)" : "oklch(0.62 0.19 15 / 0.04)" }}>
+                                <p className="text-[10px] text-muted-foreground">{label}</p>
+                                <p className="text-[13px] font-bold" style={{ color: na ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                                  {value !== null ? format(value) : "Not Set"}
+                                </p>
+                                {threshold !== null && (
+                                  <p className="text-[9px] text-muted-foreground">
+                                    Req: {format(threshold)}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                       {/* Last Modification Comment */}
                       {modification && (
-                        <div
-                          className="px-3 py-2.5 rounded-lg"
-                          style={{
-                            background: "oklch(0.58 0.16 290 / 0.04)",
-                            border: "1px solid oklch(0.58 0.16 290 / 0.12)",
-                          }}
-                        >
-                          <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "oklch(0.42 0.16 290)" }}>
-                            Last Modification
-                          </p>
-                          <p className="text-[12px] text-foreground/80 italic leading-relaxed">
-                            "{modification.comment}"
-                          </p>
+                        <div className="px-3 py-2.5 rounded-lg" style={{ background: "oklch(0.58 0.16 290 / 0.04)", border: "1px solid oklch(0.58 0.16 290 / 0.12)" }}>
+                          <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "oklch(0.42 0.16 290)" }}>Last Modification</p>
+                          <p className="text-[12px] text-foreground/80 italic leading-relaxed">"{modification.comment}"</p>
                           <p className="text-[10px] text-muted-foreground mt-1">
                             — {modification.modifiedBy},{" "}
-                            {new Date(modification.modifiedAt).toLocaleDateString("en-ZA", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(modification.modifiedAt).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
                       )}
 
                       {/* Action */}
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                          Recommended Action
-                        </p>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Recommended Action</p>
                         <p className="text-[12px] text-foreground leading-relaxed">{partner.action}</p>
                       </div>
 
                       {/* Contacts */}
                       {partner.targetEmails.length > 0 && (
                         <div>
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-                            Contacts
-                          </p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Contacts</p>
                           <div className="flex flex-wrap gap-1.5">
                             {partner.targetEmails.map((email) => (
-                              <a
-                                key={email}
-                                href={`mailto:${email}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[10px] px-2 py-0.5 rounded-md font-medium hover:opacity-80 transition-opacity"
-                                style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.48 0.16 290)" }}
-                              >
+                              <a key={email} href={`mailto:${email}`} onClick={(e) => e.stopPropagation()} className="text-[10px] px-2 py-0.5 rounded-md font-medium hover:opacity-80 transition-opacity" style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.48 0.16 290)" }}>
                                 {email}
                               </a>
                             ))}
@@ -353,19 +348,11 @@ export default function PartnersPage() {
 
                       {/* Modify Button */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setModifyPartner(partner);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
-                        style={{
-                          background: "oklch(0.50 0.12 175)",
-                          color: "white",
-                          boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)",
-                        }}
+                        style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
                       >
-                        <Pencil className="w-4 h-4" />
-                        Modify Gaps
+                        <Pencil className="w-4 h-4" /> Modify Gaps
                       </button>
                     </motion.div>
                   )}
@@ -386,11 +373,7 @@ export default function PartnersPage() {
 
       {/* Modify Gap Modal */}
       {modifyPartner && (
-        <ModifyGapModal
-          partner={modifyPartner}
-          isOpen={!!modifyPartner}
-          onClose={() => setModifyPartner(null)}
-        />
+        <ModifyGapModal partner={modifyPartner} isOpen={!!modifyPartner} onClose={() => setModifyPartner(null)} />
       )}
     </div>
   );

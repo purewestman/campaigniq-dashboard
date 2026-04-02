@@ -1,20 +1,17 @@
 /*
- * Certifications Page — CampaignIQ Dashboard
- * "Soft Terrain" design
+ * Certifications Page — PEI Dashboard
+ * "Soft Terrain" design — 4-tier architecture
  * Exam records, certification leaderboard, and per-partner exam details
  */
 
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { TIER_CONFIG } from "@/lib/data";
+import { motion } from "framer-motion";
+import { TIER_DEFINITIONS, type ProgramTier } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import {
   Award,
   Search,
-  ChevronDown,
-  ChevronUp,
   User,
-  Mail,
   BookOpen,
   Trophy,
   X,
@@ -35,7 +32,7 @@ import {
 interface FlatExam {
   partnerId: number;
   partnerName: string;
-  tier: string;
+  programTier: ProgramTier;
   email: string;
   certification: string;
 }
@@ -44,7 +41,6 @@ export default function CertificationsPage() {
   const { modifiedPartners: partners } = useModifications();
 
   const [search, setSearch] = useState("");
-  const [expandedPartner, setExpandedPartner] = useState<number | null>(null);
 
   // Flatten all exam records
   const allExams = useMemo<FlatExam[]>(() => {
@@ -55,7 +51,7 @@ export default function CertificationsPage() {
           exams.push({
             partnerId: p.id,
             partnerName: p.name,
-            tier: p.tier,
+            programTier: p.programTier,
             email: e.email,
             certification: cert,
           });
@@ -63,14 +59,14 @@ export default function CertificationsPage() {
       });
     });
     return exams;
-  }, []);
+  }, [partners]);
 
   // Partners with exams, sorted by count
   const partnerExamCounts = useMemo(() => {
     return partners
       .filter((p) => p.totalExams > 0)
       .sort((a, b) => b.totalExams - a.totalExams);
-  }, []);
+  }, [partners]);
 
   // Certification type breakdown
   const certTypes = useMemo(() => {
@@ -113,7 +109,7 @@ export default function CertificationsPage() {
       });
     });
     return Array.from(map.values()).sort((a, b) => b.count - a.count);
-  }, []);
+  }, [partners]);
 
   // Filter exams by search
   const filteredExams = useMemo(() => {
@@ -152,18 +148,9 @@ export default function CertificationsPage() {
           { label: "Partners with Certs", value: partnersWithCerts, icon: BookOpen, color: "oklch(0.75 0.14 75)" },
           { label: "Cert Types", value: certTypes.length, icon: FileCheck, color: "oklch(0.62 0.19 15)" },
         ].map((kpi, i) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="terrain-card p-4"
-          >
+          <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="terrain-card p-4">
             <div className="flex items-center gap-2 mb-2">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: `${kpi.color}15` }}
-              >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${kpi.color}15` }}>
                 <kpi.icon className="w-3.5 h-3.5" style={{ color: kpi.color }} />
               </div>
               <span className="text-[11px] text-muted-foreground">{kpi.label}</span>
@@ -176,19 +163,12 @@ export default function CertificationsPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Partner Certification Leaderboard */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="terrain-card p-5"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="terrain-card p-5">
           <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
             <Trophy className="w-4 h-4" style={{ color: "oklch(0.75 0.14 75)" }} />
             Partner Certification Leaderboard
           </h3>
-          <p className="text-[11px] text-muted-foreground mb-4">
-            Partners ranked by total certifications earned
-          </p>
+          <p className="text-[11px] text-muted-foreground mb-4">Partners ranked by total certifications earned</p>
           <div style={{ height: Math.max(250, partnerExamCounts.length * 32) }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -196,18 +176,13 @@ export default function CertificationsPage() {
                   name: p.name.length > 20 ? p.name.substring(0, 18) + "…" : p.name,
                   fullName: p.name,
                   count: p.totalExams,
-                  tier: p.tier,
+                  programTier: p.programTier,
                 }))}
                 layout="vertical"
                 margin={{ left: 130, right: 20, top: 5, bottom: 5 }}
               >
                 <XAxis type="number" tick={{ fontSize: 10, fill: "oklch(0.55 0.02 55)" }} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fontSize: 10, fill: "oklch(0.45 0.02 55)" }}
-                  width={125}
-                />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "oklch(0.45 0.02 55)" }} width={125} />
                 <Tooltip
                   content={({ payload }) => {
                     if (!payload?.[0]) return null;
@@ -222,11 +197,7 @@ export default function CertificationsPage() {
                 />
                 <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={18}>
                   {partnerExamCounts.map((p, i) => (
-                    <Cell
-                      key={i}
-                      fill={TIER_CONFIG[p.tier as keyof typeof TIER_CONFIG].color}
-                      fillOpacity={0.65}
-                    />
+                    <Cell key={i} fill={TIER_DEFINITIONS[p.programTier].color} fillOpacity={0.65} />
                   ))}
                 </Bar>
               </BarChart>
@@ -235,30 +206,13 @@ export default function CertificationsPage() {
         </motion.div>
 
         {/* Certification Type Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="terrain-card p-5"
-        >
-          <h3 className="text-[14px] font-bold text-foreground mb-1">
-            Certification Type Breakdown
-          </h3>
-          <p className="text-[11px] text-muted-foreground mb-4">
-            Distribution of certification types across the ecosystem
-          </p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="terrain-card p-5">
+          <h3 className="text-[14px] font-bold text-foreground mb-1">Certification Type Breakdown</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Distribution of certification types across the ecosystem</p>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={certTypes}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={2}
-                  dataKey="count"
-                >
+                <Pie data={certTypes} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="count">
                   {certTypes.map((_, i) => (
                     <Cell key={i} fill={certColors[i % certColors.length]} />
                   ))}
@@ -293,19 +247,12 @@ export default function CertificationsPage() {
       </div>
 
       {/* Individual Leaderboard */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="terrain-card p-5"
-      >
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="terrain-card p-5">
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
           <User className="w-4 h-4" style={{ color: "oklch(0.60 0.12 175)" }} />
           Top Certified Individuals
         </h3>
-        <p className="text-[11px] text-muted-foreground mb-4">
-          Engineers ranked by number of certifications earned
-        </p>
+        <p className="text-[11px] text-muted-foreground mb-4">Engineers ranked by number of certifications earned</p>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
@@ -321,12 +268,7 @@ export default function CertificationsPage() {
                 <tr key={person.email} className="border-b border-border/20 hover:bg-black/[0.02] transition-colors">
                   <td className="py-2 px-3">
                     {i < 3 ? (
-                      <span
-                        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white"
-                        style={{
-                          background: i === 0 ? "oklch(0.75 0.14 75)" : i === 1 ? "oklch(0.65 0.02 55)" : "oklch(0.62 0.10 50)",
-                        }}
-                      >
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white" style={{ background: i === 0 ? "oklch(0.75 0.14 75)" : i === 1 ? "oklch(0.65 0.02 55)" : "oklch(0.62 0.10 50)" }}>
                         {i + 1}
                       </span>
                     ) : (
@@ -334,18 +276,10 @@ export default function CertificationsPage() {
                     )}
                   </td>
                   <td className="py-2 px-3">
-                    <a
-                      href={`mailto:${person.email}`}
-                      className="font-medium hover:underline"
-                      style={{ color: "oklch(0.48 0.16 290)" }}
-                    >
-                      {person.email}
-                    </a>
+                    <a href={`mailto:${person.email}`} className="font-medium hover:underline" style={{ color: "oklch(0.48 0.16 290)" }}>{person.email}</a>
                   </td>
                   <td className="py-2 px-3 text-foreground">{person.partner}</td>
-                  <td className="py-2 px-3 text-center font-bold" style={{ color: "oklch(0.58 0.16 290)" }}>
-                    {person.count}
-                  </td>
+                  <td className="py-2 px-3 text-center font-bold" style={{ color: "oklch(0.58 0.16 290)" }}>{person.count}</td>
                 </tr>
               ))}
             </tbody>
@@ -354,34 +288,15 @@ export default function CertificationsPage() {
       </motion.div>
 
       {/* Searchable Exam Records */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="terrain-card p-5"
-      >
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="terrain-card p-5">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
             <h3 className="text-[14px] font-bold text-foreground">All Exam Records</h3>
-            <p className="text-[11px] text-muted-foreground">
-              {filteredExams.length} of {allExams.length} records
-            </p>
+            <p className="text-[11px] text-muted-foreground">{filteredExams.length} of {allExams.length} records</p>
           </div>
-          <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]"
-            style={{
-              background: "oklch(0.99 0.003 85 / 0.95)",
-              borderColor: search ? "oklch(0.58 0.16 290 / 0.4)" : "oklch(0.92 0.01 85)",
-            }}
-          >
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]" style={{ background: "oklch(0.99 0.003 85 / 0.95)", borderColor: search ? "oklch(0.58 0.16 290 / 0.4)" : "oklch(0.92 0.01 85)" }}>
             <Search className="w-3.5 h-3.5 text-muted-foreground" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search exams, emails, partners..."
-              className="bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none flex-1"
-            />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search exams, emails, partners..." className="bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none flex-1" />
             {search && (
               <button onClick={() => setSearch("")} className="p-0.5 rounded hover:bg-black/5">
                 <X className="w-3 h-3 text-muted-foreground" />
@@ -404,13 +319,7 @@ export default function CertificationsPage() {
                 <tr key={`${exam.email}-${exam.certification}-${i}`} className="border-b border-border/20 hover:bg-black/[0.02] transition-colors">
                   <td className="py-1.5 px-3 text-foreground font-medium">{exam.partnerName}</td>
                   <td className="py-1.5 px-3">
-                    <a
-                      href={`mailto:${exam.email}`}
-                      className="hover:underline"
-                      style={{ color: "oklch(0.48 0.16 290)" }}
-                    >
-                      {exam.email}
-                    </a>
+                    <a href={`mailto:${exam.email}`} className="hover:underline" style={{ color: "oklch(0.48 0.16 290)" }}>{exam.email}</a>
                   </td>
                   <td className="py-1.5 px-3 text-foreground">{exam.certification}</td>
                 </tr>

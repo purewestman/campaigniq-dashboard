@@ -1,21 +1,22 @@
 /*
  * Tier Compliance Summary Cards — "Soft Terrain" design
- * Three cards: Top Performers, Mid-Tier, Falling Behind
- * Clickable to filter the entire dashboard by tier
- * FY27 Global Reseller Program Tier Compliance
+ * Four cards: Ambassador, Elite, Preferred, Authorized
+ * Clickable to filter the entire dashboard by program tier
+ * FY27 Global Reseller Program Tier Compliance — 4-tier architecture
  * Uses modifiedPartners so admin edits are reflected
  */
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { TIER_CONFIG, type ComplianceFilter } from "@/lib/data";
+import { TIER_DEFINITIONS, PROGRAM_TIERS, type ComplianceFilter, type ProgramTier } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
-import { Trophy, Minus, AlertTriangle, X } from "lucide-react";
+import { Crown, Shield, Star, Award, X } from "lucide-react";
 
-const tierIcons: Record<string, React.ElementType> = {
-  tier1: Trophy,
-  tier2: Minus,
-  tier3: AlertTriangle,
+const tierIcons: Record<ProgramTier, React.ElementType> = {
+  ambassador: Crown,
+  elite: Shield,
+  preferred: Star,
+  authorized: Award,
 };
 
 interface ComplianceSummaryProps {
@@ -26,26 +27,21 @@ interface ComplianceSummaryProps {
 export default function ComplianceSummary({ activeFilter, onFilterChange }: ComplianceSummaryProps) {
   const { modifiedPartners } = useModifications();
 
-  const tierDistribution = useMemo(() => [
-    {
-      tier: "tier1" as const,
-      label: "Top Performers",
-      count: modifiedPartners.filter((p) => p.tier === "tier1").length,
-      description: "Only missing Bootcamp",
-    },
-    {
-      tier: "tier2" as const,
-      label: "Mid-Tier",
-      count: modifiedPartners.filter((p) => p.tier === "tier2").length,
-      description: "Missing Impl Spec + Bootcamp",
-    },
-    {
-      tier: "tier3" as const,
-      label: "Falling Behind",
-      count: modifiedPartners.filter((p) => p.tier === "tier3").length,
-      description: "Heavy course & cert gaps",
-    },
-  ], [modifiedPartners]);
+  const tierDistribution = useMemo(() =>
+    PROGRAM_TIERS.map((tierId) => {
+      const def = TIER_DEFINITIONS[tierId];
+      return {
+        tier: tierId,
+        label: def.label,
+        count: modifiedPartners.filter((p) => p.programTier === tierId).length,
+        description: def.description,
+        compliantCount: modifiedPartners.filter(
+          (p) => p.programTier === tierId && p.enablementCompliant
+        ).length,
+      };
+    }),
+    [modifiedPartners]
+  );
 
   const totalPartners = modifiedPartners.length;
 
@@ -74,7 +70,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
           <span className="text-[12px] font-medium text-foreground">
             Filtering by:{" "}
             <span className="font-bold">
-              {TIER_CONFIG[activeFilter as keyof typeof TIER_CONFIG]?.label || activeFilter}
+              {TIER_DEFINITIONS[activeFilter as ProgramTier]?.label || activeFilter}
             </span>
           </span>
           <button
@@ -88,10 +84,10 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {tierDistribution.map((item, i) => {
-          const Icon = tierIcons[item.tier] || Minus;
-          const style = TIER_CONFIG[item.tier];
+          const Icon = tierIcons[item.tier];
+          const style = TIER_DEFINITIONS[item.tier];
           const isActive = activeFilter === item.tier;
 
           return (
@@ -101,7 +97,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 + i * 0.08, duration: 0.4 }}
               onClick={() => handleClick(item.tier)}
-              className="terrain-card p-5 relative overflow-hidden text-left transition-all duration-200 group"
+              className="terrain-card p-4 relative overflow-hidden text-left transition-all duration-200 group"
               style={{
                 outline: isActive ? `2px solid ${style.activeRing}` : "2px solid transparent",
                 outlineOffset: "-1px",
@@ -118,22 +114,22 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                 }}
               />
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2.5 mb-3">
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
                     style={{ background: style.iconBg }}
                   >
                     <Icon className="w-4 h-4" style={{ color: style.iconColor }} />
                   </div>
-                  <div>
-                    <h4 className="text-[14px] font-bold text-foreground">{item.label}</h4>
-                    <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-[13px] font-bold text-foreground truncate">{item.label}</h4>
+                    <p className="text-[9px] text-muted-foreground truncate">{item.description}</p>
                   </div>
                   {isActive && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="ml-auto text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
                       style={{
                         background: style.iconBg,
                         color: style.iconColor,
@@ -144,21 +140,21 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
                       Partners
                     </p>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-xl font-bold text-foreground">
                       {item.count}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
-                      Of Total
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                      Compliant
                     </p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {totalPartners > 0 ? Math.round((item.count / totalPartners) * 100) : 0}%
+                    <p className="text-xl font-bold" style={{ color: style.color }}>
+                      {item.compliantCount}/{item.count}
                     </p>
                   </div>
                 </div>

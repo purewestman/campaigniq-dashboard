@@ -37,7 +37,7 @@ function CustomTooltip({ active, payload, label }: any) {
       }}
     >
       <p className="text-[12px] font-semibold text-foreground mb-1">{fullName}</p>
-      <p className="text-[11px] text-muted-foreground mb-2">Total gap: {totalGap} of 11 required</p>
+      <p className="text-[11px] text-muted-foreground mb-2">Total gap: {totalGap}</p>
       {payload.map((entry: any) =>
         entry.value > 0 ? (
           <div key={entry.dataKey} className="flex items-center gap-2 mb-1">
@@ -97,7 +97,7 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
         <div>
           <h3 className="text-[15px] font-bold text-foreground">Enablement Gap by Partner</h3>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            Elite Zone B requirements: 5 Sales Pro, 3 Tech Pro, 2 Bootcamp, 1 Impl Specialist
+            Enablement gaps by category per partner (tier-specific requirements)
           </p>
         </div>
         <div
@@ -150,7 +150,7 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
         </div>
       ) : (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-[13px]">
-          All partners in this selection meet Elite Zone B requirements — no gaps to display.
+          All partners in this selection meet their tier requirements — no gaps to display.
         </div>
       )}
     </motion.div>

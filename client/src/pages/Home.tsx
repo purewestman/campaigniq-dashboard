@@ -23,7 +23,7 @@ import GapAnalysisPage from "@/pages/GapAnalysisPage";
 import CertificationsPage from "@/pages/CertificationsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import { useModifications } from "@/contexts/ModificationContext";
-import { type ComplianceFilter } from "@/lib/data";
+import { type ComplianceFilter, TIER_DEFINITIONS } from "@/lib/data";
 import { Settings } from "lucide-react";
 
 export default function Home() {
@@ -48,7 +48,7 @@ export default function Home() {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.tierLabel.toLowerCase().includes(q) ||
+          TIER_DEFINITIONS[p.programTier].label.toLowerCase().includes(q) ||
           p.action.toLowerCase().includes(q) ||
           p.targetEmails.some((e) => e.toLowerCase().includes(q))
       );
@@ -192,7 +192,7 @@ export default function Home() {
           {/* Footer */}
           <footer className="pb-6 pt-4 text-center">
             <p className="text-[11px] text-muted-foreground">
-              CampaignIQ &middot; FY27 Global Reseller Program Tier Compliance &middot; Elite Zone B (South Africa) &middot; Data as of April 2026
+              PEI &middot; FY27 Global Reseller Program Tier Compliance &middot; 4-Tier Architecture (South Africa) &middot; Data as of April 2026
             </p>
           </footer>
         </div>

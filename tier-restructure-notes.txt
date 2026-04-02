@@ -1,0 +1,35 @@
+# Tier Restructuring Notes
+
+## Business Metric Goals per Tier
+| Tier         | Bookings USD (non-renewal) | Unique Customers (non-renewal) | Partner-Delivered Services |
+|--------------|---------------------------|-------------------------------|---------------------------|
+| Authorized   | N/A                       | 1                             | N/A                       |
+| Preferred    | N/A                       | 2                             | N/A                       |
+| Elite Zone B | $500K                     | 3                             | 5                         |
+| Ambassador   | $10M                      | 10                            | 15                        |
+
+## Key Design Decisions
+1. Each partner gets tagged to one of 4 tiers: Authorized, Preferred, Elite (Zone B), Ambassador
+2. Compliance = Business Metrics MET + Enablement & Certifications MET
+3. We have Enablement data already; Business Metrics need manual entry
+4. Need a Business Metrics entry form per partner (Bookings USD, Unique Customers, PDS)
+5. The system should auto-calculate if a partner meets their tier's business metric thresholds
+6. Enablement requirements scale by tier (currently we only have Elite Zone B: 5 SP, 3 TSP, 2 Boot, 1 Impl)
+7. Need to define enablement requirements for all 4 tiers
+
+## Enablement Requirements by Tier (from FY27 Compliance Architecture doc)
+- Authorized: 1 Sales Pro, 1 Tech Pro (2 total)
+- Preferred: 2 Sales Pro, 2 Tech Pro, 1 Bootcamp (5 total)
+- Elite Zone B: 5 Sales Pro, 3 Tech Pro, 2 Bootcamp, 1 Impl Specialist (11 total)
+- Ambassador: 8 Sales Pro, 5 Tech Pro, 3 Bootcamp, 2 Impl Specialist (18 total)
+
+## Partner Tier Assignment
+Based on the SA Elite Partner Gap Analysis doc, most partners are tagged as Elite Zone B.
+But we should allow admin to change tier assignment per partner.
+
+## Implementation Plan
+1. Add tier definitions with both business metric and enablement thresholds
+2. Add businessMetrics field to Partner type (bookingsUSD, uniqueCustomers, partnerDeliveredServices)
+3. Add BusinessMetricsContext for manual entry with localStorage persistence
+4. Compute overall compliance = enablement compliance + business metric compliance
+5. Update all pages to show both compliance dimensions

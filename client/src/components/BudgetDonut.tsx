@@ -56,7 +56,7 @@ export default function EnablementDonut({ data }: EnablementDonutProps) {
       <div className="mb-4">
         <h3 className="text-[15px] font-bold text-foreground">Requirement Compliance</h3>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          Partners meeting each Elite Zone B requirement
+          Partners meeting their tier-specific requirements
         </p>
       </div>
 
