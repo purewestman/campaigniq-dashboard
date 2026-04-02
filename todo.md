@@ -24,3 +24,8 @@
 - [x] Add FolderOpen icon to Sidebar icon map
 - [x] Add File Storage nav item to sidebar navItems
 - [x] Write vitest tests for file storage tRPC procedures (15 tests passing)
+
+## Bug Fixes
+- [x] Fix Vite HMR errors: "send was called before connect" in button.tsx (stale cache — cleared node_modules/.vite + restarted)
+- [x] Fix failed reload of /src/index.css (stale HMR state — resolved by cache clear + restart)
+- [x] Fix failed reload of /src/components/ErrorBoundary.tsx (stale HMR state — resolved by cache clear + restart)
