@@ -17,6 +17,7 @@ import {
   Zap,
   Route,
   Shield,
+  TrendingUp,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
 
@@ -29,6 +30,7 @@ const iconMap: Record<string, React.ElementType> = {
   Settings,
   Route,
   Shield,
+  TrendingUp,
 };
 
 interface SidebarProps {

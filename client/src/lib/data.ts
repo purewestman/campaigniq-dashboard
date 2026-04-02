@@ -509,6 +509,7 @@ export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
   { id: "partners", label: "Partners", icon: "Building2", badge: totalPartners },
   { id: "tiers", label: "Tier Compliance", icon: "Shield" },
+  { id: "progression", label: "Tier Progression", icon: "TrendingUp" },
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassed },
   { id: "reports", label: "Reports", icon: "FileBarChart" },

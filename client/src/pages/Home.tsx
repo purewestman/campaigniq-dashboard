@@ -22,6 +22,7 @@ import TierCompliancePage from "@/pages/TierCompliancePage";
 import GapAnalysisPage from "@/pages/GapAnalysisPage";
 import CertificationsPage from "@/pages/CertificationsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import TierProgressionPage from "@/pages/TierProgressionPage";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS } from "@/lib/data";
 import { Settings } from "lucide-react";
@@ -73,6 +74,8 @@ export default function Home() {
         return <CertificationsPage />;
       case "reports":
         return <ReportsPage />;
+      case "progression":
+        return <TierProgressionPage />;
       case "settings":
         return (
           <div className="space-y-6">
