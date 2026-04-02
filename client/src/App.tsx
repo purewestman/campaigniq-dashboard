@@ -8,8 +8,8 @@ import { OverrideProvider } from "./contexts/OverrideContext";
 import { ModificationProvider } from "./contexts/ModificationContext";
 import Home from "./pages/Home";
 
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />

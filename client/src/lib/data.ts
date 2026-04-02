@@ -513,5 +513,6 @@ export const navItems: NavItem[] = [
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassed },
   { id: "reports", label: "Reports", icon: "FileBarChart" },
+  { id: "files", label: "File Storage", icon: "FolderOpen" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];
