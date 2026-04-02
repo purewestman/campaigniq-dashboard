@@ -69,7 +69,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
               className="overflow-hidden"
             >
               <h1 className="text-[15px] font-bold text-white tracking-tight whitespace-nowrap">
-                CampaignIQ
+                PEI
               </h1>
               <p className="text-[10px] text-white/40 -mt-0.5 whitespace-nowrap">
                 FY27 Tier Compliance
