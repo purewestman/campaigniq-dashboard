@@ -1,0 +1,49 @@
+FY27 GLOBAL RESELLER PROGRAM TIER COMPLIANCE ARCHITECTURE
+=========================================================
+
+TIER REQUIREMENTS (Zone B / South Africa — Elite):
+- Business: $500K Bookings, 3 Unique Customers, 5 Partner Delivered Services
+- Enablement:
+  * 5 × Sales Pro Trained
+  * 3 × Tech Sales Pro Trained
+  * 2 × In-person SE Bootcamp attendees
+  * 1 × Advanced Implementation Specialist
+
+OTHER TIERS:
+- Authorized: 1 Unique Customer, no enablement
+- Preferred: 2 Unique Customers, 1 Sales Pro, 1 Tech Pro
+- Elite (Zone A): $2M bookings, 10 Sales Pros, 8 Tech Pros, 4 Bootcamp, 2 Impl Specialists
+- Ambassador: $10M bookings, 15 Sales Pros, 12 Tech Pros, 8 Bootcamp, 4 EDC SEs, 2 Solution Practice Designations, CIP, CMP
+
+SOUTH AFRICA ELITE GAP ANALYSIS — 23 PARTNERS
+==============================================
+
+TIER 1: TOP PERFORMERS (4 partners) — Met Course & Cert Baseline; Only Missing Bootcamp
+1. Data Sciences — Gap: 2 Bootcamp only. Compliant: >5 SP, >3 TSP, >1 Impl Spec
+2. AXIZ — Gap: 2 Bootcamp only. Compliant: >5 SP, >3 TSP, 1 Impl Spec
+3. NTT DATA / Dimension Data — Gap: 2 Bootcamp only. Compliant: >5 SP, >3 TSP, >1 Impl Spec
+4. TCM — Gap: 2 Bootcamp only. Compliant: >5 SP, 3 TSP, 1 Impl Spec
+
+TIER 2: MID-TIER (4 partners) — Missing Implementation Specialist & Bootcamp
+5. iOCO — Gap: 1 Impl Spec, 2 Bootcamp. Has: >5 SP, >3 TSP
+6. First Tech KZN — Gap: 1 Impl Spec, 2 Bootcamp. Has: >5 SP, >3 TSP
+7. Netsync — Gap: 1 Impl Spec, 2 Bootcamp. Has: >5 SP, >3 TSP
+8. NEC XON — Gap: 1 Impl Spec, 2 Bootcamp. Has: 5 SP, 3 TSP
+
+TIER 3: FALLING BEHIND (15 partners) — Heavy Course & Certification Gaps
+9. Altron Digital — Gap: 4 SP, 1 TSP, 1 Impl, 2 Boot. Has: 1 SP, 2 TSP
+10. ITgility — Gap: 3 SP, 2 TSP, 1 Impl, 2 Boot. Has: 2 SP, 1 TSP
+11. Global Indirect Markets — Gap: 4 SP, 2 TSP, 1 Impl, 2 Boot. Has: 1 SP, 1 TSP
+12. Triple H — Gap: 3 SP, 3 TSP, 1 Impl, 2 Boot. Has: 2 SP, 0 TSP
+13. Netstream — Gap: 5 SP, 3 TSP, 1 Impl, 2 Boot. Has: 0 SP, 0 TSP (zero FY27)
+14-20. INTELLITECH, FIRST TECH GROUP, Nexio, SITHABILE, NetStor, ETS INNOVATIONS, Lekonakonetsi — High gap all metrics
+21. BCX — Gap: 5 SP, 3 TSP, 1 Impl, 2 Boot. Only Carla Clara minor progress
+22. Netsource One — Gap: 5 SP, 3 TSP, 1 Impl, 2 Boot. Only Jacob Beck & Conner Williams minor
+23. NEXION Networks — Gap: 5 SP, 3 TSP, 1 Impl, 2 Boot. Only Rex Tan took Simply Pure
+
+ELITE ZONE B REQUIREMENTS (for dashboard):
+- Sales Pro: 5 required
+- Tech Sales Pro: 3 required
+- Bootcamp: 2 required
+- Impl Specialist: 1 required
+- TOTAL: 11 enablement items per partner

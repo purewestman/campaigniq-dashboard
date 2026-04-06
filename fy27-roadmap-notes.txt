@@ -1,0 +1,44 @@
+# FY27 Partner SE Journey Gap Analysis and Training Roadmap — Data Extraction
+
+## Key Changes from Previous Document:
+1. Fewer partners listed (reduced from 22 to ~12 named partners)
+2. Much richer data per partner: exam/certification details, more SE counts
+3. New data fields: exams passed per partner (individual SE names + cert names)
+4. Updated gap numbers for some partners (e.g., Data Sciences gap=2 with 18 SP SEs, 3 TSP SEs)
+5. Training roadmap phases added (Phase 1: Foundation, Phase 2: Advance)
+6. Some partners consolidated or removed
+
+## Partners with Updated Data:
+
+### Tier 1: Compliant
+1. AXIZ (PTY) LTD - Gap: 0, 3 compliant SEs
+   - Exams: lerato (Platform Positioning), adolph (5 certs!), oscar (Platform Positioning)
+
+### Tier 2: Partial Progress  
+2. Data Sciences Corporation - Gap: 2, 18 SP SEs, 3 TSP SEs, 1 overlap (Freddie Kgari)
+   - Exams: jp.marais (FlashArray Support), enrico+antony+mekeal+irtond (FlashArray Impl), 
+     rudolf (6 certs!), koos+mndeni+rukaya (FA Architect Assoc), nelson (FA Arch Prof),
+     kenny (FA+FB Arch Prof)
+3. FIRST TECHNOLOGY KZN - Gap: 2, 11 SP SEs, 1 TSP SE (Stelios)
+   - No exams
+4. Netsync Network Solutions - Gap: 2, 30 SP SEs, 2 TSP SEs, 1 overlap (David Goss)
+   - No exams
+5. NTT DATA South Africa - Gap: 2, 6 SP SEs, 2 TSP SEs, 1 overlap (Riaan Taylor)
+   - Exams: kayode+angelo (FA Support+Impl), thulani+peetri (FA Support), 
+     mannes+kamalan (FA+FB Impl), lourens (Arch Assoc FB+FA), morne (3 certs)
+6. ITgility - Gap: 2 need TSP + 1 new needs both, 2 SP SEs, 1 overlap (James)
+   - Exams: jamesb (Platform Positioning)
+7. Global Indirect Markets - Gap: 2, 2 SP SEs, 1 overlap (Dylan)
+   - No exams
+
+### Tier 3: Heavy Gaps
+8. INTELLITECH SYSTEMS - Gap: 3, 1 SP SE, 2 TSP SEs
+9. FIRST TECHNOLOGY GROUP - Gap: 2+1 new, 1 SP, 1 TSP
+10. ETS INNOVATIONS - Gap: 3, zero completions
+11. Lekonakonetsi - Gap: 3, zero completions
+
+## New Data to Add to Dashboard:
+- Certification/exam records per partner (new expandable detail)
+- Updated SP/TSP SE counts (significantly different numbers)
+- Training roadmap phases
+- Total exam count across ecosystem

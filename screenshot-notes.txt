@@ -1,0 +1,18 @@
+Screenshot Review — Tier Progression Feature
+=================================================
+Date: 2026-04-02
+
+Overview page: Renders correctly with updated sidebar
+- Sidebar now has 8 nav items including "Tier Progression" with TrendingUp icon
+- No TypeScript errors, no LSP errors, dependencies OK
+- HMR updated all files successfully
+- KPI cards: 23 partners, 36% enablement, 58 gaps, 43 exams
+
+Tier Progression page: New page added
+- Accessible via sidebar nav between "Tier Compliance" and "Gap Analysis"
+- Shows per-partner progression cards with readiness rings
+- Each card shows current tier → next tier with enablement and business metric deltas
+- Expandable details with progress bars for each enablement category
+- Business metric gaps shown with format helpers
+- Search, tier filter pills, and sort controls
+- Summary KPIs: Fully Ready, Enablement Ready, Avg Readiness, At Top Tier
