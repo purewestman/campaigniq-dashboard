@@ -1,22 +1,26 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Router, Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { OverrideProvider } from "./contexts/OverrideContext";
 import { ModificationProvider } from "./contexts/ModificationContext";
 import Home from "./pages/Home";
 
-
-function Router() {
+function AppRouter() {
+  // Vite sets BASE_URL to /campaigniq-dashboard/ in prod, / in dev
+  const base = import.meta.env.BASE_URL;
+  
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Router base={base}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
   );
 }
 
@@ -30,7 +34,7 @@ function App() {
           <OverrideProvider>
             <TooltipProvider>
               <Toaster />
-              <Router />
+              <AppRouter />
             </TooltipProvider>
           </OverrideProvider>
         </ModificationProvider>
