@@ -17,6 +17,7 @@ import {
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import ModifyGapModal from "@/components/ModifyGapModal";
+import ExportButton from "@/components/ExportButton";
 import {
   Search,
   Building2,
@@ -346,14 +347,17 @@ export default function PartnersPage() {
                         </div>
                       )}
 
-                      {/* Modify Button */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
-                        style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
-                      >
-                        <Pencil className="w-4 h-4" /> Modify Gaps
-                      </button>
+                      {/* Modify & Export Buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
+                          style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
+                        >
+                          <Pencil className="w-4 h-4" /> Modify Gaps
+                        </button>
+                        <ExportButton partner={partner} />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

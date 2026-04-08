@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { CheckCircle2, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 import { activityData } from "@/lib/activityData";
+import { partners } from "@/lib/data";
+import ExportButton from "@/components/ExportButton";
 
 interface Candidate {
   name: string;
@@ -26,7 +28,7 @@ export default function AspTrackingPage() {
     for (const [partner, records] of Object.entries(activityData)) {
       // Group by email
       const indvMap: Record<string, { name: string; courses: Set<string> }> = {};
-      records.forEach(r => {
+      records.forEach((r: any) => {
         if (!indvMap[r.email]) {
           indvMap[r.email] = { name: r.name, courses: new Set() };
         }
@@ -140,15 +142,26 @@ export default function AspTrackingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5">
-              {resultData.map((row) => (
+              {resultData.map((row: PartnerAspResult) => (
                 <tr key={row.partner} className="hover:bg-black/[0.01] transition-colors">
                   
                   {/* Partner Name */}
                   <td className="px-5 py-4 align-top w-[25%]">
-                    <p className="text-[14px] font-semibold text-foreground">{row.partner}</p>
-                    <p className="text-[12px] text-muted-foreground mt-1">
-                      {row.fullyQualifiedCount} of 2 required full passes
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                       <div>
+                         <p className="text-[14px] font-semibold text-foreground">{row.partner}</p>
+                         <p className="text-[12px] text-muted-foreground mt-1">
+                           {row.fullyQualifiedCount} of 2 required full passes
+                         </p>
+                       </div>
+                       {/* Export Button for ASP View */}
+                       {partners.find(p => p.name === row.partner) && (
+                         <ExportButton 
+                           partner={partners.find(p => p.name === row.partner)!} 
+                           variant="ghost" 
+                         />
+                       )}
+                    </div>
                   </td>
 
                   {/* Status Badge */}
@@ -170,7 +183,7 @@ export default function AspTrackingPage() {
                   <td className="px-5 py-4 align-top">
                     {row.candidates.length > 0 ? (
                       <div className="flex flex-col gap-3">
-                        {row.candidates.map((c, i) => (
+                        {row.candidates.map((c: Candidate, i: number) => (
                           <div key={i} className="flex items-start gap-2">
                             {c.isFullyQualified ? (
                               <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
@@ -186,7 +199,7 @@ export default function AspTrackingPage() {
                               ) : (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   <span className="text-[11px] text-muted-foreground">Missing:</span>
-                                  {c.missingTags.map(tag => (
+                                  {c.missingTags.map((tag: string) => (
                                     <span key={tag} className="text-[10px] bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded border border-rose-100">
                                       {tag}
                                     </span>
