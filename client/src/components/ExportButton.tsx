@@ -3,7 +3,7 @@ import { Download, FileDown, Loader2 } from "lucide-react";
 import { type Partner } from "@/lib/data";
 import PartnerReport from "./PartnerReport";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import { createPortal } from "react-dom";
 
 interface ExportButtonProps {
@@ -18,53 +18,31 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
     e.stopPropagation();
     if (isExporting) return;
 
+    console.log(`Starting PDF export for: ${partner.name}`);
     setIsExporting(true);
     
-    // Create a temporary container for the report
-    const container = document.createElement("div");
-    container.style.position = "absolute";
-    container.style.left = "-9999px";
-    container.style.top = "-9999px";
-    document.body.appendChild(container);
-
     try {
-      // We need to render the report and wait for fonts/images
-      // For simplicity in this demo, we'll use a portal-like approach 
-      // by temporarily rendering it in the DOM.
       const reportId = `report-${partner.id}`;
-      
-      // We'll render it to the hidden container
-      // Note: In a real app we'd use a more robust way to wait for render
-      // but html2canvas handles most things well.
-      
-      // Let's create a temporary hidden div for the capture
-      const captureDiv = document.createElement("div");
-      captureDiv.id = "temp-capture";
-      captureDiv.style.width = "800px";
-      captureDiv.style.background = "white";
-      document.body.appendChild(captureDiv);
-
-      // We'll use a simple trick: render the component to a string or just use actual DOM
-      // Since we are in React, we'll use a hidden element in the main DOM instead of dynamic creation
-      // but for this implementation we'll assume the component is already in HTML if we provide a ref.
-      
-      // REVISED APPROACH: We'll look for the element in the DOM. 
-      // To make it work, let's keep the PartnerReport rendered but hidden in this component.
-      
       const element = document.getElementById(reportId);
-      if (!element) throw new Error("Report element not found");
+      
+      if (!element) {
+        console.error("Report element not found in DOM");
+        alert("Error: Report template not found. Please try refreshing the page.");
+        return;
+      }
 
-      // Make it visible momentarily for capture if needed, or html2canvas might handle hidden
-      // Wait a tiny bit for any potential re-renders
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for any images or styles to settle
+      await new Promise(resolve => setTimeout(resolve, 300));
 
+      console.log("Capturing canvas...");
       const canvas = await html2canvas(element, {
-        scale: 2, // High resolution
+        scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
-        logging: false,
+        logging: true,
       });
 
+      console.log("Canvas captured, generating PDF...");
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -77,14 +55,16 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${partner.name.replace(/\s+/g, '_')}_FY27_Report.pdf`);
+      
+      const fileName = `${partner.name.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_')}_FY27_Report.pdf`;
+      pdf.save(fileName);
+      console.log(`PDF saved as: ${fileName}`);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("PDF Export failed:", error);
+      alert(`PDF Export failed: ${error.message || "Unknown error"}`);
     } finally {
       setIsExporting(false);
-      const temp = document.getElementById("temp-capture");
-      if (temp) temp.remove();
     }
   };
 
