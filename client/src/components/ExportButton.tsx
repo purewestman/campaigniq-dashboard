@@ -40,6 +40,10 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: true,
+        onclone: (clonedDoc) => {
+          // Force standard colors on the cloned document to avoid oklch parsing errors
+          clonedDoc.body.classList.add("pdf-export-mode");
+        }
       });
 
       console.log("Canvas captured, generating PDF...");

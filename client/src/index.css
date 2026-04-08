@@ -174,3 +174,40 @@
     background: oklch(0.70 0.02 85);
   }
 }
+
+/* Isolation layer for PDF export to avoid oklch parsing errors in html2canvas */
+.pdf-export-mode {
+  --background: #f8f9fa;
+  --foreground: #1a1c1e;
+  --card: #ffffff;
+  --card-foreground: #1a1c1e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1c1e;
+  --primary: #008374;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f5;
+  --secondary-foreground: #343a40;
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
+  --accent: #e9ecef;
+  --accent-foreground: #1a1c1e;
+  --destructive: #d63301;
+  --destructive-foreground: #ffffff;
+  --border: #dee2e6;
+  --input: #dee2e6;
+  --ring: #008374;
+  --chart-1: #008374;
+  --chart-2: #7e4bc3;
+  --chart-3: #d63301;
+  --chart-4: #b56500;
+  --chart-5: #007bb8;
+  --sidebar: #1a1c1e;
+  --sidebar-foreground: #e9ecef;
+  --sidebar-primary: #008374;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #212529;
+  --sidebar-accent-foreground: #f8f9fa;
+  --sidebar-border: #343a40;
+  --sidebar-ring: #008374;
+}
+
