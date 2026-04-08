@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FileDown, Loader2 } from "lucide-react";
 import { type Partner } from "@/lib/data";
 import PartnerReport from "./PartnerReport";
@@ -12,26 +12,24 @@ interface ExportButtonProps {
 
 export default function ExportButton({ partner, variant = "primary" }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const handleExport = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isExporting) return;
 
-    console.log(`Starting PDF export for: ${partner.name} using html-to-image`);
+    if (!reportRef.current) {
+      console.error("Report ref not found");
+      return;
+    }
+
+    console.log(`Starting PDF export for: ${partner.name} using html-to-image (ref)`);
     setIsExporting(true);
     
     try {
-      const reportId = `report-${partner.id}`;
-      const element = document.getElementById(reportId);
+      const element = reportRef.current;
       
-      if (!element) {
-        console.error("Report element not found in DOM");
-        alert("Error: Report template not found. Please try refreshing the page.");
-        return;
-      }
-
       // Ensure the element is visible and computed styles are ready
-      // We also temporarily apply the isolation class just to be safe
       element.classList.add("pdf-export-mode");
       
       // Give the browser time to reflow
@@ -46,6 +44,7 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
 
       // Remove the isolation class after capture
       element.classList.remove("pdf-export-mode");
+
 
       console.log("Image captured, generating PDF...");
       const pdf = new jsPDF({
@@ -100,10 +99,11 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
 
       {/* Hidden Report for capture */}
       <div className="fixed -left-[2000px] -top-[2000px] pointer-events-none overflow-hidden h-0 w-0">
-        <div id={`report-${partner.id}`}>
+        <div ref={reportRef}>
           <PartnerReport partner={partner} />
         </div>
       </div>
     </>
   );
 }
+
