@@ -35,17 +35,19 @@ export default function PartnerActivityPage() {
     if (!selectedPartner || !activityData[selectedPartner]) return [];
     
     const records = activityData[selectedPartner];
-    const counts: Record<string, { name: string, email: string, count: number }> = {};
+    const counts: Record<string, { name: string, email: string, count: number, activities: Set<string> }> = {};
     
     records.forEach(r => {
       const key = r.email;
       if (!counts[key]) {
-        counts[key] = { name: r.name, email: r.email, count: 0 };
+        counts[key] = { name: r.name, email: r.email, count: 0, activities: new Set() };
       }
       counts[key].count += 1;
+      if (r.activity) counts[key].activities.add(r.activity);
     });
 
     return Object.values(counts)
+      .map(emp => ({ ...emp, activities: Array.from(emp.activities) }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10); // Top 10
   }, [selectedPartner]);
@@ -107,27 +109,37 @@ export default function PartnerActivityPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Leaderboard */}
-        <div className="terrain-card p-6 flex flex-col h-[400px]">
+        <div className="terrain-card p-6 flex flex-col h-[600px] lg:h-[500px]">
           <h3 className="text-[14px] font-bold text-foreground mb-4 flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />
             Top 10 Employees
           </h3>
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {topEmployees.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {topEmployees.map((emp, idx) => (
-                  <div key={emp.email} className="flex items-center justify-between p-3 rounded-lg bg-black/[0.02] border border-black/[0.04]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center shrink-0">
-                        {idx + 1}
+                  <div key={emp.email} className="flex flex-col p-4 rounded-xl bg-black/[0.02] border border-black/[0.04]">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-semibold text-foreground leading-tight">{emp.name}</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{emp.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[13px] font-medium text-foreground leading-tight">{emp.name}</p>
-                        <p className="text-[11px] text-muted-foreground">{emp.email}</p>
+                      <div className="text-[13px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                        {emp.count} <span className="text-[10px] font-medium text-blue-500">modules</span>
                       </div>
                     </div>
-                    <div className="text-[13px] font-bold">
-                      {emp.count} <span className="text-[10px] font-normal text-muted-foreground">modules</span>
+                    {/* Cluster View of specific activities */}
+                    <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
+                      {emp.activities.map((act, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded border border-black/10 bg-white shadow-sm text-muted-foreground break-words max-w-full">
+                          {act}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 ))}
