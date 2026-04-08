@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Download, FileDown, Loader2 } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react";
 import { type Partner } from "@/lib/data";
 import PartnerReport from "./PartnerReport";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
-import { createPortal } from "react-dom";
 
 interface ExportButtonProps {
   partner: Partner;
@@ -18,7 +17,7 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
     e.stopPropagation();
     if (isExporting) return;
 
-    console.log(`Starting PDF export for: ${partner.name}`);
+    console.log(`Starting PDF export for: ${partner.name} using html-to-image`);
     setIsExporting(true);
     
     try {
@@ -31,34 +30,39 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
         return;
       }
 
-      // Wait for any images or styles to settle
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Ensure the element is visible and computed styles are ready
+      // We also temporarily apply the isolation class just to be safe
+      element.classList.add("pdf-export-mode");
+      
+      // Give the browser time to reflow
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      console.log("Capturing canvas...");
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
+      const dataUrl = await toPng(element, {
+        quality: 1.0,
+        pixelRatio: 2,
         backgroundColor: "#ffffff",
-        logging: true,
-        onclone: (clonedDoc) => {
-          // Force standard colors on the cloned document to avoid oklch parsing errors
-          clonedDoc.body.classList.add("pdf-export-mode");
-        }
+        cacheBust: true,
       });
 
-      console.log("Canvas captured, generating PDF...");
-      const imgData = canvas.toDataURL("image/png");
+      // Remove the isolation class after capture
+      element.classList.remove("pdf-export-mode");
+
+      console.log("Image captured, generating PDF...");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
         format: "a4",
       });
 
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      // PNGs from html-to-image are standard data URLs
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise(resolve => img.onload = resolve);
+      
+      const pdfHeight = (img.height * pdfWidth) / img.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
       
       const fileName = `${partner.name.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_')}_FY27_Report.pdf`;
       pdf.save(fileName);
@@ -67,6 +71,9 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
     } catch (error: any) {
       console.error("PDF Export failed:", error);
       alert(`PDF Export failed: ${error.message || "Unknown error"}`);
+      // Cleanup class if it was stuck
+      const reportId = `report-${partner.id}`;
+      document.getElementById(reportId)?.classList.remove("pdf-export-mode");
     } finally {
       setIsExporting(false);
     }
