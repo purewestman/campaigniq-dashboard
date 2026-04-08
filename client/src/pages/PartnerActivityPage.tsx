@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Activity, Trophy } from "lucide-react";
+import { Activity, Trophy, Search, Users } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -27,10 +27,12 @@ const LINE_COLORS = [
 ];
 
 export default function PartnerActivityPage() {
-  const partners = Object.keys(activityData).sort();
+  const [viewMode, setViewMode] = useState<"partner" | "course">("partner");
+
+  // --- Partner View Logic ---
+  const partners = useMemo(() => Object.keys(activityData).sort(), []);
   const [selectedPartner, setSelectedPartner] = useState<string>(partners[0] || "");
 
-  // Compute leaderboard
   const topEmployees = useMemo(() => {
     if (!selectedPartner || !activityData[selectedPartner]) return [];
     
@@ -49,23 +51,19 @@ export default function PartnerActivityPage() {
     return Object.values(counts)
       .map(emp => ({ ...emp, activities: Array.from(emp.activities) }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10); // Top 10
+      .slice(0, 10);
   }, [selectedPartner]);
 
-  // Compute timeline data
-  const chartData = useMemo(() => {
+  const partnerChartData = useMemo(() => {
     if (!selectedPartner || !activityData[selectedPartner]) return [];
     
     const records = activityData[selectedPartner];
     const timelineMap: Record<string, any> = {};
-
-    // Get the top employee emails for separate lines
     const topEmails = topEmployees.map(e => e.email);
 
     records.forEach(r => {
       if (!r.date) return;
       const dateObj = new Date(r.date);
-      // Format as YYYY-MM
       const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
       
       if (!timelineMap[monthStr]) {
@@ -82,40 +80,146 @@ export default function PartnerActivityPage() {
     return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
   }, [selectedPartner, topEmployees]);
 
+
+  // --- Course View Logic ---
+  const uniqueCourses = useMemo(() => {
+    const courses = new Set<string>();
+    Object.values(activityData).forEach(partnerRecs => {
+      partnerRecs.forEach(r => {
+        if (r.activity) courses.add(r.activity);
+      });
+    });
+    return Array.from(courses).sort();
+  }, []);
+
+  const [selectedCourse, setSelectedCourse] = useState<string>(uniqueCourses[0] || "");
+
+  const courseEmployees = useMemo(() => {
+    if (!selectedCourse) return [];
+    const employees: Array<{ partner: string, name: string, email: string, date: string | null }> = [];
+    
+    for (const [partner, records] of Object.entries(activityData)) {
+      records.forEach(r => {
+        if (r.activity === selectedCourse) {
+          employees.push({
+            partner,
+            name: r.name,
+            email: r.email,
+            date: r.date
+          });
+        }
+      });
+    }
+    
+    // Sort by recent completion date
+    return employees.sort((a, b) => {
+      if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
+      return 0;
+    });
+  }, [selectedCourse]);
+
+  const courseChartData = useMemo(() => {
+    if (!selectedCourse) return [];
+    const timelineMap: Record<string, any> = {};
+    
+    for (const records of Object.values(activityData)) {
+      records.forEach(r => {
+        if (r.activity === selectedCourse && r.date) {
+            const dateObj = new Date(r.date);
+            const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+            if (!timelineMap[monthStr]) {
+              timelineMap[monthStr] = { name: monthStr, Completions: 0 };
+            }
+            timelineMap[monthStr].Completions += 1;
+        }
+      });
+    }
+    return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
+  }, [selectedCourse]);
+
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      
+      {/* Header and Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Activity className="w-5 h-5 text-rose-500" />
-            Partner Activity Tracking
+            Activity Tracking
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Top 10 employees and module completion timeline.
+            Analyze online module activity by Partner or by Course.
           </p>
         </div>
-        
-        {/* Partner Selector */}
-        <select
-          value={selectedPartner}
-          onChange={(e) => setSelectedPartner(e.target.value)}
-          className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-sm"
-        >
-          {partners.map(p => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {/* View Toggles */}
+          <div className="flex bg-black/[0.04] p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode("partner")}
+              className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
+                viewMode === "partner" 
+                  ? "bg-white shadow-sm text-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              By Partner
+            </button>
+            <button
+              onClick={() => setViewMode("course")}
+              className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
+                viewMode === "course" 
+                  ? "bg-white shadow-sm text-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              By Course
+            </button>
+          </div>
+
+          {/* Contextual Selectors */}
+          {viewMode === "partner" ? (
+            <select
+              value={selectedPartner}
+              onChange={(e) => setSelectedPartner(e.target.value)}
+              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[200px] sm:max-w-xs"
+            >
+              {partners.map(p => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          ) : (
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500 max-w-[200px] sm:max-w-xs"
+            >
+              {uniqueCourses.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
+      {/* Main Grid View */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Leaderboard */}
+        
+        {/* Left List Container (Leaderboard or Roster) */}
         <div className="terrain-card p-6 flex flex-col h-[600px] lg:h-[500px]">
           <h3 className="text-[14px] font-bold text-foreground mb-4 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500" />
-            Top 10 Employees
+            {viewMode === "partner" ? (
+              <><Trophy className="w-4 h-4 text-amber-500" /> Top 10 Employees</>
+            ) : (
+              <><Users className="w-4 h-4 text-rose-500" /> Completion Roster ({courseEmployees.length})</>
+            )}
           </h3>
+
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            {topEmployees.length > 0 ? (
+            
+            {/* PARTNER VIEW: Top Employees */}
+            {viewMode === "partner" && topEmployees.length > 0 && (
               <div className="space-y-4">
                 {topEmployees.map((emp, idx) => (
                   <div key={emp.email} className="flex flex-col p-4 rounded-xl bg-black/[0.02] border border-black/[0.04]">
@@ -133,7 +237,6 @@ export default function PartnerActivityPage() {
                         {emp.count} <span className="text-[10px] font-medium text-blue-500">modules</span>
                       </div>
                     </div>
-                    {/* Cluster View of specific activities */}
                     <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
                       {emp.activities.map((act, i) => (
                         <span key={i} className="text-[10px] px-2 py-0.5 rounded border border-black/10 bg-white shadow-sm text-muted-foreground break-words max-w-full">
@@ -144,23 +247,46 @@ export default function PartnerActivityPage() {
                   </div>
                 ))}
               </div>
-            ) : (
+            )}
+
+            {/* COURSE VIEW: Roster */}
+            {viewMode === "course" && courseEmployees.length > 0 && (
+              <div className="space-y-3">
+                {courseEmployees.map((emp, idx) => (
+                  <div key={`${emp.email}-${idx}`} className="flex flex-col p-3 rounded-lg bg-black/[0.02] border border-black/[0.04]">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[13px] font-semibold text-foreground">{emp.name}</p>
+                        <p className="text-[11px] font-medium text-blue-600 mt-0.5">{emp.partner}</p>
+                      </div>
+                      {emp.date && (
+                        <div className="text-[10px] text-muted-foreground ml-2">
+                          {new Date(emp.date).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {((viewMode === "partner" && topEmployees.length === 0) || (viewMode === "course" && courseEmployees.length === 0)) && (
               <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                No activity data found.
+                No tracking data found for this selection.
               </div>
             )}
           </div>
         </div>
 
-        {/* Timeline Chart */}
+        {/* Right Chart Container */}
         <div className="terrain-card p-6 lg:col-span-2 h-[400px] flex flex-col">
           <h3 className="text-[14px] font-bold text-foreground mb-4">
             Activity Timeline (Modules Completed per Month)
           </h3>
           <div className="flex-1 w-full min-h-0">
-            {chartData.length > 0 ? (
+            {((viewMode === "partner" && partnerChartData.length > 0) || (viewMode === "course" && courseChartData.length > 0)) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <LineChart data={viewMode === "partner" ? partnerChartData : courseChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
                   <XAxis 
                     dataKey="name" 
@@ -178,37 +304,32 @@ export default function PartnerActivityPage() {
                     contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", background: "rgba(255,255,255,0.9)" }}
                   />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                  {/* Total Line */}
-                  <Line 
-                    type="monotone" 
-                    dataKey="Total" 
-                    stroke="#000" 
-                    strokeWidth={2}
-                    dot={{ r: 4, strokeWidth: 2 }}
-                    activeDot={{ r: 6 }} 
-                  />
-                  {/* Top Employees Lines */}
-                  {topEmployees.map((emp, i) => (
-                    <Line 
-                      key={emp.email}
-                      type="monotone" 
-                      dataKey={emp.email} 
-                      name={emp.name || emp.email.split('@')[0]}
-                      stroke={LINE_COLORS[i % LINE_COLORS.length]} 
-                      strokeWidth={1.5}
-                      dot={false}
-                      activeDot={{ r: 4 }} 
-                    />
-                  ))}
+                  
+                  {/* Partner View Chart Lines */}
+                  {viewMode === "partner" && (
+                    <>
+                      <Line type="monotone" dataKey="Total" stroke="#000" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      {topEmployees.map((emp, i) => (
+                        <Line key={emp.email} type="monotone" dataKey={emp.email} name={emp.name || emp.email.split('@')[0]} stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                      ))}
+                    </>
+                  )}
+
+                  {/* Course View Chart Line */}
+                  {viewMode === "course" && (
+                    <Line type="monotone" dataKey="Completions" stroke="#e11d48" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  )}
+
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                Not enough date data to draw timeline.
+                Not enough trending date data available.
               </div>
             )}
           </div>
         </div>
+        
       </div>
     </div>
   );
