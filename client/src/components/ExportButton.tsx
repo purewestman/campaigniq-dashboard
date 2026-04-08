@@ -23,30 +23,43 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
       return;
     }
 
-    console.log(`Starting PDF export for: ${partner.name} using html-to-image (ref)`);
+    console.log(`Starting PDF export (robust) for: ${partner.name}`);
     setIsExporting(true);
     
     try {
       const element = reportRef.current;
       
-      // Ensure the element is visible and computed styles are ready
+      // Temporarily apply isolation class
       element.classList.add("pdf-export-mode");
       
-      // Give the browser time to reflow
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Force layout and wait for images/fonts
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-      const dataUrl = await toPng(element, {
-        quality: 1.0,
-        pixelRatio: 2,
+      // Use html-to-image with security filters and a timeout
+      const capturePromise = toPng(element, {
+        quality: 0.95,
+        pixelRatio: 1.5, // Slightly lower resolution for speed and reliability
         backgroundColor: "#ffffff",
         cacheBust: true,
+        // Filter out link tags that might cause SecurityErrors
+        filter: (node: any) => {
+          if (node.tagName === 'LINK' && node.rel === 'stylesheet') {
+            return !node.href.includes('external-domain.com'); // Placeholder logic
+          }
+          return true;
+        }
       });
 
-      // Remove the isolation class after capture
+      // Wrap in a timeout to prevent infinite spin
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("PDF generation timed out")), 15000)
+      );
+
+      const dataUrl = await Promise.race([capturePromise, timeoutPromise]) as string;
+
       element.classList.remove("pdf-export-mode");
 
-
-      console.log("Image captured, generating PDF...");
+      console.log("Image captured via html-to-image");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "pt",
@@ -54,25 +67,29 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      // PNGs from html-to-image are standard data URLs
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise(resolve => img.onload = resolve);
       
-      const pdfHeight = (img.height * pdfWidth) / img.width;
-
+      // Proportions check without long wait
+      const img = new Image();
+      const loadPromise = new Promise((resolve, reject) => {
+        img.onload = () => resolve(true);
+        img.onerror = () => reject(new Error("Image failed to load in PDF"));
+        setTimeout(() => reject(new Error("Image dimension check timed out")), 5000);
+      });
+      
+      img.src = dataUrl;
+      await loadPromise;
+      
+      const pdfHeight = (img.naturalHeight * pdfWidth) / img.naturalWidth;
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
       
       const fileName = `${partner.name.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_')}_FY27_Report.pdf`;
       pdf.save(fileName);
-      console.log(`PDF saved as: ${fileName}`);
+      console.log(`PDF saved successfully`);
 
     } catch (error: any) {
       console.error("PDF Export failed:", error);
-      alert(`PDF Export failed: ${error.message || "Unknown error"}`);
-      // Cleanup class if it was stuck
-      const reportId = `report-${partner.id}`;
-      document.getElementById(reportId)?.classList.remove("pdf-export-mode");
+      alert(`Export failed: ${error.message || "Unknown error"}. Check console for details.`);
+      reportRef.current?.classList.remove("pdf-export-mode");
     } finally {
       setIsExporting(false);
     }
@@ -97,13 +114,25 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
         {isExporting ? "Generating..." : "Export PDF"}
       </button>
 
-      {/* Hidden Report for capture */}
-      <div className="fixed -left-[2000px] -top-[2000px] pointer-events-none overflow-hidden h-0 w-0">
-        <div ref={reportRef}>
+      {/* Hidden Report for capture - Improved styling to avoid measuring errors */}
+      <div 
+        style={{ 
+          position: 'fixed', 
+          top: '-10000px', 
+          left: '-10000px', 
+          width: '800px', 
+          height: '1132px', // A4 aspect ratio height at 800px width
+          pointerEvents: 'none',
+          background: 'white',
+          zIndex: -1
+        }}
+      >
+        <div ref={reportRef} style={{ width: '800px' }}>
           <PartnerReport partner={partner} />
         </div>
       </div>
     </>
   );
 }
+
 
