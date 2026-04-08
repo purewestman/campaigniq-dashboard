@@ -25,6 +25,7 @@ import ReportsPage from "@/pages/ReportsPage";
 import TierProgressionPage from "@/pages/TierProgressionPage";
 import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
+import AspTrackingPage from "@/pages/AspTrackingPage";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS } from "@/lib/data";
 import { Settings } from "lucide-react";
@@ -82,6 +83,8 @@ export default function Home() {
         return <TrainingDetailsPage />;
       case "activity":
         return <PartnerActivityPage />;
+      case "asp":
+        return <AspTrackingPage />;
       case "settings":
         return (
           <div className="space-y-6">
