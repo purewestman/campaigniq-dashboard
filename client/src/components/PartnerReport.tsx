@@ -13,8 +13,16 @@ const tierIcons: Record<string, React.ElementType> = {
   ambassador: Crown,
 };
 
+const tierStyles: Record<string, { bg: string, color: string }> = {
+  authorized: { bg: "#e0f2fe", color: "#0369a1" },
+  preferred: { bg: "#fef3c7", color: "#b45309" },
+  elite: { bg: "#ccfbf1", color: "#0f766e" },
+  ambassador: { bg: "#f3e8ff", color: "#7e22ce" },
+};
+
 export default function PartnerReport({ partner }: PartnerReportProps) {
   const def = TIER_DEFINITIONS[partner.programTier];
+  const style = tierStyles[partner.programTier] || tierStyles.authorized;
   const TierIcon = tierIcons[partner.programTier];
   const tierReq = def.enablement;
   
@@ -40,13 +48,13 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
   });
 
   return (
-    <div className="w-[800px] p-10 bg-white font-sans text-slate-900" id={`report-${partner.id}`}>
+    <div className="w-[800px] p-10 bg-white font-sans text-slate-900 border" id={`report-${partner.id}`}>
       {/* Header */}
       <div className="flex justify-between items-start border-b-2 border-slate-100 pb-8 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">{partner.name}</h1>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold" style={{ background: def.bg, color: def.color }}>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold" style={{ background: style.bg, color: style.color }}>
               <TierIcon className="w-4 h-4" />
               {def.label}
             </span>
@@ -54,7 +62,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-4xl font-bold text-indigo-600 leading-tight">{partner.enablementScore}%</div>
+          <div className="text-4xl font-bold text-blue-600 leading-tight">{partner.enablementScore}%</div>
           <div className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Enablement Score</div>
         </div>
       </div>
@@ -65,14 +73,14 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
           <section>
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Program Compliance</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className={`p-4 rounded-2xl border-2 ${partner.enablementCompliant ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+              <div className={`p-4 rounded-2xl border-2 ${partner.enablementCompliant ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
                 <div className="flex items-center gap-2 mb-1">
                   {partner.enablementCompliant ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                   <span className="font-bold">Enablement</span>
                 </div>
                 <p className="text-xs opacity-80">{partner.enablementCompliant ? 'Requirements Met' : 'Action Required'}</p>
               </div>
-              <div className={`p-4 rounded-2xl border-2 ${partner.businessCompliant ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-rose-50 border-rose-100 text-rose-700'}`}>
+              <div className={`p-4 rounded-2xl border-2 ${partner.businessCompliant ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
                 <div className="flex items-center gap-2 mb-1">
                   {partner.businessCompliant ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                   <span className="font-bold">Business</span>
@@ -84,7 +92,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
 
           <section>
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">ASP Qualification</h2>
-            <div className={`p-4 rounded-2xl border-2 ${fullyQualifiedAspCount >= 2 ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+            <div className={`p-4 rounded-2xl border-2 ${fullyQualifiedAspCount >= 2 ? 'bg-blue-50 border-blue-100 text-blue-700' : 'bg-orange-50 border-orange-100 text-orange-700'}`}>
               <div className="flex items-center gap-2 mb-1">
                 {fullyQualifiedAspCount >= 2 ? <CheckCircle2 className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
                 <span className="font-bold">ASP Status</span>
@@ -111,7 +119,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
                 <div key={key}>
                   <div className="flex justify-between text-xs mb-1.5">
                     <span className="font-semibold text-slate-600">{label}</span>
-                    <span className={`font-bold ${met ? 'text-emerald-600' : req.required === 0 ? 'text-slate-400' : 'text-rose-600'}`}>
+                    <span className={`font-bold ${met ? 'text-green-600' : req.required === 0 ? 'text-slate-400' : 'text-red-600'}`}>
                       {req.obtained} / {req.required}
                     </span>
                   </div>
@@ -120,7 +128,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
                       className="h-full rounded-full transition-all" 
                       style={{ 
                         width: `${Math.min(100, percent)}%`,
-                        background: met ? '#10b981' : req.required === 0 ? '#cbd5e1' : '#f43f5e'
+                        backgroundColor: met ? '#10b981' : req.required === 0 ? '#cbd5e1' : '#f43f5e'
                       }} 
                     />
                   </div>
@@ -160,7 +168,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
             return (
               <div key={label} className="p-4 rounded-2xl border border-slate-100 bg-white shadow-sm">
                 <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">{label}</p>
-                <p className={`text-lg font-bold ${na ? 'text-slate-300' : met ? 'text-slate-900' : 'text-rose-600'}`}>
+                <p className={`text-lg font-bold ${na ? 'text-slate-300' : met ? 'text-slate-900' : 'text-red-600'}`}>
                   {value !== null ? format(value) : "N/A"}
                 </p>
                 {threshold !== null && (
@@ -173,12 +181,12 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
       </section>
 
       {/* Recommendations */}
-      <section className="bg-indigo-600 rounded-3xl p-8 text-white">
+      <section className="bg-blue-600 rounded-3xl p-8 text-white">
         <div className="flex items-center gap-3 mb-4">
           <Activity className="w-6 h-6" />
           <h2 className="text-xl font-bold">Recommended Action Plan</h2>
         </div>
-        <p className="text-indigo-100 leading-relaxed text-lg">
+        <p className="text-blue-100 leading-relaxed text-lg">
           {partner.action}
         </p>
       </section>
