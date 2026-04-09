@@ -1,4 +1,5 @@
 // Auto-generated from Partner_Training_Report_Filled.csv
+// Bootcamp: only completions with Last Login > Feb 2, 2026 count for FY27
 // DO NOT EDIT — regenerate with the Python script if the CSV changes
 
 export interface TrainingPerson {
@@ -37,12 +38,9 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "miyelani.mnisi@datasciences.co.za", firstName: "Miyelani", lastName: "Mnisi" },
     ],
     bootcamp: [
-      { email: "morne.groenewald@datasciences.co.za", firstName: "Morne", lastName: "Groenewald" },
       { email: "nelson.lopes@datasciences.co.za", firstName: "Nelson", lastName: "Lopes" },
-      { email: "mndeni.msibi@datasciences.co.za", firstName: "Mndeni", lastName: "Msibi" },
       { email: "rukaya.najam@datasciences.co.za", firstName: "Rukaya", lastName: "Najam" },
       { email: "freddie.kgari@datasciences.co.za", firstName: "Freddy", lastName: "Kgari" },
-      { email: "kenny.thiart@datasciences.co.za", firstName: "Kenny", lastName: "Thiart" },
       { email: "ignes.ingram@datasciences.co.za", firstName: "Ignes", lastName: "Ingram" },
     ],
     implSpec: [
@@ -97,7 +95,6 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "peter.mcguigan@nec.xon.co.za", firstName: "Peter", lastName: "McGuigan" },
     ],
     bootcamp: [
-      { email: "merwe.erasmus@nec.xon.co.za", firstName: "Merwe", lastName: "Erasmus" },
       { email: "kobus.putter@nec.xon.co.za", firstName: "Kobus", lastName: "Putter" },
       { email: "zayed.carrim@nec.xon.co.za", firstName: "Zayed", lastName: "Carrim" },
     ],
@@ -131,10 +128,8 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "steliosk@ftechkzn.co.za", firstName: "Stelios", lastName: "Kyriakides" },
     ],
     bootcamp: [
-      { email: "lehlohonolom@ftechkzn.co.za", firstName: "Lehlohonolo", lastName: "Mofokeng" },
       { email: "rajivp@ftechkzn.co.za", firstName: "Rajiv", lastName: "Pirtu" },
       { email: "steliosk@ftechkzn.co.za", firstName: "Stelios", lastName: "Kyriakides" },
-      { email: "vikeshs@ftechkzn.co.za", firstName: "Vikesh", lastName: "Surju" },
       { email: "andrew.cotty@ftechkzn.co.za", firstName: "Andrew", lastName: "Cotty" },
       { email: "ramiror@ftechkzn.co.za", firstName: "Ramiro", lastName: "Rampartab" },
     ],
@@ -159,8 +154,6 @@ export const trainingData: Record<number, PartnerTrainingData> = {
     ],
     techPro: [],
     bootcamp: [
-      { email: "richard.blewitt@ioco.tech", firstName: "Richard", lastName: "Blewitt" },
-      { email: "christopher.young@ioco.tech", firstName: "Christopher", lastName: "Young" },
       { email: "johan.grove@ioco.tech", firstName: "Johan", lastName: "Grove" },
     ],
     implSpec: [
@@ -175,11 +168,7 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "liz.borges@sithabile.co.za", firstName: "Elizabeth", lastName: "Borges" },
     ],
     techPro: [],
-    bootcamp: [
-      { email: "damon.engelsman@sithabile.co.za", firstName: "Damon", lastName: "Engelsman" },
-      { email: "francois.jansevanvuuren@sithabile.co.za", firstName: "Francois", lastName: "Janse van Vuuren" },
-      { email: "malcolm.tiley@sithabile.co.za", firstName: "Malcolm", lastName: "Tiley" },
-    ],
+    bootcamp: [],
     implSpec: [
       { email: "adolph.madzivhandila@sithabile.co.za", firstName: "Adolph", lastName: "Madzivhandila" },
     ],
@@ -195,12 +184,9 @@ export const trainingData: Record<number, PartnerTrainingData> = {
     ],
     techPro: [],
     bootcamp: [
-      { email: "david.cornelli@tcm.co.za", firstName: "David", lastName: "Cornelli" },
       { email: "dierk.lobbecke@tcm.co.za", firstName: "Dierk", lastName: "Lobbecke" },
-      { email: "francois.bezuidenhout@tcm.co.za", firstName: "Francois", lastName: "Bezuidenhout" },
       { email: "paul.pimenta@tcm.co.za", firstName: "Paul", lastName: "Pimenta" },
       { email: "vishnu.naidoo@tcm.co.za", firstName: "Vishnu", lastName: "Naidoo" },
-      { email: "louis.albertyn@tcm.co.za", firstName: "Louis", lastName: "Albertyn" },
       { email: "colin.smith@tcm.co.za", firstName: "Colin", lastName: "Smith" },
       { email: "andries.botha@tcm.co.za", firstName: "Andries", lastName: "Botha" },
     ],
@@ -230,14 +216,8 @@ export const trainingData: Record<number, PartnerTrainingData> = {
     ],
     bootcamp: [
       { email: "zane.maphalle@altron.com", firstName: "Zane", lastName: "Maphalle" },
-      { email: "craigedward.botha@altron.com", firstName: "Craig Edward", lastName: "Botha" },
-      { email: "verlin.pillay@axiz.com", firstName: "Verlin", lastName: "Pillay" },
       { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
-      { email: "mike.styer@axiz.com", firstName: "Mike", lastName: "Styer" },
-      { email: "jacquess@itgility.co.za", firstName: "Jacques", lastName: "Swanevelder" },
       { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
-      { email: "titus.malo@axiz.com", firstName: "Titus", lastName: "Malo" },
-      { email: "leandro.ramjee@axiz.com", firstName: "Leandro", lastName: "Ramjee" },
     ],
     implSpec: [
       { email: "mpho.mpya@altron.com", firstName: "Mpho", lastName: "Mpya" },
@@ -315,12 +295,7 @@ export const trainingData: Record<number, PartnerTrainingData> = {
     ],
     techPro: [],
     bootcamp: [
-      { email: "vsondoyi@zm.ces-africa.com", firstName: "Valentine", lastName: "Sondoyi" },
-      { email: "lwamundila@zm.ces-africa.com", firstName: "Luckjoe", lastName: "Wamundila" },
       { email: "mkasonde@zm.ces-africa.com", firstName: "Mwenya", lastName: "Kasonde" },
-      { email: "bmphande@zm.ces-africa.com", firstName: "Brighton", lastName: "Mphande" },
-      { email: "nmvula@zm.ces-africa.com", firstName: "Nonenge", lastName: "Mvula" },
-      { email: "mchiwale@zm.ces-africa.com", firstName: "Mwiza", lastName: "Chiwale" },
     ],
     implSpec: [],
   },

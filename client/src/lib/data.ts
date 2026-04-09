@@ -366,7 +366,7 @@ function makePartner(
 
 export const partners: Partner[] = [
   // ── Tier 1: FULLY COMPLIANT (8 partners) ──
-  makePartner(1, "Data Sciences Corporation", "elite", 13, 3, 7, 13,
+  makePartner(1, "Data Sciences Corporation", "elite", 13, 3, 4, 13,
     "Gap CLOSED. 18 certs across 11 SEs. $681K FY27 revenue, $21.2M pipeline.",
     ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"],
     [
@@ -410,7 +410,7 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 14663939, fy27Revenue: 68427, contributionFY27: 0.04, drFY27: 34, fy26Revenue: 2582381, contributionFY26: 0.17, fy25Revenue: 917409, fy24Revenue: 0 }),
 
-  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 6, 1, 3, 2,
+  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 6, 1, 2, 2,
     "Gap CLOSED. 3 certs, $11.8M pipeline. Focus on conversion.",
     ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"],
     [
@@ -419,28 +419,28 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 11754114, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 29, fy26Revenue: 2313276, contributionFY26: 0.15, fy25Revenue: 1786458, fy24Revenue: 2009087 }),
 
-  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 18, 1, 6, 6,
+  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 18, 1, 4, 6,
     "Gap CLOSED. $369K FY27 revenue, $1.5M pipeline. 1 customer, 1 installation.",
     ["steliosk@ftechkzn.co.za"],
     [],
     { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
     { targetFY27: 1000000, pipelineFY27: 1474699, fy27Revenue: 368798, contributionFY27: 0.20, drFY27: 17, fy26Revenue: 1161197, contributionFY26: 0.08, fy25Revenue: 0, fy24Revenue: 0 }),
 
-  makePartner(6, "iOCO Infrastructure Services", "elite", 7, 0, 3, 1,
+  makePartner(6, "iOCO Infrastructure Services", "elite", 7, 0, 1, 1,
     "Gap CLOSED. $3M pipeline, focus on conversion. 6 DRs in flight.",
     ["jacques.dejager@ioco.tech"],
     [],
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 3048476, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 6, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 751411, fy24Revenue: 2271293 }),
 
-  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 4, 0, 3, 1,
+  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 4, 0, 0, 1,
     "Gap CLOSED. High compliance. $1M pipeline, 4 DRs registered.",
     [],
     [],
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 1049129, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 4, fy26Revenue: 722318, contributionFY26: 0.05, fy25Revenue: 723226, fy24Revenue: 1476692 }),
 
-  makePartner(8, "Technology Corporate Management", "elite", 6, 0, 8, 3,
+  makePartner(8, "Technology Corporate Management", "elite", 6, 0, 5, 3,
     "Gap CLOSED. $49K FY27 revenue, $1.6M pipeline. 3 certs on file.",
     ["vishnu.naidoo@tcm.co.za"],
     [
@@ -451,7 +451,7 @@ export const partners: Partner[] = [
     { targetFY27: 1000000, pipelineFY27: 1636573, fy27Revenue: 49390, contributionFY27: 0.03, drFY27: 14, fy26Revenue: 749572, contributionFY26: 0.05, fy25Revenue: 400457, fy24Revenue: 1370355 }),
 
   // ── Tier 2: PARTIAL PROGRESS (5 partners) ──
-  makePartner(9, "Altron Digital Business", "preferred", 10, 3, 9, 2,
+  makePartner(9, "Altron Digital Business", "preferred", 10, 3, 3, 2,
     "Strong training activity. 6 certs on file. $194K pipeline, 2 DRs registered.",
     ["robert.mlombile@altron.com"],
     [
@@ -507,7 +507,7 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 1079690, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 8, fy26Revenue: 293007, contributionFY26: 0.02, fy25Revenue: 0, fy24Revenue: 0 }),
 
-  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 1, 0, 6, 0,
+  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 1, 0, 1, 0,
     "Good Bootcamp completions. Prioritise Sales Pro and Tech Pro paths.", []),
 
   makePartner(20, "Data Sciences Corporation UK", "authorized", 0, 0, 0, 0,
