@@ -100,7 +100,7 @@ export interface Partner {
   targetEmails: string[];
   exams: ExamRecord[];
   totalExams: number;
-  financials: PartnerFinancials | null;
+  revenueData: PartnerFinancials | null;
   meta: PartnerMeta | null;
 }
 
@@ -292,7 +292,17 @@ function makePartner(
     targetEmails: emails,
     exams,
     totalExams,
-    financials,
+    revenueData: financials || {
+      targetFY27: 0,
+      pipelineFY27: 0,
+      fy27Revenue: 0,
+      contributionFY27: 0,
+      drFY27: 0,
+      fy26Revenue: 0,
+      contributionFY26: 0,
+      fy25Revenue: 0,
+      fy24Revenue: 0,
+    },
     meta,
   };
 }
@@ -537,3 +547,31 @@ export const navItems: NavItem[] = [
   { id: "asp", label: "ASP Tracker", icon: "ShieldAlert" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];
+
+
+// ─── Revenue Formatting Helpers ────────────────────────────
+
+export function formatCurrency(value: number | null, abbreviate: boolean = false): string {
+  if (value === null || value === 0) return "—";
+  if (abbreviate) {
+    if (value >= 1_000_000) {
+      return `$${(value / 1_000_000).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `$${(value / 1_000).toFixed(1)}K`;
+    }
+  }
+  return `$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+}
+
+export function formatPercent(value: number | null): string {
+  if (value === null) return "—";
+  return `${Math.round(value)}%`;
+}
+
+export function getRevenueAttainment(partner: Partner): number | null {
+  if (!partner.revenueData || !partner.revenueData.targetFY27 || partner.revenueData.targetFY27 === 0) {
+    return null;
+  }
+  const attainment = (partner.revenueData.fy27Revenue / partner.revenueData.targetFY27) * 100;
+  return Math.round(attainment);
+}

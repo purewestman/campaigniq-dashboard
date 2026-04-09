@@ -337,7 +337,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         </p>
                         <div className="grid grid-cols-4 gap-2">
                           {[
-                            { label: "Revenue", val: formatCurrency(partner.revenueData.revenueFY27, true) },
+                            { label: "Revenue", val: formatCurrency(partner.revenueData.fy27Revenue, true) },
                             { label: "Target", val: formatCurrency(partner.revenueData.targetFY27, true) },
                             { label: "Attainment", val: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
                             { label: "Pipeline", val: formatCurrency(partner.revenueData.pipelineFY27, true) },
@@ -352,8 +352,8 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           {[
                             { label: "Contribution", val: formatPercent(partner.revenueData.contributionFY27) },
                             { label: "DR (P-S)", val: formatCurrency(partner.revenueData.drFY27, true) },
-                            { label: "FY26 Rev", val: formatCurrency(partner.revenueData.revenueFY26, true) },
-                            { label: "FY25 Rev", val: formatCurrency(partner.revenueData.revenueFY25, true) },
+                            { label: "FY26 Rev", val: formatCurrency(partner.revenueData.fy26Revenue, true) },
+                            { label: "FY25 Rev", val: formatCurrency(partner.revenueData.fy25Revenue, true) },
                           ].map((item) => (
                             <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
                               <p className="text-[10px] text-muted-foreground">{item.label}</p>

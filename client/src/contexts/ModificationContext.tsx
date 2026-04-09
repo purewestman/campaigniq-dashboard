@@ -221,7 +221,7 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
       const overallCompliant = filtered.filter((p) => p.overallCompliant).length;
 
       // FY27 Revenue aggregate
-      const totalRevenueFY27 = filtered.reduce((s, p) => s + (p.revenueData.revenueFY27 ?? 0), 0);
+      const totalRevenueFY27 = filtered.reduce((s, p) => s + (p.revenueData.fy27Revenue ?? 0), 0);
       const totalTargetFY27 = filtered.reduce((s, p) => s + (p.revenueData.targetFY27 ?? 0), 0);
       const revenueAttainment = totalTargetFY27 > 0 ? Math.round((totalRevenueFY27 / totalTargetFY27) * 100) : 0;
 

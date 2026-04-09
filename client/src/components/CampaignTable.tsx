@@ -409,14 +409,14 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             </p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "FY27 Revenue", value: formatCurrency(partner.revenueData.revenueFY27, true) },
+                { label: "FY27 Revenue", value: formatCurrency(partner.revenueData.fy27Revenue, true) },
                 { label: "FY27 Target", value: formatCurrency(partner.revenueData.targetFY27, true) },
                 { label: "Attainment", value: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
                 { label: "Pipeline", value: formatCurrency(partner.revenueData.pipelineFY27, true) },
                 { label: "Contribution", value: formatPercent(partner.revenueData.contributionFY27) },
                 { label: "DR (P-S)", value: formatCurrency(partner.revenueData.drFY27, true) },
-                { label: "FY26 Rev", value: formatCurrency(partner.revenueData.revenueFY26, true) },
-                { label: "FY25 Rev", value: formatCurrency(partner.revenueData.revenueFY25, true) },
+                { label: "FY26 Rev", value: formatCurrency(partner.revenueData.fy26Revenue, true) },
+                { label: "FY25 Rev", value: formatCurrency(partner.revenueData.fy25Revenue, true) },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -783,7 +783,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                       </td>
                       <td className="px-4 py-3.5 text-right">
                         <span className="text-[12px] font-semibold text-foreground">
-                          {formatCurrency(partner.revenueData.revenueFY27, true)}
+                          {formatCurrency(partner.revenueData.fy27Revenue, true)}
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
