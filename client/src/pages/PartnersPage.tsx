@@ -56,6 +56,24 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [modifyPartner, setModifyPartner] = useState<Partner | null>(null);
+  const [certPopover, setCertPopover] = useState<{ partnerId: number; category: string } | null>(null);
+
+  const CERT_KEYWORDS: Record<string, string[]> = {
+    salesPro: ["platform positioning", "platform solutions", "sales professional"],
+    techPro: ["architect"],
+    bootcamp: ["implementation specialist"],
+    implSpec: ["implementation specialist", "support specialist"],
+  };
+
+  function getCertPeople(partner: Partner, category: string) {
+    const keywords = CERT_KEYWORDS[category] || [];
+    return partner.exams
+      .map((e) => ({
+        email: e.email,
+        certs: e.certifications.filter((c) => keywords.some((kw) => c.toLowerCase().includes(kw))),
+      }))
+      .filter((e) => e.certs.length > 0);
+  }
   const { getOverrideCount } = useOverrides();
   const { modifiedPartners, getModification } = useModifications();
 
@@ -280,14 +298,26 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           ]).map(({ label, key }) => {
                             const req = partner.requirements[key];
                             const met = req.obtained >= req.required;
+                            const isActive = certPopover?.partnerId === partner.id && certPopover?.category === key;
                             return (
-                              <div 
-                                key={key} 
-                                className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all" 
-                                style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}
+                              <div
+                                key={key}
+                                className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+                                style={{
+                                  background: isActive
+                                    ? "oklch(0.58 0.16 290 / 0.12)"
+                                    : met ? "oklch(0.60 0.12 175 / 0.06)"
+                                    : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)"
+                                    : "oklch(0.62 0.19 15 / 0.04)",
+                                  outline: isActive ? "1.5px solid oklch(0.58 0.16 290 / 0.4)" : "none",
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onNavigateToActivity?.(partner.name, undefined, label);
+                                  setCertPopover((prev) =>
+                                    prev?.partnerId === partner.id && prev?.category === key
+                                      ? null
+                                      : { partnerId: partner.id, category: key }
+                                  );
                                 }}
                               >
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
@@ -298,6 +328,45 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             );
                           })}
                         </div>
+                        {/* Cert people popover */}
+                        {certPopover?.partnerId === partner.id && (() => {
+                          const people = getCertPeople(partner, certPopover.category);
+                          const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[certPopover.category] ?? certPopover.category;
+                          return (
+                            <div className="mt-2 rounded-lg p-3 border" style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.88 0.03 220)" }}>
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "oklch(0.48 0.16 290)" }}>
+                                  {catLabel} — Certified Individuals
+                                </p>
+                                <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                              {people.length === 0 ? (
+                                <p className="text-[11px] text-muted-foreground italic">No certification records matched for this category.</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {people.map((person) => (
+                                    <div key={person.email}>
+                                      <p className="text-[11px] font-medium text-foreground flex items-center gap-1">
+                                        <Mail className="w-3 h-3 text-muted-foreground" />
+                                        {person.email}
+                                      </p>
+                                      <ul className="mt-1 space-y-0.5 pl-4">
+                                        {person.certs.map((cert) => (
+                                          <li key={cert} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                                            <Award className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                                            {cert}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Business Metrics */}
@@ -363,24 +432,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         </div>
                       </div>
 
-                      {/* Training Contacts (P-T) */}
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
-                          Training Contacts (P-T)
-                        </p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            { label: "Sales Pro", val: partner.trainingContacts.salesProContacts },
-                            { label: "Tech Sales Pro", val: partner.trainingContacts.techSalesProContacts },
-                            { label: "SE Bootcamp", val: partner.trainingContacts.seBootcampContacts },
-                          ].map((item) => (
-                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
-                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
-                              <p className="text-[13px] font-bold text-foreground">{item.val !== null ? item.val : "\u2014"}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
 
                       {/* Last Modification Comment */}
                       {modification && (

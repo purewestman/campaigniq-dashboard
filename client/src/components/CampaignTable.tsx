@@ -68,6 +68,23 @@ const categoryLabels: Record<GapCategory, string> = {
 };
 
 /** Progress bar with override toggle for a single requirement category */
+const CERT_KEYWORDS: Record<GapCategory, string[]> = {
+  salesPro: ["platform positioning", "platform solutions", "sales professional"],
+  techPro: ["architect"],
+  bootcamp: ["implementation specialist"],
+  implSpec: ["implementation specialist", "support specialist"],
+};
+
+function getCertPeople(exams: import("@/lib/data").ExamRecord[], category: GapCategory) {
+  const keywords = CERT_KEYWORDS[category];
+  return exams
+    .map((e) => ({
+      email: e.email,
+      certs: e.certifications.filter((c) => keywords.some((kw) => c.toLowerCase().includes(kw))),
+    }))
+    .filter((e) => e.certs.length > 0);
+}
+
 function RequirementBarWithOverride({
   label,
   category,
@@ -76,6 +93,7 @@ function RequirementBarWithOverride({
   partnerId,
   partnerName,
   onNavigateToActivity,
+  exams = [],
 }: {
   label: string;
   category: GapCategory;
@@ -84,6 +102,7 @@ function RequirementBarWithOverride({
   partnerId: number;
   partnerName: string;
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
+  exams?: import("@/lib/data").ExamRecord[];
 }) {
   const { getOverride, addOverride, removeOverride } = useOverrides();
   const override = getOverride(partnerId, category);
@@ -93,6 +112,8 @@ function RequirementBarWithOverride({
 
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
+  const [showPeople, setShowPeople] = useState(false);
+  const certPeople = getCertPeople(exams, category);
 
   const handleMarkComplete = () => {
     addOverride({ partnerId, category, comment: comment.trim(), completedBy: "Admin" });
@@ -157,20 +178,17 @@ function RequirementBarWithOverride({
           />
         </div>
         
-        {/* Navigation link to activity tracker */}
+        {/* Toggle certified people */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onNavigateToActivity?.(partnerName, undefined, label);
-          }}
+          onClick={(e) => { e.stopPropagation(); setShowPeople((p) => !p); }}
           className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:bg-black/10 active:scale-95 shrink-0"
           style={{
-            background: "oklch(0.58 0.16 290 / 0.08)",
+            background: showPeople ? "oklch(0.58 0.16 290 / 0.16)" : "oklch(0.58 0.16 290 / 0.08)",
             color: "oklch(0.48 0.16 290)",
           }}
-          title={`View ${label} details`}
+          title={`View ${label} certified individuals`}
         >
-          View Individuals
+          {showPeople ? "Hide" : "Who?"}
         </button>
         {/* Override / Undo buttons */}
         {gap > 0 && !override && (
@@ -206,6 +224,46 @@ function RequirementBarWithOverride({
           </button>
         )}
       </div>
+
+      {/* Certified individuals panel */}
+      <AnimatePresence>
+        {showPeople && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-2 overflow-hidden"
+          >
+            <div
+              className="rounded-lg px-3 py-2.5 border"
+              style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.90 0.02 220)" }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "oklch(0.48 0.16 290)" }}>
+                {label} — Certified Individuals
+              </p>
+              {certPeople.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground italic">No certification records matched for this category.</p>
+              ) : (
+                <div className="space-y-2">
+                  {certPeople.map((person) => (
+                    <div key={person.email}>
+                      <p className="text-[11px] font-medium text-foreground">{person.email}</p>
+                      <ul className="mt-0.5 space-y-0.5">
+                        {person.certs.map((cert) => (
+                          <li key={cert} className="text-[10px] text-muted-foreground flex items-start gap-1">
+                            <Award className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                            {cert}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Comment input for override */}
       <AnimatePresence>
@@ -323,6 +381,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
+                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Tech Pro"
@@ -332,6 +391,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
+                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Bootcamp"
@@ -341,6 +401,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
+                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Impl Spec"
@@ -350,6 +411,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
+                exams={partner.exams}
               />
             </div>
 
@@ -429,40 +491,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                   <p className="text-[13px] font-semibold text-foreground">{item.value}</p>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* Training Contacts (Consolidated P-T) */}
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3 font-semibold flex items-center gap-1.5">
-              <GraduationCap className="w-3.5 h-3.5" />
-              Training Contacts (P-T)
-            </p>
-            <div className="grid grid-cols-1 gap-2">
-              {[
-                { label: "Unique Customers", value: partner.businessMetrics.uniqueCustomers, icon: Users },
-                { label: "Partner Installations", value: partner.businessMetrics.partnerDeliveredServices, icon: Shield },
-                { label: "Sales Pro Contacts", value: partner.trainingContacts.salesProContacts, icon: Award },
-                { label: "Tech Sales Pro Contacts", value: partner.trainingContacts.techSalesProContacts, icon: Award },
-                { label: "SE Bootcamp Contacts", value: partner.trainingContacts.seBootcampContacts, icon: GraduationCap },
-              ].map((item) => {
-                const ItemIcon = item.icon;
-                return (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between rounded-lg px-3 py-2 border"
-                    style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ItemIcon className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-[11px] text-muted-foreground">{item.label}</span>
-                    </div>
-                    <span className="text-[13px] font-semibold text-foreground">
-                      {item.value !== null ? item.value : "\u2014"}
-                    </span>
-                  </div>
-                );
-              })}
             </div>
           </div>
 
