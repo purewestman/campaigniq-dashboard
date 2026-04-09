@@ -220,6 +220,11 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
       const businessCompliant = filtered.filter((p) => p.businessCompliant).length;
       const overallCompliant = filtered.filter((p) => p.overallCompliant).length;
 
+      // FY27 Revenue aggregate
+      const totalRevenueFY27 = filtered.reduce((s, p) => s + (p.revenueData.revenueFY27 ?? 0), 0);
+      const totalTargetFY27 = filtered.reduce((s, p) => s + (p.revenueData.targetFY27 ?? 0), 0);
+      const revenueAttainment = totalTargetFY27 > 0 ? Math.round((totalRevenueFY27 / totalTargetFY27) * 100) : 0;
+
       return [
         {
           id: "partners",
@@ -229,6 +234,15 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
           changeLabel: `${overallCompliant} fully compliant`,
           trend: "up",
           sparkline: [11, 14, 17, 19, 21, 22, total],
+        },
+        {
+          id: "revenue",
+          label: "FY27 Revenue",
+          value: `$${(totalRevenueFY27 / 1000000).toFixed(1)}M`,
+          change: revenueAttainment,
+          changeLabel: `${revenueAttainment}% of $${(totalTargetFY27 / 1000000).toFixed(1)}M target`,
+          trend: revenueAttainment >= 70 ? "up" as const : revenueAttainment >= 40 ? "flat" as const : "down" as const,
+          sparkline: [2.1, 3.5, 4.2, 5.0, 5.8, 6.5, totalRevenueFY27 / 1000000],
         },
         {
           id: "enablement",

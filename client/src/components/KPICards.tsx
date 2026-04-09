@@ -10,6 +10,7 @@ import {
   Target,
   AlertTriangle,
   Award,
+  DollarSign,
   ArrowUpRight,
   ArrowDownRight,
   Minus,
@@ -19,6 +20,7 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 const iconMap: Record<string, React.ElementType> = {
   partners: Building2,
+  revenue: DollarSign,
   enablement: Target,
   gaps: AlertTriangle,
   exams: Award,
@@ -45,10 +47,16 @@ const gradientMap: Record<string, { from: string; to: string; iconBg: string }> 
     to: "oklch(0.75 0.14 75 / 0.02)",
     iconBg: "oklch(0.75 0.14 75 / 0.12)",
   },
+  revenue: {
+    from: "oklch(0.55 0.18 145 / 0.12)",
+    to: "oklch(0.55 0.18 145 / 0.02)",
+    iconBg: "oklch(0.55 0.18 145 / 0.12)",
+  },
 };
 
 const sparklineColorMap: Record<string, string> = {
   partners: "oklch(0.55 0.12 175)",
+  revenue: "oklch(0.50 0.18 145)",
   enablement: "oklch(0.53 0.16 290)",
   gaps: "oklch(0.58 0.19 15)",
   exams: "oklch(0.70 0.14 75)",
@@ -162,7 +170,7 @@ interface KPICardsProps {
 
 export default function KPICards({ metrics }: KPICardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className={`grid grid-cols-1 sm:grid-cols-2 ${metrics.length >= 5 ? 'xl:grid-cols-5' : 'xl:grid-cols-4'} gap-4`}>
       {metrics.map((metric, i) => (
         <KPICard key={metric.id} metric={metric} index={i} />
       ))}

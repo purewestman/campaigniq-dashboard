@@ -13,6 +13,9 @@ import {
   PROGRAM_TIERS,
   type ProgramTier,
   type Partner,
+  formatCurrency,
+  formatPercent,
+  getRevenueAttainment,
 } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
@@ -324,6 +327,58 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                               </div>
                             );
                           })}
+                        </div>
+                      </div>
+
+                      {/* FY27 Revenue & Training */}
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> FY27 Revenue & Pipeline
+                        </p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[
+                            { label: "Revenue", val: formatCurrency(partner.revenueData.revenueFY27, true) },
+                            { label: "Target", val: formatCurrency(partner.revenueData.targetFY27, true) },
+                            { label: "Attainment", val: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
+                            { label: "Pipeline", val: formatCurrency(partner.revenueData.pipelineFY27, true) },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.55 0.18 145 / 0.04)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {[
+                            { label: "Contribution", val: formatPercent(partner.revenueData.contributionFY27) },
+                            { label: "DR (P-S)", val: formatCurrency(partner.revenueData.drFY27, true) },
+                            { label: "FY26 Rev", val: formatCurrency(partner.revenueData.revenueFY26, true) },
+                            { label: "FY25 Rev", val: formatCurrency(partner.revenueData.revenueFY25, true) },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Training Contacts (P-T) */}
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                          Training Contacts (P-T)
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { label: "Sales Pro", val: partner.trainingContacts.salesProContacts },
+                            { label: "Tech Sales Pro", val: partner.trainingContacts.techSalesProContacts },
+                            { label: "SE Bootcamp", val: partner.trainingContacts.seBootcampContacts },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val !== null ? item.val : "\u2014"}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
