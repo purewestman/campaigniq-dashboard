@@ -83,6 +83,12 @@ export interface RevenueData {
   revenueFY25: number;
 }
 
+export interface TrainingContacts {
+  salesProContacts: number;
+  techSalesProContacts: number;
+  seBootcampContacts: number;
+}
+
 export interface PartnerMeta {
   region: string;
   pam: string;
@@ -112,6 +118,7 @@ export interface Partner {
   totalExams: number;
   financials: PartnerFinancials | null;
   revenueData: RevenueData;
+  trainingContacts: TrainingContacts;
   meta: PartnerMeta | null;
 }
 
@@ -339,6 +346,11 @@ function makePartner(
     totalExams,
     financials,
     revenueData,
+    trainingContacts: {
+      salesProContacts: sp,
+      techSalesProContacts: tsp,
+      seBootcampContacts: boot,
+    },
     meta,
   };
 }
@@ -349,53 +361,122 @@ function makePartner(
 export const partners: Partner[] = [
   // ── Tier 1: FULLY COMPLIANT (8 partners) ──
   makePartner(1, "Data Sciences Corporation", "elite", 6, 2, 2, 1,
-    "Gap CLOSED. 2 SEs compliant, 9 exams. Maintaining strong alignment.",
-    ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"]),
+    "Gap CLOSED. 18 certs across 11 SEs. $681K FY27 revenue, $21.2M pipeline.",
+    ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"],
+    [
+      { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
+      { email: "jp.marais@datasciences.co.za", certifications: ["Pure Certifed FlashArray Support Specialist"] },
+      { email: "nelson.lopes@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam"] },
+      { email: "antony@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
+      { email: "koos.hattingh@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate"] },
+      { email: "mekeal.beepath@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
+      { email: "kenny.thiart@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam"] },
+      { email: "mndeni.msibi@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
+      { email: "irtond@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
+      { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam", "Pure Platform Positioning Certificate", "Pure Storage Platform Solutions Associate"] },
+      { email: "rukaya.najam@datasciences.co.za", certifications: ["Pure Storage FlashBlade Architect Associate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: 4, partnerDeliveredServices: 9 },
+    { targetFY27: 1000000, pipelineFY27: 21210081, fy27Revenue: 681950, contributionFY27: 0.37, drFY27: 87, fy26Revenue: 5111976, contributionFY26: 0.34, fy25Revenue: 6122066, fy24Revenue: 12991230 }),
 
   makePartner(2, "AXIZ (PTY) LTD", "elite", 6, 3, 2, 1,
-    "Gap CLOSED. 3+ SEs compliant, 7 exams. Maintain Elite status.",
-    ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"]),
+    "Gap CLOSED. 7 certs across 3 SEs. Maintain Elite status.",
+    ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
+    [
+      { email: "adolph.strydom@axiz.com", certifications: ["Pure Storage FlashBlade Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashArray Implementation Specialist", "Pure Storage Platform Solutions Associate", "Pure Storage Certified Architect Associate FlashArray"] },
+      { email: "oscar.ronander@axiz.com", certifications: ["Pure Platform Positioning Exam"] },
+      { email: "lerato.mabunda@axiz.com", certifications: ["Pure Platform Positioning Certificate"] },
+    ]),
 
   makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 6, 4, 2, 2,
-    "Gap CLOSED. 3 SEs compliant. Converting $14.7M pipeline is the focus.",
-    ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"]),
+    "Gap CLOSED. 15 certs across 8 SEs. $68K FY27 revenue, $14.7M pipeline.",
+    ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"],
+    [
+      { email: "mannes.nijeboer@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
+      { email: "morne.frans@dimensiondata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Implementation Specialist"] },
+      { email: "kayode.fatoki@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
+      { email: "angelo.campbell@global.ntt", certifications: ["Pure Storage FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
+      { email: "thulani.kunene@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
+      { email: "kamalan.naraidoo@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
+      { email: "peetri.riekert@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
+      { email: "lourens.jvrensburg@nttdata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage Certified Architect Associate FlashBlade"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 14663939, fy27Revenue: 68427, contributionFY27: 0.04, drFY27: 34, fy26Revenue: 2582381, contributionFY26: 0.17, fy25Revenue: 917409, fy24Revenue: 0 }),
 
   makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 5, 3, 2, 1,
-    "Gap CLOSED. 3 SEs compliant. Huge pipeline potential.",
-    ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"]),
+    "Gap CLOSED. 3 certs, $11.8M pipeline. Focus on conversion.",
+    ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"],
+    [
+      { email: "merwe.erasmus@nec.xon.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Associate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 11754114, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 29, fy26Revenue: 2313276, contributionFY26: 0.15, fy25Revenue: 1786458, fy24Revenue: 2009087 }),
 
   makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 6, 4, 2, 1,
-    "Gap CLOSED. 3 SEs compliant. Strong Mauritian contribution.",
-    ["steliosk@ftechkzn.co.za"]),
+    "Gap CLOSED. $369K FY27 revenue, $1.5M pipeline. 1 customer, 1 installation.",
+    ["steliosk@ftechkzn.co.za"],
+    [],
+    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
+    { targetFY27: 1000000, pipelineFY27: 1474699, fy27Revenue: 368798, contributionFY27: 0.20, drFY27: 17, fy26Revenue: 1161197, contributionFY26: 0.08, fy25Revenue: 0, fy24Revenue: 0 }),
 
   makePartner(6, "iOCO Infrastructure Services", "elite", 6, 4, 2, 1,
-    "Gap CLOSED. 6 SEs compliant. Focus on $3M pipeline conversion.",
-    ["jacques.dejager@ioco.tech"]),
+    "Gap CLOSED. $3M pipeline, focus on conversion. 6 DRs in flight.",
+    ["jacques.dejager@ioco.tech"],
+    [],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 3048476, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 6, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 751411, fy24Revenue: 2271293 }),
 
   makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 6, 4, 2, 1,
-    "Gap CLOSED. High compliance across all metrics.",
-    []),
+    "Gap CLOSED. High compliance. $1M pipeline, 4 DRs registered.",
+    [],
+    [],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 1049129, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 4, fy26Revenue: 722318, contributionFY26: 0.05, fy25Revenue: 723226, fy24Revenue: 1476692 }),
 
   makePartner(8, "Technology Corporate Management", "elite", 6, 4, 2, 1,
-    "Gap CLOSED. Strategic account alignment in progress.",
-    ["vishnu.naidoo@tcm.co.za"]),
+    "Gap CLOSED. $49K FY27 revenue, $1.6M pipeline. 3 certs on file.",
+    ["vishnu.naidoo@tcm.co.za"],
+    [
+      { email: "dierk.lobbecke@tcm.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
+      { email: "vishnu.naidoo@tcm.co.za", certifications: ["Pure Platform Positioning Certificate", "Pure Storage Platform Solutions Associate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
+    { targetFY27: 1000000, pipelineFY27: 1636573, fy27Revenue: 49390, contributionFY27: 0.03, drFY27: 14, fy26Revenue: 749572, contributionFY26: 0.05, fy25Revenue: 400457, fy24Revenue: 1370355 }),
 
   // ── Tier 2: PARTIAL PROGRESS (5 partners) ──
   makePartner(9, "Altron Digital Business", "preferred", 3, 1, 0, 0,
-    "Gap of 2. Need Mpho Mpya and Paulina Moagi to complete TSP.",
-    ["robert.mlombile@altron.com"]),
+    "Gap of 2. 6 certs on file. $194K pipeline, 2 DRs registered.",
+    ["robert.mlombile@altron.com"],
+    [
+      { email: "zane.maphalle@altron.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
+      { email: "johan.westman@altron.com", certifications: ["Pure Platform Positioning Exam"] },
+      { email: "williamrobert.souter@altron.com", certifications: ["Pure Platform Positioning Certificate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: 0, partnerDeliveredServices: 0 },
+    { targetFY27: 1000000, pipelineFY27: 194302, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 0, fy24Revenue: 0 }),
 
   makePartner(10, "ITgility PTY (Ltd)", "preferred", 1, 1, 0, 0,
-    "Gap of 2. 1 exam completed.",
-    ["envorp@itgility.co.za"]),
+    "Gap of 2. 1 cert on file. $179K pipeline, 2 DRs registered.",
+    ["envorp@itgility.co.za"],
+    [
+      { email: "jamesb@itgility.co.za", certifications: ["Pure Platform Positioning Certificate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 178588, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 248321, contributionFY26: 0.02, fy25Revenue: 405146, fy24Revenue: 0 }),
 
   makePartner(11, "BCX", "preferred", 1, 1, 0, 0,
     "Gap of 2. Initial certifications in progress.",
     []),
 
   makePartner(12, "Triple H Technology Group", "preferred", 1, 0, 0, 0,
-    "Gap of 3. Cross-training scheduled.",
-    ["frederiks@triplehgroup.co.za"]),
+    "Gap of 3. 1 cert on file. $1.4M pipeline, 12 DRs registered.",
+    ["frederiks@triplehgroup.co.za"],
+    [
+      { email: "frederiks@triplehgroup.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
+    ],
+    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 0 },
+    { targetFY27: 1000000, pipelineFY27: 1397860, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 12, fy26Revenue: 151860, contributionFY26: 0.01, fy25Revenue: 153427, fy24Revenue: 246160 }),
 
   makePartner(13, "Lekonakonetsi Consulting Services (PTY) LTD", "preferred", 1, 0, 0, 0,
     "Gap of 3. Target engineers starting path.",
@@ -415,7 +496,10 @@ export const partners: Partner[] = [
     "High Gap. Regional expansion target.", []),
 
   makePartner(18, "Complete Enterprise Solutions Namibia PTY Ltd", "authorized", 0, 0, 0, 0,
-    "High Gap. Regional expansion target.", []),
+    "High Gap. $1.1M pipeline, 8 DRs registered.", [],
+    [],
+    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
+    { targetFY27: 1000000, pipelineFY27: 1079690, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 8, fy26Revenue: 293007, contributionFY26: 0.02, fy25Revenue: 0, fy24Revenue: 0 }),
 
   makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 0, 0, 0, 0,
     "High Gap. Regional expansion target.", []),
