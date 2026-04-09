@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Activity, Trophy, Search, Users } from "lucide-react";
 import {
   LineChart,
@@ -26,6 +26,9 @@ const LINE_COLORS = [
   "#059669", // emerald-600
 ];
 
+/** Sanitise an email into a recharts-safe dataKey (no dots, no @) */
+const safeKey = (email: string) => email.replace(/[@.]/g, "_");
+
 interface PartnerActivityPageProps {
   initialPartner?: string;
   initialCourse?: string;
@@ -33,196 +36,172 @@ interface PartnerActivityPageProps {
   onClearFilters?: () => void;
 }
 
-export default function PartnerActivityPage({ 
-  initialPartner, 
+export default function PartnerActivityPage({
+  initialPartner,
   initialCourse,
   initialSearch,
-  onClearFilters
+  onClearFilters,
 }: PartnerActivityPageProps) {
-  const [viewMode, setViewMode] = useState<"partner" | "course">("partner");
+  const [viewMode, setViewMode] = useState<"partner" | "course">(
+    initialCourse ? "course" : "partner"
+  );
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
 
-  // Update selection and search if props change
-  useMemo(() => {
-    if (initialPartner) setViewMode("partner");
-    if (initialCourse) setViewMode("course");
+  // ── Partner state ────────────────────────────────────────────────
+  const partners = useMemo(() => Object.keys(activityData).sort(), []);
+  const [selectedPartner, setSelectedPartner] = useState<string>(
+    initialPartner || partners[0] || ""
+  );
+
+  // ── Course state ─────────────────────────────────────────────────
+  const uniqueCourses = useMemo(() => {
+    const courses = new Set<string>();
+    Object.values(activityData).forEach((recs) =>
+      recs.forEach((r) => { if (r.activity) courses.add(r.activity); })
+    );
+    return Array.from(courses).sort();
+  }, []);
+  const [selectedCourse, setSelectedCourse] = useState<string>(
+    initialCourse || uniqueCourses[0] || ""
+  );
+
+  // Sync state when deep-link props change
+  useEffect(() => {
+    if (initialPartner) { setViewMode("partner"); setSelectedPartner(initialPartner); }
+    else if (initialCourse) { setViewMode("course"); setSelectedCourse(initialCourse); }
     if (initialSearch) setSearchQuery(initialSearch);
   }, [initialPartner, initialCourse, initialSearch]);
 
-  // Handle initial filters
-  useMemo(() => {
-    if (initialPartner) {
-      setViewMode("partner");
-    } else if (initialCourse) {
-      setViewMode("course");
-    }
-  }, [initialPartner, initialCourse]);
-
-  // --- Partner View Logic ---
-  const partners = useMemo(() => Object.keys(activityData).sort(), []);
-  const [selectedPartner, setSelectedPartner] = useState<string>(initialPartner || partners[0] || "");
-
+  // ─────────────────────────────────────────────────────────────────
+  // PARTNER VIEW — filtered records + derived lists
+  // ─────────────────────────────────────────────────────────────────
   const filteredPartnerRecords = useMemo(() => {
     if (!selectedPartner || !activityData[selectedPartner]) return [];
     let recs = activityData[selectedPartner];
-    
+
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      const searchMap: Record<string, string[]> = {
-        "sales pro": [
-          "sales professional", 
-          "ae fy27", 
-          "partner sellers", 
-          "simply pure for partners",
-          "sales portfolio",
-          "enterprise data cloud",
-          "sales pro"
-        ],
-        "tech pro": [
-          "technical professional", 
-          "technical sellers", 
-          "storage professional", 
-          "partner se bootcamp", 
-          "implementation specialist", 
-          "support specialist",
-          "ahead of the cloud",
-          "activecluster",
-          "technical sales professional",
-          "tech pro"
-        ],
-        "foundations": ["foundations", "intro", "basics"],
-        "elite": ["elite"]
-      };
-      
-      const mappedQueries = searchMap[q] || [q];
-      
-      recs = recs.filter(r => {
+      recs = recs.filter((r) => {
         const act = r.activity.toLowerCase();
-        const contact = r.name.toLowerCase() + " " + r.email.toLowerCase();
-        return mappedQueries.some(query => act.includes(query)) || contact.includes(q);
+        const person = `${r.name} ${r.email}`.toLowerCase();
+        return act.includes(q) || person.includes(q);
       });
     }
     return recs;
   }, [selectedPartner, searchQuery]);
 
-  // Update selection if prop changes
-  useMemo(() => {
-    if (initialPartner) setSelectedPartner(initialPartner);
-  }, [initialPartner]);
-
+  // Top 10 employees by module count — recomputes whenever filtered records change
   const topEmployees = useMemo(() => {
-    const records = filteredPartnerRecords;
-    if (records.length === 0) return [];
-    
-    const counts: Record<string, { name: string, email: string, count: number, activities: Set<string> }> = {};
-    
-    records.forEach(r => {
-      const key = r.email;
-      if (!counts[key]) {
-        counts[key] = { name: r.name, email: r.email, count: 0, activities: new Set() };
+    if (filteredPartnerRecords.length === 0) return [];
+
+    const counts: Record<
+      string,
+      { name: string; email: string; count: number; activities: Set<string> }
+    > = {};
+
+    filteredPartnerRecords.forEach((r) => {
+      if (!counts[r.email]) {
+        counts[r.email] = { name: r.name, email: r.email, count: 0, activities: new Set() };
       }
-      counts[key].count += 1;
-      if (r.activity) counts[key].activities.add(r.activity);
+      counts[r.email].count += 1;
+      if (r.activity) counts[r.email].activities.add(r.activity);
     });
 
     return Object.values(counts)
-      .map(emp => ({ ...emp, activities: Array.from(emp.activities) }))
+      .map((emp) => ({ ...emp, activities: Array.from(emp.activities) }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
-  }, [selectedPartner]);
+  }, [filteredPartnerRecords]); // ← correct dep; updates on search
 
+  // Timeline chart data for partner view
+  // Uses sanitised email keys so recharts doesn't mis-parse dots as nested paths
   const partnerChartData = useMemo(() => {
-    const records = filteredPartnerRecords;
-    if (records.length === 0) return [];
-    
-    const timelineMap: Record<string, any> = {};
-    const topEmails = topEmployees.map(e => e.email);
+    if (filteredPartnerRecords.length === 0) return [];
 
-    records.forEach(r => {
+    const timelineMap: Record<string, Record<string, number | string>> = {};
+
+    // Build a lookup: raw email → safe dataKey
+    const emailToKey: Record<string, string> = {};
+    topEmployees.forEach((e) => { emailToKey[e.email] = safeKey(e.email); });
+
+    filteredPartnerRecords.forEach((r) => {
       if (!r.date) return;
       const dateObj = new Date(r.date);
-      const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-      
+      const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
+
       if (!timelineMap[monthStr]) {
         timelineMap[monthStr] = { name: monthStr, Total: 0 };
-        topEmails.forEach(e => timelineMap[monthStr][e] = 0);
+        topEmployees.forEach((e) => { timelineMap[monthStr][safeKey(e.email)] = 0; });
       }
-      
-      timelineMap[monthStr].Total += 1;
-      if (topEmails.includes(r.email)) {
-        timelineMap[monthStr][r.email] += 1;
+
+      (timelineMap[monthStr].Total as number) += 1;
+      if (emailToKey[r.email]) {
+        (timelineMap[monthStr][emailToKey[r.email]] as number) += 1;
       }
     });
 
-    return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
-  }, [selectedPartner, topEmployees]);
+    return Object.values(timelineMap).sort((a, b) =>
+      (a.name as string).localeCompare(b.name as string)
+    );
+  }, [filteredPartnerRecords, topEmployees]); // ← correct deps
 
-
-  // --- Course View Logic ---
-  const uniqueCourses = useMemo(() => {
-    const courses = new Set<string>();
-    Object.values(activityData).forEach(partnerRecs => {
-      partnerRecs.forEach(r => {
-        if (r.activity) courses.add(r.activity);
-      });
-    });
-    return Array.from(courses).sort();
-  }, []);
-
-  const [selectedCourse, setSelectedCourse] = useState<string>(initialCourse || uniqueCourses[0] || "");
-
-  // Update selection if prop changes
-  useMemo(() => {
-    if (initialCourse) setSelectedCourse(initialCourse);
-  }, [initialCourse]);
-
+  // ─────────────────────────────────────────────────────────────────
+  // COURSE VIEW — roster + timeline
+  // ─────────────────────────────────────────────────────────────────
   const courseEmployees = useMemo(() => {
     if (!selectedCourse) return [];
-    const employees: Array<{ partner: string, name: string, email: string, date: string | null }> = [];
-    
+    const list: Array<{ partner: string; name: string; email: string; date: string | null }> = [];
+
     for (const [partner, records] of Object.entries(activityData)) {
-      records.forEach(r => {
-        if (r.activity === selectedCourse) {
-          employees.push({
-            partner,
-            name: r.name,
-            email: r.email,
-            date: r.date
-          });
-        }
+      records.forEach((r) => {
+        if (r.activity === selectedCourse) list.push({ partner, name: r.name, email: r.email, date: r.date });
       });
     }
-    
-    // Sort by recent completion date
-    return employees.sort((a, b) => {
+
+    // Apply search filter by name / email / partner
+    const filtered = searchQuery.trim()
+      ? list.filter((e) => {
+          const q = searchQuery.trim().toLowerCase();
+          return (
+            e.name.toLowerCase().includes(q) ||
+            e.email.toLowerCase().includes(q) ||
+            e.partner.toLowerCase().includes(q)
+          );
+        })
+      : list;
+
+    return filtered.sort((a, b) => {
       if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
       return 0;
     });
-  }, [selectedCourse]);
+  }, [selectedCourse, searchQuery]);
 
   const courseChartData = useMemo(() => {
     if (!selectedCourse) return [];
-    const timelineMap: Record<string, any> = {};
-    
+    const timelineMap: Record<string, { name: string; Completions: number }> = {};
+
     for (const records of Object.values(activityData)) {
-      records.forEach(r => {
+      records.forEach((r) => {
         if (r.activity === selectedCourse && r.date) {
-            const dateObj = new Date(r.date);
-            const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-            if (!timelineMap[monthStr]) {
-              timelineMap[monthStr] = { name: monthStr, Completions: 0 };
-            }
-            timelineMap[monthStr].Completions += 1;
+          const dateObj = new Date(r.date);
+          const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
+          if (!timelineMap[monthStr]) timelineMap[monthStr] = { name: monthStr, Completions: 0 };
+          timelineMap[monthStr].Completions += 1;
         }
       });
     }
-    return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
+    return Object.values(timelineMap).sort((a, b) => a.name.localeCompare(b.name));
   }, [selectedCourse]);
 
+  // ─────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────
+  const chartData = viewMode === "partner" ? partnerChartData : courseChartData;
+  const hasChart = chartData.length > 0;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
       {/* Header and Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
@@ -241,8 +220,8 @@ export default function PartnerActivityPage({
             <button
               onClick={() => setViewMode("partner")}
               className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
-                viewMode === "partner" 
-                  ? "bg-white shadow-sm text-foreground" 
+                viewMode === "partner"
+                  ? "bg-white shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -251,8 +230,8 @@ export default function PartnerActivityPage({
             <button
               onClick={() => setViewMode("course")}
               className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
-                viewMode === "course" 
-                  ? "bg-white shadow-sm text-foreground" 
+                viewMode === "course"
+                  ? "bg-white shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -260,14 +239,14 @@ export default function PartnerActivityPage({
             </button>
           </div>
 
-          {/* Contextual Selectors */}
+          {/* Contextual Selector */}
           {viewMode === "partner" ? (
             <select
               value={selectedPartner}
               onChange={(e) => setSelectedPartner(e.target.value)}
               className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[200px] sm:max-w-xs"
             >
-              {partners.map(p => (
+              {partners.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>
@@ -277,32 +256,38 @@ export default function PartnerActivityPage({
               onChange={(e) => setSelectedCourse(e.target.value)}
               className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500 max-w-[200px] sm:max-w-xs"
             >
-              {uniqueCourses.map(c => (
+              {uniqueCourses.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           )}
 
-          {/* New Search Input */}
-          <div className="relative flex items-center min-w-[200px]">
-            <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
+          {/* Search */}
+          <div className="relative flex items-center min-w-[220px]">
+            <Search className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search people or courses..."
+              placeholder={viewMode === "partner" ? "Filter by name, email, course…" : "Filter by name or partner…"}
               className="pl-9 pr-3 py-2 border border-black/10 bg-white/80 rounded-lg text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Clear Filters Button */}
+        {/* Clear deep-link filters */}
         {(initialPartner || initialCourse || initialSearch) && (
           <button
-            onClick={() => {
-              setSearchQuery("");
-              onClearFilters?.();
-            }}
+            onClick={() => { setSearchQuery(""); onClearFilters?.(); }}
             className="text-[12px] font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
           >
             Clear deep-link filters
@@ -310,21 +295,21 @@ export default function PartnerActivityPage({
         )}
       </div>
 
-      {/* Main Grid View */}
+      {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left List Container (Leaderboard or Roster) */}
+
+        {/* Left — Leaderboard or Roster */}
         <div className="terrain-card p-6 flex flex-col h-[600px] lg:h-[500px]">
           <h3 className="text-[14px] font-bold text-foreground mb-4 flex items-center gap-2">
             {viewMode === "partner" ? (
-              <><Trophy className="w-4 h-4 text-amber-500" /> Top 10 Employees</>
+              <><Trophy className="w-4 h-4 text-amber-500" /> Top Employees{searchQuery ? " (filtered)" : ""}</>
             ) : (
               <><Users className="w-4 h-4 text-rose-500" /> Completion Roster ({courseEmployees.length})</>
             )}
           </h3>
 
           <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            
+
             {/* PARTNER VIEW: Top Employees */}
             {viewMode === "partner" && topEmployees.length > 0 && (
               <div className="space-y-4">
@@ -332,7 +317,10 @@ export default function PartnerActivityPage({
                   <div key={emp.email} className="flex flex-col p-4 rounded-xl bg-black/[0.02] border border-black/[0.04]">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0">
+                        <div
+                          className="w-7 h-7 rounded-full font-bold text-[11px] flex items-center justify-center shrink-0"
+                          style={{ background: LINE_COLORS[idx % LINE_COLORS.length] + "22", color: LINE_COLORS[idx % LINE_COLORS.length] }}
+                        >
                           {idx + 1}
                         </div>
                         <div>
@@ -377,66 +365,109 @@ export default function PartnerActivityPage({
               </div>
             )}
 
-            {((viewMode === "partner" && topEmployees.length === 0) || (viewMode === "course" && courseEmployees.length === 0)) && (
+            {((viewMode === "partner" && topEmployees.length === 0) ||
+              (viewMode === "course" && courseEmployees.length === 0)) && (
               <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                No tracking data found for this selection.
+                {searchQuery ? `No results for "${searchQuery}".` : "No tracking data found for this selection."}
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Chart Container */}
-        <div className="terrain-card p-6 lg:col-span-2 h-[400px] flex flex-col">
+        {/* Right — Timeline Chart */}
+        <div className="terrain-card p-6 lg:col-span-2 flex flex-col" style={{ height: 400 }}>
           <h3 className="text-[14px] font-bold text-foreground mb-4">
-            Activity Timeline (Modules Completed per Month)
+            Activity Timeline — Modules Completed per Month
           </h3>
-          <div className="flex-1 w-full min-h-0">
-            {((viewMode === "partner" && partnerChartData.length > 0) || (viewMode === "course" && courseChartData.length > 0)) ? (
+          <div className="flex-1 w-full" style={{ minHeight: 0 }}>
+            {hasChart ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={viewMode === "partner" ? partnerChartData : courseChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: "#6B7280" }} 
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#6B7280" }}
                     dy={10}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: "#6B7280" }} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                    allowDecimals={false}
                   />
                   <Tooltip
-                    contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", background: "rgba(255,255,255,0.9)" }}
+                    contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", background: "rgba(255,255,255,0.95)" }}
+                    formatter={(value, name) => {
+                      // Show display name instead of safe email key in tooltip
+                      if (viewMode === "partner") {
+                        const emp = topEmployees.find((e) => safeKey(e.email) === name);
+                        return [value, emp ? (emp.name || emp.email.split("@")[0]) : name];
+                      }
+                      return [value, name];
+                    }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                  
-                  {/* Partner View Chart Lines */}
+                  <Legend
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
+                    formatter={(value) => {
+                      if (viewMode === "partner") {
+                        const emp = topEmployees.find((e) => safeKey(e.email) === value);
+                        return emp ? (emp.name || emp.email.split("@")[0]) : value;
+                      }
+                      return value;
+                    }}
+                  />
+
+                  {/* Partner view: Total + individual employee lines */}
                   {viewMode === "partner" && (
                     <>
-                      <Line type="monotone" dataKey="Total" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "white" }} activeDot={{ r: 6 }} />
+                      <Line
+                        type="monotone"
+                        dataKey="Total"
+                        stroke="#2563eb"
+                        strokeWidth={3}
+                        dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                        activeDot={{ r: 6 }}
+                      />
                       {topEmployees.map((emp, i) => (
-                        <Line key={emp.email} type="monotone" dataKey={emp.email} name={emp.name || emp.email.split('@')[0]} stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                        <Line
+                          key={emp.email}
+                          type="monotone"
+                          dataKey={safeKey(emp.email)}
+                          name={safeKey(emp.email)}
+                          stroke={LINE_COLORS[i % LINE_COLORS.length]}
+                          strokeWidth={1.5}
+                          dot={false}
+                          activeDot={{ r: 4 }}
+                        />
                       ))}
                     </>
                   )}
 
-                  {/* Course View Chart Line */}
+                  {/* Course view: single Completions line */}
                   {viewMode === "course" && (
-                    <Line type="monotone" dataKey="Completions" stroke="#e11d48" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                    <Line
+                      type="monotone"
+                      dataKey="Completions"
+                      stroke="#e11d48"
+                      strokeWidth={2}
+                      dot={{ r: 4, strokeWidth: 2 }}
+                      activeDot={{ r: 6 }}
+                    />
                   )}
-
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                Not enough trending date data available.
+                {searchQuery
+                  ? `No activity data matched "${searchQuery}".`
+                  : "No timeline data available for this selection."}
               </div>
             )}
           </div>
         </div>
-        
+
       </div>
     </div>
   );
