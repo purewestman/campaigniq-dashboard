@@ -384,7 +384,7 @@ export default function FileStoragePage() {
             </div>
 
             {/* File rows */}
-            {filteredFiles.map((file) => {
+            {filteredFiles.map((file: typeof filteredFiles[0]) => {
               const Icon = getFileIcon(file.mimeType);
               return (
                 <motion.div

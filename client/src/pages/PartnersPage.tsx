@@ -13,10 +13,14 @@ import {
   PROGRAM_TIERS,
   type ProgramTier,
   type Partner,
+  formatCurrency,
+  formatPercent,
+  getRevenueAttainment,
 } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import ModifyGapModal from "@/components/ModifyGapModal";
+import ExportButton from "@/components/ExportButton";
 import {
   Search,
   Building2,
@@ -43,7 +47,11 @@ const tierIcons: Record<ProgramTier, React.ElementType> = {
   ambassador: Crown,
 };
 
-export default function PartnersPage() {
+interface PartnersPageProps {
+  onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
+}
+
+export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps) {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
@@ -273,7 +281,15 @@ export default function PartnersPage() {
                             const req = partner.requirements[key];
                             const met = req.obtained >= req.required;
                             return (
-                              <div key={key} className="px-3 py-2 rounded-lg text-center" style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}>
+                              <div 
+                                key={key} 
+                                className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all" 
+                                style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onNavigateToActivity?.(partner.name, undefined, label);
+                                }}
+                              >
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
                                 <p className="text-[14px] font-bold" style={{ color: req.required === 0 ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
                                   {req.obtained}/{req.required}
@@ -314,6 +330,58 @@ export default function PartnersPage() {
                         </div>
                       </div>
 
+                      {/* FY27 Revenue & Training */}
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2 flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> FY27 Revenue & Pipeline
+                        </p>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[
+                            { label: "Revenue", val: formatCurrency(partner.revenueData.revenueFY27, true) },
+                            { label: "Target", val: formatCurrency(partner.revenueData.targetFY27, true) },
+                            { label: "Attainment", val: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
+                            { label: "Pipeline", val: formatCurrency(partner.revenueData.pipelineFY27, true) },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.55 0.18 145 / 0.04)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {[
+                            { label: "Contribution", val: formatPercent(partner.revenueData.contributionFY27) },
+                            { label: "DR (P-S)", val: formatCurrency(partner.revenueData.drFY27, true) },
+                            { label: "FY26 Rev", val: formatCurrency(partner.revenueData.revenueFY26, true) },
+                            { label: "FY25 Rev", val: formatCurrency(partner.revenueData.revenueFY25, true) },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Training Contacts (P-T) */}
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
+                          Training Contacts (P-T)
+                        </p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { label: "Sales Pro", val: partner.trainingContacts.salesProContacts },
+                            { label: "Tech Sales Pro", val: partner.trainingContacts.techSalesProContacts },
+                            { label: "SE Bootcamp", val: partner.trainingContacts.seBootcampContacts },
+                          ].map((item) => (
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                              <p className="text-[10px] text-muted-foreground">{item.label}</p>
+                              <p className="text-[13px] font-bold text-foreground">{item.val !== null ? item.val : "\u2014"}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Last Modification Comment */}
                       {modification && (
                         <div className="px-3 py-2.5 rounded-lg" style={{ background: "oklch(0.58 0.16 290 / 0.04)", border: "1px solid oklch(0.58 0.16 290 / 0.12)" }}>
@@ -346,14 +414,17 @@ export default function PartnersPage() {
                         </div>
                       )}
 
-                      {/* Modify Button */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
-                        style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
-                      >
-                        <Pencil className="w-4 h-4" /> Modify Gaps
-                      </button>
+                      {/* Modify & Export Buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
+                          style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
+                        >
+                          <Pencil className="w-4 h-4" /> Modify Gaps
+                        </button>
+                        <ExportButton partner={partner} />
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

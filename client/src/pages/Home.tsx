@@ -23,7 +23,9 @@ import GapAnalysisPage from "@/pages/GapAnalysisPage";
 import CertificationsPage from "@/pages/CertificationsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import TierProgressionPage from "@/pages/TierProgressionPage";
-import FileStoragePage from "@/pages/FileStoragePage";
+import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
+import PartnerActivityPage from "@/pages/PartnerActivityPage";
+import AspTrackingPage from "@/pages/AspTrackingPage";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS } from "@/lib/data";
 import { Settings } from "lucide-react";
@@ -33,6 +35,9 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activityPartnerFilter, setActivityPartnerFilter] = useState<string | null>(null);
+  const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
+  const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
 
   const {
     modifiedPartners,
@@ -62,11 +67,20 @@ export default function Home() {
   const filteredGapData = useMemo(() => getModifiedGapBreakdown(filteredPartners), [filteredPartners, getModifiedGapBreakdown]);
   const filteredEnablement = useMemo(() => getModifiedEnablementDistribution(filteredPartners), [filteredPartners, getModifiedEnablementDistribution]);
 
+  // Navigation helper to switch pages with filters
+  const navigateToActivity = (partner?: string, course?: string, search?: string) => {
+    if (partner) setActivityPartnerFilter(partner);
+    if (course) setActivityCourseFilter(course);
+    if (search) setActivitySearchFilter(search);
+    setActiveNav("activity");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Render page content based on active navigation
   const renderPageContent = () => {
     switch (activeNav) {
       case "partners":
-        return <PartnersPage />;
+        return <PartnersPage onNavigateToActivity={navigateToActivity} />;
       case "tiers":
         return <TierCompliancePage />;
       case "gaps":
@@ -77,8 +91,23 @@ export default function Home() {
         return <ReportsPage />;
       case "progression":
         return <TierProgressionPage />;
-      case "files":
-        return <FileStoragePage />;
+      case "training":
+        return <TrainingDetailsPage />;
+      case "activity":
+        return (
+          <PartnerActivityPage 
+            initialPartner={activityPartnerFilter || undefined} 
+            initialCourse={activityCourseFilter || undefined} 
+            initialSearch={activitySearchFilter || undefined}
+            onClearFilters={() => {
+              setActivityPartnerFilter(null);
+              setActivityCourseFilter(null);
+              setActivitySearchFilter(null);
+            }}
+          />
+        );
+      case "asp":
+        return <AspTrackingPage />;
       case "settings":
         return (
           <div className="space-y-6">
@@ -147,7 +176,7 @@ export default function Home() {
             <section className="mb-6">
               <ComplianceSummary
                 activeFilter={complianceFilter}
-                onFilterChange={setComplianceFilter}
+                onFilterChange={(filter: ComplianceFilter) => setComplianceFilter(filter)}
               />
             </section>
 
@@ -168,6 +197,7 @@ export default function Home() {
                 activeFilter={complianceFilter}
                 onFilterChange={setComplianceFilter}
                 searchQuery={searchQuery}
+                onNavigateToActivity={navigateToActivity}
               />
             </section>
           </>

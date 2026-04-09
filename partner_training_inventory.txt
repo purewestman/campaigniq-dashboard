@@ -1,0 +1,103 @@
+# Partner training inventory
+
+## Core partner journey
+- Simply Pure for Partners
+- Sales Professional
+- Technical Sales Professional
+- Partner SE Bootcamp
+- How to Position an Enterprise Data Cloud (for AE)
+- How to Build an Enterprise Data Cloud (for SE)
+- Alliance Joint Offerings
+- Electives
+
+## FY27 service specializations
+- Implementation Specialization (Certified Implementation Partner / CIP)
+- Support Specialization (Authorized Support Partner / ASP)
+- Migration Specialization (Certified Migration Partner / CMP)
+- Customer Success Specialization for STaaS
+- Managed Services Specialization
+
+## FY27 solution specializations
+- App Modernization
+- Cloud
+- Cyber Resilience
+- AI & Analytics (coming soon / pilot by invitation)
+
+## ASP / support specialization
+- FlashArray Foundations for ASP
+- FlashBlade Foundations for ASP
+- FlashArray Storage Professional
+- FlashBlade Storage Professional
+- FlashArray Support Specialist
+- FlashBlade Support Specialist
+
+## PEAK certification prep / study guides
+- Pure Certified Data Storage Associate Prep
+- Pure Certified FlashArray Storage Professional Prep
+- Pure Certified FlashBlade Storage Professional Prep
+- Pure Certified Portworx Enterprise Professional Prep
+- Pure Certified Data Protection Professional Study Guide
+- Pure Certified FlashArray Support Specialist Prep
+- Pure Certified FlashBlade Support Specialist Prep
+- Pure Certified FlashArray Implementation Specialist Prep
+- Pure Certified FlashBlade Implementation Specialist Prep
+- Pure Certified Cloud Block Store Specialist Prep
+- Pure Certified Migration Specialist Study Guide
+- Pure Certified Platform Architect Prep Study Guide
+- Pure Certified Cyber Resilience Professional Certification / study guide
+
+## Recommended partner academy / partner central items
+- Financial Services Essentials for Pure Storage Partners
+- Sustainability Essentials for Pure Storage Partners
+- Video Surveillance Essentials for Pure Storage Partners
+- Pure Rewards Partner Track
+- FlashArray Support Specialization Partner Track
+- FlashBlade Support Specialization Partner Track
+
+## Portworx / cloud / app mod / fusion
+- Beyond The Basics
+- Portworx Sales Professional
+- Portworx Technical Sales Professional
+- Discovering Portworx
+- Exploring Portworx Use Cases
+- Exploring Portworx Use Cases: AI / ML
+- Exploring Portworx Use Cases: Application Modernization
+- Exploring Portworx Use Cases: Modern Virtualization
+- Introducing Azure VMware Solution with Pure Cloud Block Store
+- Pure Certified Cloud Block Store Specialist Prep
+- Pure Fusion Foundations
+- Pure Fusion Technical Foundations
+- Pure1 Security Assessment
+- Secure Application Workspace
+
+## Platform / product / file / object / seller enablement
+- Back to Basics
+- Pure Portfolio 101
+- FlashArray Architect Associate
+- FlashBlade Architect Associate
+- FlashBlade for Partners
+- File Technical Training
+- Pure Storage File Solutions for Sellers
+- Pure Storage File Solutions for Technical Sellers
+- FlashArray Specific File Management
+- FlashBlade Specific File Management
+- Object Technical Training
+- Pure Storage Object Solutions for Technical Sellers: Object Technical Training
+- Selling FlashArray
+- Selling FlashBlade
+- Scaling FlashBlade
+- Capacity Terminology Deep Dive
+- Pure Tech Glossary
+
+## Older route-to-market partner paths still shown in catalog
+- Pure Sales Professional
+- Pure Technical Sales Professional
+- Distribution FA Technical Sales Professional
+- Distribution FB Technical Sales Professional
+- Pure MSP Sales Professional
+- MSP FlashArray Technical Sales Professional
+- MSP FlashBlade Technical Sales Professional
+- MSP FlashArray Admin & Support
+- MSP FlashBlade Admin & Support
+- Evergreen//Flex Partners
+- Evergreen//Forever Partners

@@ -10,8 +10,8 @@ import { nanoid } from "nanoid";
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
+    me: publicProcedure.query((opts: any) => opts.ctx.user),
+    logout: publicProcedure.mutation(({ ctx }: any) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return {
@@ -38,7 +38,7 @@ export const appRouter = router({
           description: z.string().max(2000).optional(),
         })
       )
-      .mutation(async ({ input, ctx }) => {
+      .mutation(async ({ input, ctx }: any) => {
         // Decode base64 to buffer
         const buffer = Buffer.from(input.base64Data, "base64");
 
@@ -76,7 +76,7 @@ export const appRouter = router({
           category: z.string().max(64).optional(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input }: { input: any }) => {
         const updated = await updateFileMetadata(input.id, {
           description: input.description,
           category: input.category,
@@ -87,7 +87,7 @@ export const appRouter = router({
     /** Delete a file (removes DB record; S3 object remains for safety) */
     delete: protectedProcedure
       .input(z.object({ id: z.number().int().positive() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input }: { input: any }) => {
         await deleteFile(input.id);
         return { success: true } as const;
       }),
