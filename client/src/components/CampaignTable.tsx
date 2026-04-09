@@ -19,6 +19,7 @@ import {
   getRevenueAttainment,
 } from "@/lib/data";
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
+import { aspData, type AspPerson } from "@/lib/aspData";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
 import {
   ArrowUpDown,
@@ -40,6 +41,9 @@ import {
   DollarSign,
   Users,
   GraduationCap,
+  Wrench,
+  BadgeCheck,
+  CircleAlert,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -310,6 +314,196 @@ function RequirementBarWithOverride({
   );
 }
 
+// ─── ASP Eligibility Panel ───────────────────────────────────────────────────
+
+const ASP_ORANGE = "#e8571a"; // Pure Storage brand orange
+
+interface AspStepProps {
+  step: number;
+  label: string;
+  sublabel: string;
+  required: number;
+  people: AspPerson[];
+}
+
+function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
+  const [open, setOpen] = useState(false);
+  const met = people.length >= required;
+  return (
+    <div className="flex-1 min-w-0">
+      {/* Step pill */}
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border-2"
+          style={met
+            ? { background: ASP_ORANGE, borderColor: ASP_ORANGE, color: "#fff" }
+            : { background: "#fff", borderColor: "#d1d5db", color: "#6b7280" }}
+        >
+          {met ? "✓" : step}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold leading-tight text-foreground truncate">{label}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">{sublabel}</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-1.5 rounded-full bg-black/[0.06] mb-1.5 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${Math.min(100, (people.length / required) * 100)}%`,
+            background: met ? ASP_ORANGE : "#d1d5db",
+          }}
+        />
+      </div>
+      <p className="text-[10px] font-semibold mb-2" style={{ color: met ? ASP_ORANGE : "#6b7280" }}>
+        {people.length}/{required} individuals
+      </p>
+
+      {/* Who? popover */}
+      {people.length > 0 && (
+        <div className="relative">
+          <button
+            onClick={() => setOpen(o => !o)}
+            className="text-[10px] font-medium underline underline-offset-2 transition-colors"
+            style={{ color: ASP_ORANGE }}
+          >
+            {open ? "Hide" : "Who?"}
+          </button>
+          {open && (
+            <div
+              className="absolute z-30 left-0 top-6 w-64 rounded-xl shadow-lg border p-3 space-y-1.5"
+              style={{ background: "#fff", borderColor: "#e5e7eb" }}
+            >
+              <p className="text-[10px] uppercase tracking-wider font-bold mb-2" style={{ color: ASP_ORANGE }}>
+                {label.toUpperCase()} — {people.length} INDIVIDUAL{people.length !== 1 ? "S" : ""}
+              </p>
+              {people.map(p => (
+                <div key={p.email} className="flex items-center gap-1.5 text-[11px]">
+                  <GraduationCap className="w-3 h-3 shrink-0" style={{ color: ASP_ORANGE }} />
+                  <span className="font-medium text-foreground">{p.firstName} {p.lastName}</span>
+                  <span className="text-muted-foreground truncate text-[10px]">{p.email}</span>
+                </div>
+              ))}
+              {people.length < required && (
+                <p className="text-[10px] text-muted-foreground pt-1 border-t border-black/10">
+                  Need {required - people.length} more to qualify.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
+  const asp = aspData[partnerId];
+
+  // No ASP data at all for this partner
+  const hasAnyData = asp && (
+    asp.foundations.length > 0 || asp.storageProCert.length > 0 || asp.supportSpecCert.length > 0
+  );
+
+  return (
+    <div
+      className="rounded-xl border-2 p-4"
+      style={{
+        borderColor: asp?.eligible ? ASP_ORANGE : "#e5e7eb",
+        background: asp?.eligible
+          ? `${ASP_ORANGE}08`
+          : "oklch(0.99 0.003 85)",
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: `${ASP_ORANGE}18` }}
+          >
+            <Wrench className="w-4 h-4" style={{ color: ASP_ORANGE }} />
+          </div>
+          <div>
+            <p className="text-[13px] font-bold text-foreground">ASP Eligibility</p>
+            <p className="text-[10px] text-muted-foreground">Authorized Support Partner — requires ≥2 individuals per step</p>
+          </div>
+        </div>
+        <div className="shrink-0">
+          {asp?.eligible ? (
+            <span
+              className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
+              style={{ background: `${ASP_ORANGE}18`, color: ASP_ORANGE }}
+            >
+              <BadgeCheck className="w-3.5 h-3.5" />
+              ELIGIBLE
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-black/[0.05] text-muted-foreground">
+              <CircleAlert className="w-3.5 h-3.5" />
+              NOT YET
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Process steps — horizontal timeline */}
+      <div className="flex items-stretch gap-3 relative">
+        {/* Connecting line */}
+        <div
+          className="absolute top-3 left-4 right-4 h-px"
+          style={{ background: "#e5e7eb", zIndex: 0 }}
+        />
+        <AspStep
+          step={1}
+          label="ASP Foundations"
+          sublabel="FlashArray / FlashBlade Foundations Training & Assessment"
+          required={2}
+          people={asp?.foundations ?? []}
+        />
+        <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
+        <AspStep
+          step={2}
+          label="Storage Pro Cert"
+          sublabel="FlashArray / FlashBlade Storage Professional Certification"
+          required={2}
+          people={asp?.storageProCert ?? []}
+        />
+        <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
+        <AspStep
+          step={3}
+          label="Support Spec Cert"
+          sublabel="FlashArray / FlashBlade Support Specialist Certification"
+          required={2}
+          people={asp?.supportSpecCert ?? []}
+        />
+      </div>
+
+      {/* Gap summary when not eligible */}
+      {!asp?.eligible && (
+        <div className="mt-3 pt-3 border-t border-black/[0.06]">
+          {!hasAnyData ? (
+            <p className="text-[11px] text-muted-foreground italic">
+              No ASP training or certification activity recorded for this partner yet.
+            </p>
+          ) : (
+            <p className="text-[11px] text-muted-foreground">
+              <span className="font-semibold text-foreground">Gaps: </span>
+              {[
+                asp && asp.foundations.length < 2 && `Foundations (${asp.foundations.length}/2)`,
+                asp && asp.storageProCert.length < 2 && `Storage Pro Cert (${asp.storageProCert.length}/2)`,
+                asp && asp.supportSpecCert.length < 2 && `Support Spec Cert (${asp.supportSpecCert.length}/2)`,
+              ].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Expanded detail row for a partner */
 function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNavigateToActivity?: (partner: string, course?: string, search?: string) => void }) {
   const { getPartnerOverrides } = useOverrides();
@@ -466,6 +660,11 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── ASP Eligibility Panel ──────────────────────────────── */}
+          <div className="md:col-span-2">
+            <AspEligibilityPanel partnerId={partner.id} />
           </div>
 
           {/* Exam/Certification Records */}
@@ -644,6 +843,9 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
               </th>
               <SortHeader label="Gaps" sortKeyName="totalGaps" align="right" />
               <SortHeader label="Exams" sortKeyName="totalExams" align="right" />
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-center" style={{ color: "#e8571a" }}>
+                ASP
+              </th>
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
                 FY27 Revenue
               </th>
@@ -780,6 +982,24 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           >
                             <Award className="w-3 h-3" />
                             {partner.totalExams}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        {aspData[partner.id]?.eligible ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: "#e8571a18", color: "#e8571a" }}
+                          >
+                            <BadgeCheck className="w-3 h-3" />
+                            ASP
+                          </span>
+                        ) : aspData[partner.id] && (aspData[partner.id].foundations.length > 0 || aspData[partner.id].storageProCert.length > 0 || aspData[partner.id].supportSpecCert.length > 0) ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] text-muted-foreground">
+                            <Wrench className="w-3 h-3" />
+                            Prog.
                           </span>
                         ) : (
                           <span className="text-[12px] text-muted-foreground">—</span>
