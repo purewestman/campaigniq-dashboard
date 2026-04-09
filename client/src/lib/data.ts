@@ -241,6 +241,72 @@ export function getTierDef(tier: ProgramTier): TierDefinition {
   return TIER_DEFINITIONS[tier];
 }
 
+/**
+ * Generates a recommended action string for a partner based on their CURRENT
+ * enablement and business metric gaps. Always reflects the live data — never
+ * hard-coded — so it cannot fall out of sync with training or financial updates.
+ */
+export function generateRecommendedAction(partner: Partner): string {
+  const tierDef = TIER_DEFINITIONS[partner.programTier];
+  const { requirements, businessMetrics } = partner;
+
+  // ── Enablement gaps ───────────────────────────────────────
+  const enablementGaps: string[] = [];
+  if (requirements.salesPro.obtained < requirements.salesPro.required) {
+    const n = requirements.salesPro.required - requirements.salesPro.obtained;
+    enablementGaps.push(`${n} more Sales Pro completion${n !== 1 ? "s" : ""} (${requirements.salesPro.obtained}/${requirements.salesPro.required})`);
+  }
+  if (requirements.techPro.obtained < requirements.techPro.required) {
+    const n = requirements.techPro.required - requirements.techPro.obtained;
+    enablementGaps.push(`${n} more Tech Pro completion${n !== 1 ? "s" : ""} (${requirements.techPro.obtained}/${requirements.techPro.required})`);
+  }
+  if (requirements.bootcamp.obtained < requirements.bootcamp.required) {
+    const n = requirements.bootcamp.required - requirements.bootcamp.obtained;
+    enablementGaps.push(`${n} more SE Bootcamp completion${n !== 1 ? "s" : ""} (${requirements.bootcamp.obtained}/${requirements.bootcamp.required})`);
+  }
+  if (requirements.implSpec.obtained < requirements.implSpec.required) {
+    const n = requirements.implSpec.required - requirements.implSpec.obtained;
+    enablementGaps.push(`${n} more Impl Spec completion${n !== 1 ? "s" : ""} (${requirements.implSpec.obtained}/${requirements.implSpec.required})`);
+  }
+
+  // ── Business metric gaps ──────────────────────────────────
+  const businessGaps: string[] = [];
+  const bm = tierDef.businessMetrics;
+  if (bm.bookingsUSD !== null) {
+    const current = businessMetrics.bookingsUSD ?? 0;
+    if (current < bm.bookingsUSD) {
+      const remaining = formatCurrency(bm.bookingsUSD - current, true);
+      businessGaps.push(`${remaining} more in bookings (${formatCurrency(current, true)} of ${formatCurrency(bm.bookingsUSD, true)} required)`);
+    }
+  }
+  if (bm.uniqueCustomers !== null) {
+    const current = businessMetrics.uniqueCustomers ?? 0;
+    if (current < bm.uniqueCustomers) {
+      businessGaps.push(`${bm.uniqueCustomers - current} more unique customer${bm.uniqueCustomers - current !== 1 ? "s" : ""} (${current}/${bm.uniqueCustomers} required)`);
+    }
+  }
+  if (bm.partnerDeliveredServices !== null) {
+    const current = businessMetrics.partnerDeliveredServices ?? 0;
+    if (current < bm.partnerDeliveredServices) {
+      businessGaps.push(`${bm.partnerDeliveredServices - current} more partner-delivered installation${bm.partnerDeliveredServices - current !== 1 ? "s" : ""} (${current}/${bm.partnerDeliveredServices} required)`);
+    }
+  }
+
+  // ── Build output ──────────────────────────────────────────
+  if (enablementGaps.length === 0 && businessGaps.length === 0) {
+    return `All ${tierDef.label} tier requirements met. Sustain training activity and business metrics to maintain ${tierDef.shortLabel} status.`;
+  }
+
+  const lines: string[] = [];
+  if (enablementGaps.length > 0) {
+    lines.push(`Enablement outstanding — complete: ${enablementGaps.join("; ")}.`);
+  }
+  if (businessGaps.length > 0) {
+    lines.push(`Business criteria outstanding — close: ${businessGaps.join("; ")}.`);
+  }
+  return lines.join(" ");
+}
+
 export function computeEnablementGaps(reqs: EnablementRequirements): number {
   return (
     Math.max(0, reqs.salesPro.required - reqs.salesPro.obtained) +

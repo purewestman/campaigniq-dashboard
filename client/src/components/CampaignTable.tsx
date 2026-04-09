@@ -17,6 +17,7 @@ import {
   formatCurrency,
   formatPercent,
   getRevenueAttainment,
+  generateRecommendedAction,
 } from "@/lib/data";
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { aspData, type AspPerson } from "@/lib/aspData";
@@ -605,7 +606,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Recommended Action
             </p>
-            <p className="text-[13px] text-foreground leading-relaxed mb-3">{partner.action}</p>
+            <p className="text-[13px] text-foreground leading-relaxed mb-3">{generateRecommendedAction(partner)}</p>
 
             {/* Target Contacts */}
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">

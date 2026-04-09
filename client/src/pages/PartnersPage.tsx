@@ -16,6 +16,7 @@ import {
   formatCurrency,
   formatPercent,
   getRevenueAttainment,
+  generateRecommendedAction,
 } from "@/lib/data";
 import { trainingData } from "@/lib/trainingData";
 import { useModifications } from "@/contexts/ModificationContext";
@@ -428,7 +429,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                       {/* Action */}
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Recommended Action</p>
-                        <p className="text-[12px] text-foreground leading-relaxed">{partner.action}</p>
+                        <p className="text-[12px] text-foreground leading-relaxed">{generateRecommendedAction(partner)}</p>
                       </div>
 
                       {/* Contacts */}
