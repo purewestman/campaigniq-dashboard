@@ -48,7 +48,7 @@ type SortKey = "name" | "totalGaps" | "enablementScore" | "totalExams";
 interface PartnerTableProps {
   partners: Partner[];
   activeFilter: string;
-  onFilterChange: (filter: string) => void;
+  onFilterChange: (filter: ComplianceFilter) => void;
   searchQuery: string;
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
 }
@@ -74,6 +74,8 @@ function RequirementBarWithOverride({
   obtained,
   required,
   partnerId,
+  partnerName,
+  onNavigateToActivity,
 }: {
   label: string;
   category: GapCategory;
