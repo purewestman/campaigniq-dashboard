@@ -35,6 +35,9 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activityPartnerFilter, setActivityPartnerFilter] = useState<string | null>(null);
+  const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
+  const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
 
   const {
     modifiedPartners,
@@ -64,11 +67,20 @@ export default function Home() {
   const filteredGapData = useMemo(() => getModifiedGapBreakdown(filteredPartners), [filteredPartners, getModifiedGapBreakdown]);
   const filteredEnablement = useMemo(() => getModifiedEnablementDistribution(filteredPartners), [filteredPartners, getModifiedEnablementDistribution]);
 
+  // Navigation helper to switch pages with filters
+  const navigateToActivity = (partner?: string, course?: string, search?: string) => {
+    if (partner) setActivityPartnerFilter(partner);
+    if (course) setActivityCourseFilter(course);
+    if (search) setActivitySearchFilter(search);
+    setActiveNav("activity");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Render page content based on active navigation
   const renderPageContent = () => {
     switch (activeNav) {
       case "partners":
-        return <PartnersPage />;
+        return <PartnersPage onNavigateToActivity={navigateToActivity} />;
       case "tiers":
         return <TierCompliancePage />;
       case "gaps":
@@ -82,7 +94,18 @@ export default function Home() {
       case "training":
         return <TrainingDetailsPage />;
       case "activity":
-        return <PartnerActivityPage />;
+        return (
+          <PartnerActivityPage 
+            initialPartner={activityPartnerFilter || undefined} 
+            initialCourse={activityCourseFilter || undefined} 
+            initialSearch={activitySearchFilter || undefined}
+            onClearFilters={() => {
+              setActivityPartnerFilter(null);
+              setActivityCourseFilter(null);
+              setActivitySearchFilter(null);
+            }}
+          />
+        );
       case "asp":
         return <AspTrackingPage />;
       case "settings":
@@ -174,6 +197,7 @@ export default function Home() {
                 activeFilter={complianceFilter}
                 onFilterChange={setComplianceFilter}
                 searchQuery={searchQuery}
+                onNavigateToActivity={navigateToActivity}
               />
             </section>
           </>

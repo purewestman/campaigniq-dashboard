@@ -505,6 +505,42 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Imtiyaaz Essop",
       "activity": "Sales Portfolio 101: Pure Cloud Block Store",
       "date": null
+    },
+    {
+      "email": "zane.maphalle@altron.com",
+      "name": "Zane Maphalle",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-05-14T23:00:00.000Z"
+    },
+    {
+      "email": "zane.maphalle@altron.com",
+      "name": "Zane Maphalle",
+      "activity": "Pure Platform Positioning Exam",
+      "date": "2025-04-22T23:00:00.000Z"
+    },
+    {
+      "email": "zane.maphalle@altron.com",
+      "name": "Zane Maphalle",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2025-05-22T23:00:00.000Z"
+    },
+    {
+      "email": "zane.maphalle@altron.com",
+      "name": "Zane Maphalle",
+      "activity": "Pure Storage Platform Solutions Associate",
+      "date": "2025-05-23T10:00:00.000Z"
+    },
+    {
+      "email": "johan.westman@altron.com",
+      "name": "Johan Westman",
+      "activity": "Pure Platform Positioning Exam",
+      "date": "2025-07-23T23:00:00.000Z"
+    },
+    {
+      "email": "williamrobert.souter@altron.com",
+      "name": "Robert Souter",
+      "activity": "Pure Platform Positioning Certificate",
+      "date": "2025-09-08T10:00:00.000Z"
     }
   ],
   "AXIZ (PTY) LTD": [
@@ -1803,6 +1839,48 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Titus Malo",
       "activity": "What is Modern Data Protection",
       "date": "2025-06-23T13:03:00.000Z"
+    },
+    {
+      "email": "adolph.strydom@axiz.com",
+      "name": "Adolph Strydom",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2025-01-24T00:00:00.000Z"
+    },
+    {
+      "email": "adolph.strydom@axiz.com",
+      "name": "Adolph Strydom",
+      "activity": "Pure Platform Positioning Exam",
+      "date": "2025-05-29T23:00:00.000Z"
+    },
+    {
+      "email": "adolph.strydom@axiz.com",
+      "name": "Adolph Strydom",
+      "activity": "Pure Storage FlashArray Implementation Specialist",
+      "date": "2025-08-22T10:00:00.000Z"
+    },
+    {
+      "email": "adolph.strydom@axiz.com",
+      "name": "Adolph Strydom",
+      "activity": "Pure Storage Platform Solutions Associate",
+      "date": "2025-05-30T10:00:00.000Z"
+    },
+    {
+      "email": "adolph.strydom@axiz.com",
+      "name": "Adolph Strydom",
+      "activity": "Pure Storage Certified Architect Associate FlashArray",
+      "date": "2025-12-05T10:00:00.000Z"
+    },
+    {
+      "email": "oscar.ronander@axiz.com",
+      "name": "Oscar Ronander Ronander",
+      "activity": "Pure Platform Positioning Exam",
+      "date": "2025-07-31T23:00:00.000Z"
+    },
+    {
+      "email": "lerato.mabunda@axiz.com",
+      "name": "Lerato Mabunda",
+      "activity": "Pure Platform Positioning Certificate",
+      "date": "2025-04-24T10:00:00.000Z"
     }
   ],
   "BILLION ROWS (PTY) LTD": [
@@ -4539,6 +4617,114 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Morne Groenewald",
       "activity": "Technical Sales Professional Learning Path FY26 Knowledge Check - {archive}",
       "date": "2025-07-23T07:54:00.000Z"
+    },
+    {
+      "email": "enrico.vanniekerk@datasciences.co.za",
+      "name": "Enrico van Niekerk",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-03-05T00:00:00.000Z"
+    },
+    {
+      "email": "jp.marais@datasciences.co.za",
+      "name": "Jean-Pierre Marais",
+      "activity": "Pure Certifed FlashArray Support Specialist",
+      "date": "2025-09-10T10:00:00.000Z"
+    },
+    {
+      "email": "nelson.lopes@datasciences.co.za",
+      "name": "Nelson Lopes",
+      "activity": "Pure Storage FlashArray Architect Professional Exam",
+      "date": "2025-01-10T00:00:00.000Z"
+    },
+    {
+      "email": "antony@datasciences.co.za",
+      "name": "Antony Fok",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-04-02T23:00:00.000Z"
+    },
+    {
+      "email": "koos.hattingh@datasciences.co.za",
+      "name": "Koos Hattingh",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-04-24T23:00:00.000Z"
+    },
+    {
+      "email": "koos.hattingh@datasciences.co.za",
+      "name": "Koos Hattingh",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2024-04-28T23:00:00.000Z"
+    },
+    {
+      "email": "mekeal.beepath@datasciences.co.za",
+      "name": "Mekeal Beepath",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-03-20T00:00:00.000Z"
+    },
+    {
+      "email": "kenny.thiart@datasciences.co.za",
+      "name": "Kenny Thiart",
+      "activity": "Pure Storage FlashArray Architect Professional Exam",
+      "date": "2025-01-21T00:00:00.000Z"
+    },
+    {
+      "email": "kenny.thiart@datasciences.co.za",
+      "name": "Kenny Thiart",
+      "activity": "Pure Storage FlashBlade Architect Professional Exam",
+      "date": "2025-05-25T23:00:00.000Z"
+    },
+    {
+      "email": "mndeni.msibi@datasciences.co.za",
+      "name": "Mndeni Msibi",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-04-08T23:00:00.000Z"
+    },
+    {
+      "email": "irtond@datasciences.co.za",
+      "name": "Irton De Ascencao",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2023-07-10T23:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-08-19T23:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2024-08-27T23:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Storage FlashArray Architect Professional Exam",
+      "date": "2024-09-05T23:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Storage FlashBlade Architect Professional Exam",
+      "date": "2024-12-11T00:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Platform Positioning Certificate",
+      "date": "2025-01-07T10:00:00.000Z"
+    },
+    {
+      "email": "rudolf.vandergryp@datasciences.co.za",
+      "name": "Rudolf van der Gryp",
+      "activity": "Pure Storage Platform Solutions Associate",
+      "date": "2025-01-07T10:00:00.000Z"
+    },
+    {
+      "email": "rukaya.najam@datasciences.co.za",
+      "name": "Rukaya Najam",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2024-05-06T23:00:00.000Z"
     }
   ],
   "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD": [
@@ -6829,6 +7015,24 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Merwe Erasmus",
       "activity": "Sales Professional Learning Path FY26 Knowledge Check - {archive}",
       "date": "2025-12-17T13:19:00.000Z"
+    },
+    {
+      "email": "merwe.erasmus@nec.xon.co.za",
+      "name": "Merwe Erasmus",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-12-13T00:00:00.000Z"
+    },
+    {
+      "email": "merwe.erasmus@nec.xon.co.za",
+      "name": "Merwe Erasmus",
+      "activity": "Pure Storage FlashArray Architect Professional Exam",
+      "date": "2024-12-20T00:00:00.000Z"
+    },
+    {
+      "email": "merwe.erasmus@nec.xon.co.za",
+      "name": "Merwe Erasmus",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2025-03-24T00:00:00.000Z"
     }
   ],
   "NEC XON Systems Proprietary Limited": [
@@ -7097,6 +7301,96 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Morne Frans",
       "activity": "What is Modern Data Protection",
       "date": "2025-11-14T07:14:00.000Z"
+    },
+    {
+      "email": "mannes.nijeboer@global.ntt",
+      "name": "mannes nijeboer",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-01-29T00:00:00.000Z"
+    },
+    {
+      "email": "mannes.nijeboer@global.ntt",
+      "name": "mannes nijeboer",
+      "activity": "Pure Certified FlashBlade Implementation Specialist",
+      "date": "2025-12-19T10:00:00.000Z"
+    },
+    {
+      "email": "morne.frans@dimensiondata.com",
+      "name": "Morne Frans",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2025-01-29T00:00:00.000Z"
+    },
+    {
+      "email": "morne.frans@dimensiondata.com",
+      "name": "Morne Frans",
+      "activity": "Pure Storage FlashBlade Architect Associate",
+      "date": "2025-02-20T00:00:00.000Z"
+    },
+    {
+      "email": "morne.frans@dimensiondata.com",
+      "name": "Morne Frans",
+      "activity": "Pure Storage FlashArray Implementation Specialist",
+      "date": "2025-09-26T10:00:00.000Z"
+    },
+    {
+      "email": "kayode.fatoki@global.ntt",
+      "name": "Kayode Fatoki",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-07-15T23:00:00.000Z"
+    },
+    {
+      "email": "kayode.fatoki@global.ntt",
+      "name": "Kayode Fatoki",
+      "activity": "Pure Certifed FlashArray Support Specialist",
+      "date": "2025-07-11T10:00:00.000Z"
+    },
+    {
+      "email": "angelo.campbell@global.ntt",
+      "name": "angelo campbell",
+      "activity": "Pure Storage FlashArray Implementation Specialist",
+      "date": "2025-09-22T10:00:00.000Z"
+    },
+    {
+      "email": "angelo.campbell@global.ntt",
+      "name": "angelo campbell",
+      "activity": "Pure Certifed FlashArray Support Specialist",
+      "date": "2025-06-30T10:00:00.000Z"
+    },
+    {
+      "email": "thulani.kunene@global.ntt",
+      "name": "Thulani Kunene",
+      "activity": "Pure Certifed FlashArray Support Specialist",
+      "date": "2025-06-27T10:00:00.000Z"
+    },
+    {
+      "email": "kamalan.naraidoo@global.ntt",
+      "name": "Kamalan Naraidoo",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2025-02-21T00:00:00.000Z"
+    },
+    {
+      "email": "kamalan.naraidoo@global.ntt",
+      "name": "Kamalan Naraidoo",
+      "activity": "Pure Certified FlashBlade Implementation Specialist",
+      "date": "2025-12-04T10:00:00.000Z"
+    },
+    {
+      "email": "peetri.riekert@global.ntt",
+      "name": "Peetri Riekert",
+      "activity": "Pure Certifed FlashArray Support Specialist",
+      "date": "2025-09-02T10:00:00.000Z"
+    },
+    {
+      "email": "lourens.jvrensburg@nttdata.com",
+      "name": "Lourens Janse van Rensburg",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2025-03-30T23:00:00.000Z"
+    },
+    {
+      "email": "lourens.jvrensburg@nttdata.com",
+      "name": "Lourens Janse van Rensburg",
+      "activity": "Pure Storage Certified Architect Associate FlashBlade",
+      "date": "2025-08-29T10:00:00.000Z"
     }
   ],
   "SITHABILE TECHNOLOGY SERVICES (PTY) LTD": [
@@ -8237,6 +8531,24 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Vishnu Naidoo",
       "activity": "Technical Sales Professional Learning Path FY26 Knowledge Check - {archive}",
       "date": "2026-02-23T13:37:00.000Z"
+    },
+    {
+      "email": "dierk.lobbecke@tcm.co.za",
+      "name": "Dierk Lobbecke",
+      "activity": "Pure Certified FlashArray Implementation Specialist",
+      "date": "2024-11-08T00:00:00.000Z"
+    },
+    {
+      "email": "vishnu.naidoo@tcm.co.za",
+      "name": "Vishnu Naidoo",
+      "activity": "Pure Platform Positioning Certificate",
+      "date": "2025-12-23T10:00:00.000Z"
+    },
+    {
+      "email": "vishnu.naidoo@tcm.co.za",
+      "name": "Vishnu Naidoo",
+      "activity": "Pure Storage Platform Solutions Associate",
+      "date": "2025-12-23T10:00:00.000Z"
     }
   ],
   "Triple H Technology Group": [
@@ -8455,6 +8767,12 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "Tarin Pearson",
       "activity": "Sales Professional FY26 - Knowledge Check",
       "date": "2026-04-01T14:24:00.000Z"
+    },
+    {
+      "email": "frederiks@triplehgroup.co.za",
+      "name": "Johannes Frederik Strydom",
+      "activity": "Pure Storage FlashArray Architect Associate",
+      "date": "2024-10-04T23:00:00.000Z"
     }
   ],
   "Total": [
@@ -8463,6 +8781,14 @@ export const activityData: Record<string, ActivityRecord[]> = {
       "name": "1510",
       "activity": "Sales Professional FY26 - Knowledge Check",
       "date": null
+    }
+  ],
+  "ITgility PTY (Ltd)": [
+    {
+      "email": "jamesb@itgility.co.za",
+      "name": "James Barnardt",
+      "activity": "Pure Platform Positioning Certificate",
+      "date": "2025-12-02T10:00:00.000Z"
     }
   ]
 };

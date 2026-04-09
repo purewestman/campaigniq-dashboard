@@ -204,7 +204,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
           </div>
         </div>
         <div className="text-[10px] text-slate-300 font-medium">
-          Generated via CampaignIQ Dashboard &middot; {new Date().toLocaleDateString()}
+          Generated via PEI Dashboard &middot; {new Date().toLocaleDateString()}
         </div>
       </div>
     </div>

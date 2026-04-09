@@ -44,7 +44,11 @@ const tierIcons: Record<ProgramTier, React.ElementType> = {
   ambassador: Crown,
 };
 
-export default function PartnersPage() {
+interface PartnersPageProps {
+  onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
+}
+
+export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps) {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
@@ -274,7 +278,15 @@ export default function PartnersPage() {
                             const req = partner.requirements[key];
                             const met = req.obtained >= req.required;
                             return (
-                              <div key={key} className="px-3 py-2 rounded-lg text-center" style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}>
+                              <div 
+                                key={key} 
+                                className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all" 
+                                style={{ background: met ? "oklch(0.60 0.12 175 / 0.06)" : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)" : "oklch(0.62 0.19 15 / 0.04)" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onNavigateToActivity?.(partner.name, undefined, label);
+                                }}
+                              >
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
                                 <p className="text-[14px] font-bold" style={{ color: req.required === 0 ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
                                   {req.obtained}/{req.required}

@@ -39,6 +39,14 @@ import { toast } from "sonner";
 
 type SortKey = "name" | "totalGaps" | "enablementScore" | "totalExams";
 
+interface PartnerTableProps {
+  partners: Partner[];
+  activeFilter: string;
+  onFilterChange: (filter: string) => void;
+  searchQuery: string;
+  onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
+}
+
 const tierIconMap: Record<ProgramTier, React.ElementType> = {
   ambassador: Crown,
   elite: Shield,
@@ -66,6 +74,8 @@ function RequirementBarWithOverride({
   obtained: number;
   required: number;
   partnerId: number;
+  partnerName: string;
+  onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
 }) {
   const { getOverride, addOverride, removeOverride } = useOverrides();
   const override = getOverride(partnerId, category);
@@ -138,6 +148,22 @@ function RequirementBarWithOverride({
             }}
           />
         </div>
+        
+        {/* Navigation link to activity tracker */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigateToActivity?.(partnerName, undefined, label);
+          }}
+          className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:bg-black/10 active:scale-95 shrink-0"
+          style={{
+            background: "oklch(0.58 0.16 290 / 0.08)",
+            color: "oklch(0.48 0.16 290)",
+          }}
+          title={`View ${label} details`}
+        >
+          View Individuals
+        </button>
         {/* Override / Undo buttons */}
         {gap > 0 && !override && (
           <button
@@ -241,7 +267,7 @@ function RequirementBarWithOverride({
 }
 
 /** Expanded detail row for a partner */
-function ExpandedRow({ partner }: { partner: Partner }) {
+function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNavigateToActivity?: (partner: string, course?: string, search?: string) => void }) {
   const { getPartnerOverrides } = useOverrides();
   const partnerOverrides = getPartnerOverrides(partner.id);
   const reqs = partner.requirements;
@@ -287,6 +313,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
                 obtained={reqs.salesPro.obtained}
                 required={reqs.salesPro.required}
                 partnerId={partner.id}
+                partnerName={partner.name}
+                onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
                 label="Tech Pro"
@@ -294,6 +322,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
                 obtained={reqs.techPro.obtained}
                 required={reqs.techPro.required}
                 partnerId={partner.id}
+                partnerName={partner.name}
+                onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
                 label="Bootcamp"
@@ -301,6 +331,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
                 obtained={reqs.bootcamp.obtained}
                 required={reqs.bootcamp.required}
                 partnerId={partner.id}
+                partnerName={partner.name}
+                onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
                 label="Impl Spec"
@@ -308,6 +340,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
                 obtained={reqs.implSpec.obtained}
                 required={reqs.implSpec.required}
                 partnerId={partner.id}
+                partnerName={partner.name}
+                onNavigateToActivity={onNavigateToActivity}
               />
             </div>
 
@@ -417,14 +451,8 @@ function ExpandedRow({ partner }: { partner: Partner }) {
   );
 }
 
-interface PartnerTableProps {
-  partners: Partner[];
-  activeFilter: ComplianceFilter;
-  onFilterChange: (filter: ComplianceFilter) => void;
-  searchQuery?: string;
-}
 
-export default function PartnerTable({ partners, activeFilter, onFilterChange, searchQuery }: PartnerTableProps) {
+export default function PartnerTable({ partners, activeFilter, onFilterChange, searchQuery, onNavigateToActivity }: PartnerTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -490,7 +518,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
       <div className="px-6 py-5 border-b border-border">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-[15px] font-bold text-foreground">Partner Tier Compliance</h3>
+            <h3 className="text-[15px] font-bold text-foreground">Partner Certification Compliance</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
               {partners.length} partner{partners.length !== 1 ? "s" : ""}
               {searchQuery ? ` matching "${searchQuery}"` : ""} — click a row to see breakdown &amp; override gaps
@@ -690,7 +718,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                         </button>
                       </td>
                     </motion.tr>
-                    {isExpanded && <ExpandedRow key={`exp-${partner.id}`} partner={partner} />}
+                    {isExpanded && <ExpandedRow key={`exp-${partner.id}`} partner={partner} onNavigateToActivity={onNavigateToActivity} />}
                   </React.Fragment>
                 );
               })

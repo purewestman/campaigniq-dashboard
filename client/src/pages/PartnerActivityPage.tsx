@@ -26,17 +26,94 @@ const LINE_COLORS = [
   "#059669", // emerald-600
 ];
 
-export default function PartnerActivityPage() {
+interface PartnerActivityPageProps {
+  initialPartner?: string;
+  initialCourse?: string;
+  initialSearch?: string;
+  onClearFilters?: () => void;
+}
+
+export default function PartnerActivityPage({ 
+  initialPartner, 
+  initialCourse,
+  initialSearch,
+  onClearFilters
+}: PartnerActivityPageProps) {
   const [viewMode, setViewMode] = useState<"partner" | "course">("partner");
+  const [searchQuery, setSearchQuery] = useState(initialSearch || "");
+
+  // Update selection and search if props change
+  useMemo(() => {
+    if (initialPartner) setViewMode("partner");
+    if (initialCourse) setViewMode("course");
+    if (initialSearch) setSearchQuery(initialSearch);
+  }, [initialPartner, initialCourse, initialSearch]);
+
+  // Handle initial filters
+  useMemo(() => {
+    if (initialPartner) {
+      setViewMode("partner");
+    } else if (initialCourse) {
+      setViewMode("course");
+    }
+  }, [initialPartner, initialCourse]);
 
   // --- Partner View Logic ---
   const partners = useMemo(() => Object.keys(activityData).sort(), []);
-  const [selectedPartner, setSelectedPartner] = useState<string>(partners[0] || "");
+  const [selectedPartner, setSelectedPartner] = useState<string>(initialPartner || partners[0] || "");
+
+  const filteredPartnerRecords = useMemo(() => {
+    if (!selectedPartner || !activityData[selectedPartner]) return [];
+    let recs = activityData[selectedPartner];
+    
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const searchMap: Record<string, string[]> = {
+        "sales pro": [
+          "sales professional", 
+          "ae fy27", 
+          "partner sellers", 
+          "simply pure for partners",
+          "sales portfolio",
+          "enterprise data cloud",
+          "sales pro"
+        ],
+        "tech pro": [
+          "technical professional", 
+          "technical sellers", 
+          "storage professional", 
+          "partner se bootcamp", 
+          "implementation specialist", 
+          "support specialist",
+          "ahead of the cloud",
+          "activecluster",
+          "technical sales professional",
+          "tech pro"
+        ],
+        "foundations": ["foundations", "intro", "basics"],
+        "elite": ["elite"]
+      };
+      
+      const mappedQueries = searchMap[q] || [q];
+      
+      recs = recs.filter(r => {
+        const act = r.activity.toLowerCase();
+        const contact = r.name.toLowerCase() + " " + r.email.toLowerCase();
+        return mappedQueries.some(query => act.includes(query)) || contact.includes(q);
+      });
+    }
+    return recs;
+  }, [selectedPartner, searchQuery]);
+
+  // Update selection if prop changes
+  useMemo(() => {
+    if (initialPartner) setSelectedPartner(initialPartner);
+  }, [initialPartner]);
 
   const topEmployees = useMemo(() => {
-    if (!selectedPartner || !activityData[selectedPartner]) return [];
+    const records = filteredPartnerRecords;
+    if (records.length === 0) return [];
     
-    const records = activityData[selectedPartner];
     const counts: Record<string, { name: string, email: string, count: number, activities: Set<string> }> = {};
     
     records.forEach(r => {
@@ -55,9 +132,9 @@ export default function PartnerActivityPage() {
   }, [selectedPartner]);
 
   const partnerChartData = useMemo(() => {
-    if (!selectedPartner || !activityData[selectedPartner]) return [];
+    const records = filteredPartnerRecords;
+    if (records.length === 0) return [];
     
-    const records = activityData[selectedPartner];
     const timelineMap: Record<string, any> = {};
     const topEmails = topEmployees.map(e => e.email);
 
@@ -92,7 +169,12 @@ export default function PartnerActivityPage() {
     return Array.from(courses).sort();
   }, []);
 
-  const [selectedCourse, setSelectedCourse] = useState<string>(uniqueCourses[0] || "");
+  const [selectedCourse, setSelectedCourse] = useState<string>(initialCourse || uniqueCourses[0] || "");
+
+  // Update selection if prop changes
+  useMemo(() => {
+    if (initialCourse) setSelectedCourse(initialCourse);
+  }, [initialCourse]);
 
   const courseEmployees = useMemo(() => {
     if (!selectedCourse) return [];
@@ -200,7 +282,32 @@ export default function PartnerActivityPage() {
               ))}
             </select>
           )}
+
+          {/* New Search Input */}
+          <div className="relative flex items-center min-w-[200px]">
+            <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search people or courses..."
+              className="pl-9 pr-3 py-2 border border-black/10 bg-white/80 rounded-lg text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            />
+          </div>
         </div>
+
+        {/* Clear Filters Button */}
+        {(initialPartner || initialCourse || initialSearch) && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              onClearFilters?.();
+            }}
+            className="text-[12px] font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+          >
+            Clear deep-link filters
+          </button>
+        )}
       </div>
 
       {/* Main Grid View */}
@@ -286,19 +393,19 @@ export default function PartnerActivityPage() {
           <div className="flex-1 w-full min-h-0">
             {((viewMode === "partner" && partnerChartData.length > 0) || (viewMode === "course" && courseChartData.length > 0)) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={viewMode === "partner" ? partnerChartData : courseChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
+                <LineChart data={viewMode === "partner" ? partnerChartData : courseChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis 
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 11, fill: "var(--foreground)" }} 
+                    tick={{ fontSize: 11, fill: "#6B7280" }} 
                     dy={10}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fontSize: 11, fill: "var(--foreground)" }} 
+                    tick={{ fontSize: 11, fill: "#6B7280" }} 
                   />
                   <Tooltip
                     contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", background: "rgba(255,255,255,0.9)" }}
@@ -308,7 +415,7 @@ export default function PartnerActivityPage() {
                   {/* Partner View Chart Lines */}
                   {viewMode === "partner" && (
                     <>
-                      <Line type="monotone" dataKey="Total" stroke="#000" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="Total" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "white" }} activeDot={{ r: 6 }} />
                       {topEmployees.map((emp, i) => (
                         <Line key={emp.email} type="monotone" dataKey={emp.email} name={emp.name || emp.email.split('@')[0]} stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
                       ))}

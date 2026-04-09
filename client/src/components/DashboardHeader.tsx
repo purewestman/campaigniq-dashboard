@@ -50,10 +50,10 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
         {/* Left: Greeting */}
         <div>
           <h2 className="text-xl font-bold text-foreground tracking-tight">
-            FY27 Global Reseller Tier Compliance
+            FY27 Partner Certification Compliance
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Elite Zone B enablement: track obtained vs required across Sales Pro, Tech Pro, Bootcamp, and Implementation Specialist.
+            Track SE Journey compliance across 19 partners: Roadmap score, enablement gaps, and certification status.
           </p>
         </div>
 
