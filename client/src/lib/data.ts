@@ -73,6 +73,16 @@ export interface PartnerFinancials {
   fy24Revenue: number;
 }
 
+export interface RevenueData {
+  revenueFY27: number;
+  targetFY27: number;
+  pipelineFY27: number;
+  contributionFY27: number;
+  drFY27: number;
+  revenueFY26: number;
+  revenueFY25: number;
+}
+
 export interface PartnerMeta {
   region: string;
   pam: string;
@@ -101,6 +111,7 @@ export interface Partner {
   exams: ExamRecord[];
   totalExams: number;
   financials: PartnerFinancials | null;
+  revenueData: RevenueData;
   meta: PartnerMeta | null;
 }
 
@@ -193,6 +204,28 @@ export const TIER_CONFIG = {
   tier3: { ...TIER_DEFINITIONS.authorized },
 };
 
+// ─── Formatting Utilities ──────────────────────────────────
+
+export function formatCurrency(value: number | null | undefined, compact = false): string {
+  if (value === null || value === undefined) return "—";
+  if (compact) {
+    if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+    if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
+  }
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+}
+
+export function formatPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  return `${value.toFixed(1)}%`;
+}
+
+export function getRevenueAttainment(partner: Partner): number | null {
+  const { revenueFY27, targetFY27 } = partner.revenueData;
+  if (!targetFY27) return null;
+  return Math.round((revenueFY27 / targetFY27) * 100);
+}
+
 // ─── Helper Functions ──────────────────────────────────────
 
 export function getTierDef(tier: ProgramTier): TierDefinition {
@@ -277,6 +310,18 @@ function makePartner(
   const enablementComp = isEnablementCompliant(requirements);
   const businessComp = isBusinessCompliant(bm, tierDef.businessMetrics);
 
+  const revenueData: RevenueData = financials
+    ? {
+        revenueFY27: financials.fy27Revenue,
+        targetFY27: financials.targetFY27,
+        pipelineFY27: financials.pipelineFY27,
+        contributionFY27: financials.contributionFY27,
+        drFY27: financials.drFY27,
+        revenueFY26: financials.fy26Revenue,
+        revenueFY25: financials.fy25Revenue,
+      }
+    : { revenueFY27: 0, targetFY27: 0, pipelineFY27: 0, contributionFY27: 0, drFY27: 0, revenueFY26: 0, revenueFY25: 0 };
+
   return {
     id,
     name,
@@ -293,6 +338,7 @@ function makePartner(
     exams,
     totalExams,
     financials,
+    revenueData,
     meta,
   };
 }
