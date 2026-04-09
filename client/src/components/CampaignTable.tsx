@@ -781,6 +781,11 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           <span className="text-[12px] text-muted-foreground">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-3.5 text-right">
+                        <span className="text-[12px] font-semibold text-foreground">
+                          {formatCurrency(partner.revenueData.revenueFY27, true)}
+                        </span>
+                      </td>
                       <td className="px-4 py-3.5">
                         <button
                           className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
@@ -796,7 +801,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
               })
             ) : (
               <tr>
-                <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground text-[13px]">
+                <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground text-[13px]">
                   {searchQuery
                     ? `No partners matching "${searchQuery}" found.`
                     : "No partners match the current filter."}

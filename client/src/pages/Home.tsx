@@ -176,7 +176,7 @@ export default function Home() {
             <section className="mb-6">
               <ComplianceSummary
                 activeFilter={complianceFilter}
-                onFilterChange={setComplianceFilter}
+                onFilterChange={(filter: ComplianceFilter) => setComplianceFilter(filter)}
               />
             </section>
 
