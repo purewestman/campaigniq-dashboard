@@ -315,7 +315,13 @@ function makePartner(
   const totalExams = exams.reduce((s, e) => s + e.certifications.length, 0);
   const tierDef = TIER_DEFINITIONS[programTier];
   const enablementComp = isEnablementCompliant(requirements);
-  const businessComp = isBusinessCompliant(bm, tierDef.businessMetrics);
+
+  // Revenue = Bookings USD — auto-populate bookingsUSD from fy27Revenue if not explicitly set
+  const resolvedBm: BusinessMetrics = {
+    ...bm,
+    bookingsUSD: bm.bookingsUSD !== null ? bm.bookingsUSD : (financials ? financials.fy27Revenue : null),
+  };
+  const businessComp = isBusinessCompliant(resolvedBm, tierDef.businessMetrics);
 
   const revenueData: RevenueData = financials
     ? {
@@ -334,7 +340,7 @@ function makePartner(
     name,
     programTier,
     requirements,
-    businessMetrics: bm,
+    businessMetrics: resolvedBm,
     totalGaps: computeEnablementGaps(requirements),
     enablementScore: computeEnablementScore(requirements),
     enablementCompliant: enablementComp,
