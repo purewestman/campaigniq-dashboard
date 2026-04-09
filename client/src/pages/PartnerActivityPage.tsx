@@ -7,7 +7,7 @@
  *   • By Course      — roster + monthly timeline for one course
  */
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Activity,
   Trophy,
@@ -16,6 +16,7 @@ import {
   X,
   BookOpen,
   Building2,
+  FileDown,
 } from "lucide-react";
 import {
   LineChart,
@@ -64,7 +65,6 @@ function buildAllRecords(): UnifiedRecord[] {
   // From CSV — add only records not already covered by activityData partners
   const excelPartners = new Set(Object.keys(activityData).filter(k => k !== "Total"));
   for (const [partner, recs] of Object.entries(csvActivityData)) {
-    // If this partner already exists in activityData, skip (avoid double-counting)
     if (excelPartners.has(partner)) continue;
     for (const r of recs) {
       out.push({ partner, email: r.email, name: r.name, activity: r.activity, date: r.date });
@@ -79,6 +79,54 @@ const ALL_RECORDS: UnifiedRecord[] = buildAllRecords();
 
 const ALL_PARTNERS = Array.from(new Set(ALL_RECORDS.map(r => r.partner))).sort();
 const ALL_COURSES  = Array.from(new Set(ALL_RECORDS.map(r => r.activity))).sort();
+
+// ─── PDF Export helper ────────────────────────────────────────────────────────
+function triggerPrint(printRef: React.RefObject<HTMLDivElement | null>) {
+  const el = printRef.current;
+  if (!el) return;
+
+  const html = el.innerHTML;
+  const win = window.open("", "_blank");
+  if (!win) return;
+
+  win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Activity Tracer Export — PEI Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #111; background: #fff; padding: 24px; }
+    h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: #374151; }
+    .subtitle { font-size: 11px; color: #6b7280; margin-bottom: 20px; }
+    .stats { display: flex; gap: 24px; margin-bottom: 20px; padding: 12px 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; }
+    .stat-value { font-size: 20px; font-weight: 700; color: #111; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    thead th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; border-bottom: 1px solid #d1d5db; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    tbody td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+    .badge-partner { background: #ede9fe; color: #5b21b6; }
+    .badge-course { background: #fef3c7; color: #92400e; }
+    .footer { margin-top: 24px; font-size: 10px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  ${html}
+  <div class="footer">PEI · FY27 Global Reseller Program · Data as of April 2026 · Generated ${new Date().toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })}</div>
+</body>
+</html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 interface Props {
@@ -100,6 +148,8 @@ export default function PartnerActivityPage({
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
   const [selectedPartner, setSelectedPartner] = useState(initialPartner || ALL_PARTNERS[0] || "");
   const [selectedCourse, setSelectedCourse]   = useState(initialCourse  || ALL_COURSES[0]  || "");
+
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialPartner) { setViewMode("partner"); setSelectedPartner(initialPartner); }
@@ -144,34 +194,40 @@ export default function PartnerActivityPage({
 
   const topEmployees = useMemo(() => {
     if (partnerRecords.length === 0) return [];
-    const counts: Record<string, { name: string; email: string; count: number; activities: Set<string> }> = {};
+    const counts: Record<string, { name: string; email: string; count: number; activities: string[] }> = {};
     partnerRecords.forEach(r => {
-      if (!counts[r.email]) counts[r.email] = { name: r.name, email: r.email, count: 0, activities: new Set() };
+      if (!counts[r.email]) counts[r.email] = { name: r.name, email: r.email, count: 0, activities: [] };
       counts[r.email].count += 1;
-      if (r.activity) counts[r.email].activities.add(r.activity);
+      if (r.activity && !counts[r.email].activities.includes(r.activity)) {
+        counts[r.email].activities.push(r.activity);
+      }
     });
     return Object.values(counts)
-      .map(e => ({ ...e, activities: Array.from(e.activities) }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
   }, [partnerRecords]);
 
   const partnerChartData = useMemo(() => {
     if (partnerRecords.length === 0) return [];
-    const topKeys: Record<string, string> = {};
-    topEmployees.forEach(e => { topKeys[e.email] = safeKey(e.email); });
 
-    const map: Record<string, Record<string, number | string>> = {};
+    // Map email → safe recharts key for top employees
+    const topKeyByEmail: Record<string, string> = {};
+    topEmployees.forEach(e => { topKeyByEmail[e.email] = safeKey(e.email); });
+
+    const map: Record<string, { name: string; Total: number; [k: string]: number | string }> = {};
+
     partnerRecords.forEach(r => {
       if (!r.date) return;
       const d = new Date(r.date);
-      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      if (!map[m]) {
-        map[m] = { name: m, Total: 0 };
-        Object.values(topKeys).forEach(k => { map[m][k] = 0; });
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (!map[month]) {
+        const entry: { name: string; Total: number; [k: string]: number | string } = { name: month, Total: 0 };
+        topEmployees.forEach(e => { entry[safeKey(e.email)] = 0; });
+        map[month] = entry;
       }
-      (map[m].Total as number) += 1;
-      if (topKeys[r.email]) (map[m][topKeys[r.email]] as number) += 1;
+      map[month].Total += 1;
+      const sk = topKeyByEmail[r.email];
+      if (sk) (map[month][sk] as number) += 1;
     });
 
     return Object.values(map).sort((a, b) => (a.name as string).localeCompare(b.name as string));
@@ -210,9 +266,104 @@ export default function PartnerActivityPage({
 
   const chartData = isSearching ? globalChartData : viewMode === "partner" ? partnerChartData : courseChartData;
 
+  // ── PDF print content ─────────────────────────────────────────────
+  const printTitle = isSearching
+    ? `Search: "${searchQuery}"`
+    : viewMode === "partner"
+    ? selectedPartner
+    : selectedCourse;
+
+  const printRows: { col1: string; col2: string; col3: string; col4: string }[] = useMemo(() => {
+    if (isSearching) {
+      return globalResults.map(r => ({
+        col1: r.name || r.email,
+        col2: r.email,
+        col3: r.partner,
+        col4: r.date ? new Date(r.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : "—",
+      }));
+    }
+    if (viewMode === "partner") {
+      return topEmployees.map(e => ({
+        col1: e.name || e.email,
+        col2: e.email,
+        col3: `${e.count} module${e.count !== 1 ? "s" : ""}`,
+        col4: e.activities.slice(0, 3).join("; ") + (e.activities.length > 3 ? " …" : ""),
+      }));
+    }
+    // By Course
+    return courseRoster.map(r => ({
+      col1: r.name || r.email,
+      col2: r.email,
+      col3: r.partner,
+      col4: r.date ? new Date(r.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : "—",
+    }));
+  }, [isSearching, viewMode, globalResults, topEmployees, courseRoster]);
+
+  const printHeaders = isSearching
+    ? ["Name", "Email", "Partner", "Date"]
+    : viewMode === "partner"
+    ? ["Name", "Email", "Modules", "Courses (sample)"]
+    : ["Name", "Email", "Partner", "Completed"];
+
+  const printStats: { label: string; value: string | number }[] = useMemo(() => {
+    if (isSearching) {
+      return [
+        { label: "Matched Records", value: globalResults.length },
+        { label: "Unique People", value: Array.from(new Set(globalResults.map(r => r.email))).length },
+        { label: "Partners", value: Array.from(new Set(globalResults.map(r => r.partner))).length },
+        { label: "Courses", value: Array.from(new Set(globalResults.map(r => r.activity))).length },
+      ];
+    }
+    if (viewMode === "partner") {
+      return [
+        { label: "Total Records", value: partnerRecords.length },
+        { label: "Unique People", value: new Set(partnerRecords.map(r => r.email)).size },
+        { label: "Unique Courses", value: new Set(partnerRecords.map(r => r.activity)).size },
+        { label: "Months Active", value: partnerChartData.length },
+      ];
+    }
+    return [
+      { label: "Total Completions", value: courseRoster.length },
+      { label: "Unique Learners", value: new Set(courseRoster.map(r => r.email)).size },
+      { label: "Partners", value: new Set(courseRoster.map(r => r.partner)).size },
+    ];
+  }, [isSearching, viewMode, globalResults, partnerRecords, partnerChartData, courseRoster]);
+
+  const canExport = listItems.length > 0;
+
   // ─── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {/* ── Hidden print content ── */}
+      <div ref={printRef} style={{ display: "none" }}>
+        <h1>{printTitle}</h1>
+        <p className="subtitle">PEI · FY27 Global Reseller Program · Activity Tracer · {isSearching ? "Search Results" : viewMode === "partner" ? "Partner Report" : "Course Report"}</p>
+        <div className="stats">
+          {printStats.map(s => (
+            <div key={s.label} className="stat-item">
+              <span className="stat-label">{s.label}</span>
+              <span className="stat-value">{s.value}</span>
+            </div>
+          ))}
+        </div>
+        <h2>{isSearching ? "Matched Records" : viewMode === "partner" ? "Top 10 Employees by Activity" : "Completion Roster"}</h2>
+        <table>
+          <thead>
+            <tr>{printHeaders.map(h => <th key={h}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {printRows.map((row, i) => (
+              <tr key={i}>
+                <td>{row.col1}</td>
+                <td>{row.col2}</td>
+                <td>{row.col3}</td>
+                <td>{row.col4}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* ── Header ── */}
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
@@ -228,7 +379,7 @@ export default function PartnerActivityPage({
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
 
-          {/* Global search — highest priority, spans full width on mobile */}
+          {/* Global search */}
           <div className="relative flex items-center w-full sm:w-72">
             <Search className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
@@ -271,7 +422,7 @@ export default function PartnerActivityPage({
             </div>
           )}
 
-          {/* Contextual selector — hidden while searching */}
+          {/* Contextual selectors */}
           {!isSearching && viewMode === "partner" && (
             <select
               value={selectedPartner}
@@ -290,6 +441,18 @@ export default function PartnerActivityPage({
             >
               {ALL_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          )}
+
+          {/* Export PDF button */}
+          {canExport && (
+            <button
+              onClick={() => triggerPrint(printRef)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all shrink-0"
+              title="Export as PDF"
+            >
+              <FileDown className="w-4 h-4 text-rose-500" />
+              Export PDF
+            </button>
           )}
 
           {(initialPartner || initialCourse || initialSearch) && (
@@ -449,11 +612,14 @@ export default function PartnerActivityPage({
         {/* Right panel — Timeline chart */}
         <div className="terrain-card p-6 lg:col-span-2 flex flex-col gap-3">
           <h3 className="text-[14px] font-bold text-foreground">
-            {isSearching ? "Matched Activity — Timeline" : viewMode === "partner" ? `${selectedPartner.split(" ").slice(0, 3).join(" ")} — Monthly Activity` : "Course Completions — Timeline"}
+            {isSearching
+              ? "Matched Activity — Timeline"
+              : viewMode === "partner"
+              ? `${selectedPartner.split(" ").slice(0, 3).join(" ")} — Monthly Activity`
+              : "Course Completions — Timeline"}
           </h3>
 
           {chartData.length > 0 ? (
-            /* Fixed pixel height so ResponsiveContainer can resolve height="100%" */
             <div style={{ width: "100%", height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
@@ -480,7 +646,7 @@ export default function PartnerActivityPage({
                       background: "rgba(255,255,255,0.97)",
                     }}
                     formatter={(value: number, name: string) => {
-                      if (viewMode === "partner" && !isSearching) {
+                      if (!isSearching && viewMode === "partner") {
                         const emp = topEmployees.find(e => safeKey(e.email) === name);
                         return [value, emp ? (emp.name || emp.email.split("@")[0]) : name];
                       }
@@ -490,7 +656,7 @@ export default function PartnerActivityPage({
                   <Legend
                     wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
                     formatter={(value: string) => {
-                      if (viewMode === "partner" && !isSearching) {
+                      if (!isSearching && viewMode === "partner") {
                         const emp = topEmployees.find(e => safeKey(e.email) === value);
                         return emp ? (emp.name || emp.email.split("@")[0]) : value;
                       }
@@ -498,35 +664,55 @@ export default function PartnerActivityPage({
                     }}
                   />
 
-                  {/* Global search or course: single Completions line */}
+                  {/* Global search or course: single Completions line.
+                      NOTE: Do NOT wrap Line elements in React Fragments inside recharts —
+                      recharts traverses direct children only and won't see Lines inside <>. */}
                   {(isSearching || viewMode === "course") && (
                     <Line type="monotone" dataKey="Completions" stroke="#e11d48" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "white" }} activeDot={{ r: 6 }} />
                   )}
 
-                  {/* Partner view: Total + individual per-employee lines */}
-                  {!isSearching && viewMode === "partner" && (
-                    <>
-                      <Line
-                        type="monotone"
-                        dataKey="Total"
-                        stroke="#2563eb"
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2, fill: "white" }}
-                        activeDot={{ r: 6 }}
-                      />
-                      {topEmployees.map((emp, i) => (
-                        <Line
-                          key={emp.email}
-                          type="monotone"
-                          dataKey={safeKey(emp.email)}
-                          name={safeKey(emp.email)}
-                          stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                          strokeWidth={1.5}
-                          dot={false}
-                          activeDot={{ r: 4 }}
-                        />
-                      ))}
-                    </>
+                  {/* Partner: Total line */}
+                  {(!isSearching && viewMode === "partner") && (
+                    <Line
+                      type="monotone"
+                      dataKey="Total"
+                      stroke="#2563eb"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                      activeDot={{ r: 6 }}
+                    />
+                  )}
+
+                  {/* Partner: individual employee lines — each rendered as a direct child (no Fragment) */}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 0 && (
+                    <Line key={topEmployees[0].email} type="monotone" dataKey={safeKey(topEmployees[0].email)} name={safeKey(topEmployees[0].email)} stroke={LINE_COLORS[0]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 1 && (
+                    <Line key={topEmployees[1].email} type="monotone" dataKey={safeKey(topEmployees[1].email)} name={safeKey(topEmployees[1].email)} stroke={LINE_COLORS[1]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 2 && (
+                    <Line key={topEmployees[2].email} type="monotone" dataKey={safeKey(topEmployees[2].email)} name={safeKey(topEmployees[2].email)} stroke={LINE_COLORS[2]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 3 && (
+                    <Line key={topEmployees[3].email} type="monotone" dataKey={safeKey(topEmployees[3].email)} name={safeKey(topEmployees[3].email)} stroke={LINE_COLORS[3]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 4 && (
+                    <Line key={topEmployees[4].email} type="monotone" dataKey={safeKey(topEmployees[4].email)} name={safeKey(topEmployees[4].email)} stroke={LINE_COLORS[4]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 5 && (
+                    <Line key={topEmployees[5].email} type="monotone" dataKey={safeKey(topEmployees[5].email)} name={safeKey(topEmployees[5].email)} stroke={LINE_COLORS[5]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 6 && (
+                    <Line key={topEmployees[6].email} type="monotone" dataKey={safeKey(topEmployees[6].email)} name={safeKey(topEmployees[6].email)} stroke={LINE_COLORS[6]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 7 && (
+                    <Line key={topEmployees[7].email} type="monotone" dataKey={safeKey(topEmployees[7].email)} name={safeKey(topEmployees[7].email)} stroke={LINE_COLORS[7]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 8 && (
+                    <Line key={topEmployees[8].email} type="monotone" dataKey={safeKey(topEmployees[8].email)} name={safeKey(topEmployees[8].email)} stroke={LINE_COLORS[8]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 9 && (
+                    <Line key={topEmployees[9].email} type="monotone" dataKey={safeKey(topEmployees[9].email)} name={safeKey(topEmployees[9].email)} stroke={LINE_COLORS[9]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
                   )}
                 </LineChart>
               </ResponsiveContainer>
@@ -539,7 +725,7 @@ export default function PartnerActivityPage({
             </div>
           )}
 
-          {/* Summary stats below chart */}
+          {/* Summary stats */}
           {!isSearching && viewMode === "partner" && partnerRecords.length > 0 && (
             <div className="flex flex-wrap gap-4 pt-2 border-t border-border/40">
               <div>
