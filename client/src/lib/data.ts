@@ -366,7 +366,7 @@ function makePartner(
 
 export const partners: Partner[] = [
   // ── Tier 1: FULLY COMPLIANT (8 partners) ──
-  makePartner(1, "Data Sciences Corporation", "elite", 6, 2, 2, 1,
+  makePartner(1, "Data Sciences Corporation", "elite", 13, 3, 7, 13,
     "Gap CLOSED. 18 certs across 11 SEs. $681K FY27 revenue, $21.2M pipeline.",
     ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"],
     [
@@ -394,7 +394,7 @@ export const partners: Partner[] = [
       { email: "lerato.mabunda@axiz.com", certifications: ["Pure Platform Positioning Certificate"] },
     ]),
 
-  makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 6, 4, 2, 2,
+  makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 4, 2, 2, 5,
     "Gap CLOSED. 15 certs across 8 SEs. $68K FY27 revenue, $14.7M pipeline.",
     ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"],
     [
@@ -410,7 +410,7 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 14663939, fy27Revenue: 68427, contributionFY27: 0.04, drFY27: 34, fy26Revenue: 2582381, contributionFY26: 0.17, fy25Revenue: 917409, fy24Revenue: 0 }),
 
-  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 5, 3, 2, 1,
+  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 6, 1, 3, 2,
     "Gap CLOSED. 3 certs, $11.8M pipeline. Focus on conversion.",
     ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"],
     [
@@ -419,28 +419,28 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 11754114, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 29, fy26Revenue: 2313276, contributionFY26: 0.15, fy25Revenue: 1786458, fy24Revenue: 2009087 }),
 
-  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 6, 4, 2, 1,
+  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 18, 1, 6, 6,
     "Gap CLOSED. $369K FY27 revenue, $1.5M pipeline. 1 customer, 1 installation.",
     ["steliosk@ftechkzn.co.za"],
     [],
     { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
     { targetFY27: 1000000, pipelineFY27: 1474699, fy27Revenue: 368798, contributionFY27: 0.20, drFY27: 17, fy26Revenue: 1161197, contributionFY26: 0.08, fy25Revenue: 0, fy24Revenue: 0 }),
 
-  makePartner(6, "iOCO Infrastructure Services", "elite", 6, 4, 2, 1,
+  makePartner(6, "iOCO Infrastructure Services", "elite", 7, 0, 3, 1,
     "Gap CLOSED. $3M pipeline, focus on conversion. 6 DRs in flight.",
     ["jacques.dejager@ioco.tech"],
     [],
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 3048476, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 6, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 751411, fy24Revenue: 2271293 }),
 
-  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 6, 4, 2, 1,
+  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 4, 0, 3, 1,
     "Gap CLOSED. High compliance. $1M pipeline, 4 DRs registered.",
     [],
     [],
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 1049129, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 4, fy26Revenue: 722318, contributionFY26: 0.05, fy25Revenue: 723226, fy24Revenue: 1476692 }),
 
-  makePartner(8, "Technology Corporate Management", "elite", 6, 4, 2, 1,
+  makePartner(8, "Technology Corporate Management", "elite", 6, 0, 8, 3,
     "Gap CLOSED. $49K FY27 revenue, $1.6M pipeline. 3 certs on file.",
     ["vishnu.naidoo@tcm.co.za"],
     [
@@ -451,8 +451,8 @@ export const partners: Partner[] = [
     { targetFY27: 1000000, pipelineFY27: 1636573, fy27Revenue: 49390, contributionFY27: 0.03, drFY27: 14, fy26Revenue: 749572, contributionFY26: 0.05, fy25Revenue: 400457, fy24Revenue: 1370355 }),
 
   // ── Tier 2: PARTIAL PROGRESS (5 partners) ──
-  makePartner(9, "Altron Digital Business", "preferred", 3, 1, 0, 0,
-    "Gap of 2. 6 certs on file. $194K pipeline, 2 DRs registered.",
+  makePartner(9, "Altron Digital Business", "preferred", 10, 3, 9, 2,
+    "Strong training activity. 6 certs on file. $194K pipeline, 2 DRs registered.",
     ["robert.mlombile@altron.com"],
     [
       { email: "zane.maphalle@altron.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
@@ -462,8 +462,8 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: 0, partnerDeliveredServices: 0 },
     { targetFY27: 1000000, pipelineFY27: 194302, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 0, fy24Revenue: 0 }),
 
-  makePartner(10, "ITgility PTY (Ltd)", "preferred", 1, 1, 0, 0,
-    "Gap of 2. 1 cert on file. $179K pipeline, 2 DRs registered.",
+  makePartner(10, "ITgility PTY (Ltd)", "preferred", 2, 1, 1, 1,
+    "Gap of 1. 1 cert on file. $179K pipeline, 2 DRs registered.",
     ["envorp@itgility.co.za"],
     [
       { email: "jamesb@itgility.co.za", certifications: ["Pure Platform Positioning Certificate"] },
@@ -475,8 +475,8 @@ export const partners: Partner[] = [
     "Gap of 2. Initial certifications in progress.",
     []),
 
-  makePartner(12, "Triple H Technology Group", "preferred", 1, 0, 0, 0,
-    "Gap of 3. 1 cert on file. $1.4M pipeline, 12 DRs registered.",
+  makePartner(12, "Triple H Technology Group", "preferred", 2, 0, 0, 0,
+    "Gap of 2. 1 cert on file. $1.4M pipeline, 12 DRs registered.",
     ["frederiks@triplehgroup.co.za"],
     [
       { email: "frederiks@triplehgroup.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
@@ -484,22 +484,22 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 0 },
     { targetFY27: 1000000, pipelineFY27: 1397860, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 12, fy26Revenue: 151860, contributionFY26: 0.01, fy25Revenue: 153427, fy24Revenue: 246160 }),
 
-  makePartner(13, "Lekonakonetsi Consulting Services (PTY) LTD", "preferred", 1, 0, 0, 0,
-    "Gap of 3. Target engineers starting path.",
+  makePartner(13, "Lekonakonetsi Consulting Services (PTY) LTD", "preferred", 3, 0, 0, 0,
+    "Gap of 1. Sales path in progress. Push for Tech Pro and Bootcamp completions.",
     []),
 
   // ── Tier 3: AUTHORIZED / NEW SCOPE (18 partners) ──
   makePartner(14, "ALTRON FINANCE", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement roadmap needed.", []),
 
-  makePartner(15, "BILLION ROWS (PTY) LTD", "authorized", 0, 0, 0, 0,
-    "High Gap. Initial engagement pending.", []),
+  makePartner(15, "BILLION ROWS (PTY) LTD", "authorized", 1, 0, 0, 0,
+    "1 sales path completion. Push for remaining enablement.", []),
 
   makePartner(16, "Bottomline IT", "authorized", 0, 0, 0, 0,
     "High Gap. No completions recorded.", []),
 
-  makePartner(17, "Complete Enterprise Solutions Mozambique, Limitada", "authorized", 0, 0, 0, 0,
-    "High Gap. Regional expansion target.", []),
+  makePartner(17, "Complete Enterprise Solutions Mozambique, Limitada", "authorized", 9, 1, 1, 2,
+    "Strong training activity for regional partner. Push for Tech Pro and Impl Spec completions.", []),
 
   makePartner(18, "Complete Enterprise Solutions Namibia PTY Ltd", "authorized", 0, 0, 0, 0,
     "High Gap. $1.1M pipeline, 8 DRs registered.", [],
@@ -507,8 +507,8 @@ export const partners: Partner[] = [
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 1079690, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 8, fy26Revenue: 293007, contributionFY26: 0.02, fy25Revenue: 0, fy24Revenue: 0 }),
 
-  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 0, 0, 0, 0,
-    "High Gap. Regional expansion target.", []),
+  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 1, 0, 6, 0,
+    "Good Bootcamp completions. Prioritise Sales Pro and Tech Pro paths.", []),
 
   makePartner(20, "Data Sciences Corporation UK", "authorized", 0, 0, 0, 0,
     "High Gap. Subsidiary enablement pending.", []),
@@ -519,8 +519,8 @@ export const partners: Partner[] = [
   makePartner(22, "First Technology - Gauteng", "authorized", 0, 0, 0, 0,
     "High Gap. Zero completions.", []),
 
-  makePartner(23, "FIRST TECHNOLOGY GROUP (PTY) LTD", "authorized", 0, 0, 0, 0,
-    "High Gap. All metrics required.", ["calvinm@firsttech.co.za"]),
+  makePartner(23, "FIRST TECHNOLOGY GROUP (PTY) LTD", "authorized", 0, 1, 0, 0,
+    "1 Tech Pro completion. Prioritise Sales Pro, Bootcamp, and Impl Spec paths.", ["calvinm@firsttech.co.za"]),
 
   makePartner(24, "FirstNet", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement plan required.", []),
@@ -534,8 +534,8 @@ export const partners: Partner[] = [
   makePartner(27, "Lcs Holdings", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement roadmap needed.", []),
 
-  makePartner(28, "MATLALA GROUP (PTY) LTD", "authorized", 0, 0, 0, 0,
-    "High Gap. New partner entry.", []),
+  makePartner(28, "MATLALA GROUP (PTY) LTD", "authorized", 1, 0, 0, 0,
+    "1 sales path completion. Push for remaining enablement.", []),
 
   makePartner(29, "MBULASE GROUP", "authorized", 0, 0, 0, 0,
     "High Gap. New partner entry.", []),

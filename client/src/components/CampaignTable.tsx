@@ -18,6 +18,7 @@ import {
   formatPercent,
   getRevenueAttainment,
 } from "@/lib/data";
+import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
 import {
   ArrowUpDown,
@@ -68,23 +69,6 @@ const categoryLabels: Record<GapCategory, string> = {
 };
 
 /** Progress bar with override toggle for a single requirement category */
-const CERT_KEYWORDS: Record<GapCategory, string[]> = {
-  salesPro: ["sales professional"],
-  techPro: ["technical sales professional"],
-  bootcamp: ["se bootcamp", "bootcamp"],
-  implSpec: ["implementation specialist", "support specialist"],
-};
-
-function getCertPeople(exams: import("@/lib/data").ExamRecord[], category: GapCategory) {
-  const keywords = CERT_KEYWORDS[category];
-  return exams
-    .map((e) => ({
-      email: e.email,
-      certs: e.certifications.filter((c) => keywords.some((kw) => c.toLowerCase().includes(kw))),
-    }))
-    .filter((e) => e.certs.length > 0);
-}
-
 function RequirementBarWithOverride({
   label,
   category,
@@ -93,7 +77,6 @@ function RequirementBarWithOverride({
   partnerId,
   partnerName,
   onNavigateToActivity,
-  exams = [],
 }: {
   label: string;
   category: GapCategory;
@@ -102,7 +85,6 @@ function RequirementBarWithOverride({
   partnerId: number;
   partnerName: string;
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
-  exams?: import("@/lib/data").ExamRecord[];
 }) {
   const { getOverride, addOverride, removeOverride } = useOverrides();
   const override = getOverride(partnerId, category);
@@ -113,7 +95,7 @@ function RequirementBarWithOverride({
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
   const [showPeople, setShowPeople] = useState(false);
-  const certPeople = getCertPeople(exams, category);
+  const trainingPeople: TrainingPerson[] = trainingData[partnerId]?.[category] ?? [];
 
   const handleMarkComplete = () => {
     addOverride({ partnerId, category, comment: comment.trim(), completedBy: "Admin" });
@@ -239,23 +221,19 @@ function RequirementBarWithOverride({
               style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.90 0.02 220)" }}
             >
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "oklch(0.48 0.16 290)" }}>
-                {label} — Certified Individuals
+                {label} — Completed ({trainingPeople.length})
               </p>
-              {certPeople.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground italic">No certification records matched for this category.</p>
+              {trainingPeople.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
               ) : (
-                <div className="space-y-2">
-                  {certPeople.map((person) => (
-                    <div key={person.email}>
-                      <p className="text-[11px] font-medium text-foreground">{person.email}</p>
-                      <ul className="mt-0.5 space-y-0.5">
-                        {person.certs.map((cert) => (
-                          <li key={cert} className="text-[10px] text-muted-foreground flex items-start gap-1">
-                            <Award className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
-                            {cert}
-                          </li>
-                        ))}
-                      </ul>
+                <div className="space-y-1">
+                  {trainingPeople.map((person) => (
+                    <div key={person.email} className="flex items-center gap-2">
+                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                      <span className="text-[11px] font-medium text-foreground">
+                        {person.firstName} {person.lastName}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
                     </div>
                   ))}
                 </div>
@@ -381,7 +359,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
-                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Tech Pro"
@@ -391,7 +368,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
-                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Bootcamp"
@@ -401,7 +377,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
-                exams={partner.exams}
               />
               <RequirementBarWithOverride
                 label="Impl Spec"
@@ -411,7 +386,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 partnerId={partner.id}
                 partnerName={partner.name}
                 onNavigateToActivity={onNavigateToActivity}
-                exams={partner.exams}
               />
             </div>
 

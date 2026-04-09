@@ -17,6 +17,7 @@ import {
   formatPercent,
   getRevenueAttainment,
 } from "@/lib/data";
+import { trainingData } from "@/lib/trainingData";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import ModifyGapModal from "@/components/ModifyGapModal";
@@ -38,6 +39,7 @@ import {
   X,
   Pencil,
   DollarSign,
+  GraduationCap,
 } from "lucide-react";
 
 const tierIcons: Record<ProgramTier, React.ElementType> = {
@@ -58,22 +60,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
   const [modifyPartner, setModifyPartner] = useState<Partner | null>(null);
   const [certPopover, setCertPopover] = useState<{ partnerId: number; category: string } | null>(null);
 
-  const CERT_KEYWORDS: Record<string, string[]> = {
-    salesPro: ["sales professional"],
-    techPro: ["technical sales professional"],
-    bootcamp: ["se bootcamp", "bootcamp"],
-    implSpec: ["implementation specialist", "support specialist"],
-  };
-
-  function getCertPeople(partner: Partner, category: string) {
-    const keywords = CERT_KEYWORDS[category] || [];
-    return partner.exams
-      .map((e) => ({
-        email: e.email,
-        certs: e.certifications.filter((c) => keywords.some((kw) => c.toLowerCase().includes(kw))),
-      }))
-      .filter((e) => e.certs.length > 0);
-  }
   const { getOverrideCount } = useOverrides();
   const { modifiedPartners, getModification } = useModifications();
 
@@ -328,38 +314,32 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             );
                           })}
                         </div>
-                        {/* Cert people popover */}
+                        {/* Training people popover */}
                         {certPopover?.partnerId === partner.id && (() => {
-                          const people = getCertPeople(partner, certPopover.category);
-                          const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[certPopover.category] ?? certPopover.category;
+                          const cat = certPopover.category as "salesPro" | "techPro" | "bootcamp" | "implSpec";
+                          const people = trainingData[partner.id]?.[cat] ?? [];
+                          const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[cat] ?? cat;
                           return (
                             <div className="mt-2 rounded-lg p-3 border" style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.88 0.03 220)" }}>
                               <div className="flex items-center justify-between mb-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "oklch(0.48 0.16 290)" }}>
-                                  {catLabel} — Certified Individuals
+                                  {catLabel} — Completed ({people.length})
                                 </p>
                                 <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
                                   <X className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                               {people.length === 0 ? (
-                                <p className="text-[11px] text-muted-foreground italic">No certification records matched for this category.</p>
+                                <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
                               ) : (
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                   {people.map((person) => (
-                                    <div key={person.email}>
-                                      <p className="text-[11px] font-medium text-foreground flex items-center gap-1">
-                                        <Mail className="w-3 h-3 text-muted-foreground" />
-                                        {person.email}
-                                      </p>
-                                      <ul className="mt-1 space-y-0.5 pl-4">
-                                        {person.certs.map((cert) => (
-                                          <li key={cert} className="text-[10px] text-muted-foreground flex items-start gap-1">
-                                            <Award className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
-                                            {cert}
-                                          </li>
-                                        ))}
-                                      </ul>
+                                    <div key={person.email} className="flex items-center gap-2">
+                                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                                      <span className="text-[11px] font-medium text-foreground">
+                                        {person.firstName} {person.lastName}
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
                                     </div>
                                   ))}
                                 </div>
