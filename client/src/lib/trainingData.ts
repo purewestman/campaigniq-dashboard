@@ -1,4 +1,4 @@
-// Auto-generated from Partner_Training_Report_Filled.csv
+// Auto-generated from Online FY27 report v2.csv
 // Bootcamp: only completions with Last Login > Feb 2, 2026 count for FY27
 // DO NOT EDIT — regenerate with the Python script if the CSV changes
 
@@ -59,6 +59,31 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "duane.hulley@datasciences.co.za", firstName: "Duane", lastName: "Hulley" },
     ],
   },
+  2: {
+    salesPro: [
+      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
+      { email: "leriza.debruyn@axiz.com", firstName: "Leriza", lastName: "DeBruyn" },
+      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
+      { email: "mike.styer@axiz.com", firstName: "Mike", lastName: "Styer" },
+      { email: "oscar.ronander@axiz.com", firstName: "Oscar", lastName: "Ronander" },
+      { email: "amogelang.mosaka@axiz.com", firstName: "Amogelang", lastName: "Mosaka" },
+      { email: "themba.wulana@axiz.com", firstName: "Themba", lastName: "Wulana" },
+      { email: "kevin.naidoo@axiz.com", firstName: "Kevin", lastName: "Naidoo" },
+      { email: "irving.hare@axiz.com", firstName: "Irving", lastName: "Hare" },
+    ],
+    techPro: [
+      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
+      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
+      { email: "leriza.debruyn@axiz.com", firstName: "Leriza", lastName: "DeBruyn" },
+    ],
+    bootcamp: [
+      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
+      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
+    ],
+    implSpec: [
+      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
+    ],
+  },
   3: {
     salesPro: [
       { email: "riaan.taylor@global.ntt", firstName: "Riaan", lastName: "Taylor" },
@@ -84,12 +109,12 @@ export const trainingData: Record<number, PartnerTrainingData> = {
   },
   4: {
     salesPro: [
-      { email: "peter.mcguigan@nec.xon.co.za", firstName: "Peter", lastName: "McGuigan" },
       { email: "conrad.vanniekerk@nec.xon.co.za", firstName: "Conrad", lastName: "Van Niekerk" },
       { email: "andre.grobler@nec.xon.co.za", firstName: "Andre", lastName: "Grobler" },
       { email: "marian.lubbe@nec.xon.co.za", firstName: "Marian", lastName: "Lubbe" },
       { email: "sifiso.nkosi@nec.xon.co.za", firstName: "Sifiso", lastName: "Nkosi" },
       { email: "schalk.gouws@nec.xon.co.za", firstName: "Schalk", lastName: "Gouws" },
+      { email: "peter.mcguigan@nec.xon.co.za", firstName: "Peter", lastName: "McGuigan" },
     ],
     techPro: [
       { email: "peter.mcguigan@nec.xon.co.za", firstName: "Peter", lastName: "McGuigan" },
@@ -99,8 +124,8 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "zayed.carrim@nec.xon.co.za", firstName: "Zayed", lastName: "Carrim" },
     ],
     implSpec: [
-      { email: "zayed.carrim@nec.xon.co.za", firstName: "Zayed", lastName: "Carrim" },
       { email: "monique.pretorius@nec.xon.co.za", firstName: "Monique", lastName: "Pretorius" },
+      { email: "zayed.carrim@nec.xon.co.za", firstName: "Zayed", lastName: "Carrim" },
     ],
   },
   5: {
@@ -199,29 +224,13 @@ export const trainingData: Record<number, PartnerTrainingData> = {
   9: {
     salesPro: [
       { email: "craigedward.botha@altron.com", firstName: "Craig Edward", lastName: "Botha" },
-      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
-      { email: "leriza.debruyn@axiz.com", firstName: "Leriza", lastName: "DeBruyn" },
-      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
-      { email: "mike.styer@axiz.com", firstName: "Mike", lastName: "Styer" },
-      { email: "oscar.ronander@axiz.com", firstName: "Oscar", lastName: "Ronander" },
-      { email: "amogelang.mosaka@axiz.com", firstName: "Amogelang", lastName: "Mosaka" },
-      { email: "themba.wulana@axiz.com", firstName: "Themba", lastName: "Wulana" },
-      { email: "kevin.naidoo@axiz.com", firstName: "Kevin", lastName: "Naidoo" },
-      { email: "irving.hare@axiz.com", firstName: "Irving", lastName: "Hare" },
     ],
-    techPro: [
-      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
-      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
-      { email: "leriza.debruyn@axiz.com", firstName: "Leriza", lastName: "DeBruyn" },
-    ],
+    techPro: [],
     bootcamp: [
       { email: "zane.maphalle@altron.com", firstName: "Zane", lastName: "Maphalle" },
-      { email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" },
-      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
     ],
     implSpec: [
       { email: "mpho.mpya@altron.com", firstName: "Mpho", lastName: "Mpya" },
-      { email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" },
     ],
   },
   10: {
@@ -273,13 +282,13 @@ export const trainingData: Record<number, PartnerTrainingData> = {
       { email: "jmachoco@mz.ces-africa.com", firstName: "Jose", lastName: "Machoco" },
       { email: "mhassamo@bytespieces.com", firstName: "Mussa", lastName: "Hassamo" },
       { email: "emachado@mz.ces-africa.com", firstName: "Emilio", lastName: "Machado" },
-      { email: "lmavimbe@mz.ces-africa.com", firstName: "Líria", lastName: "Mavimbe" },
+      { email: "lmavimbe@mz.ces-africa.com", firstName: "L�ria", lastName: "Mavimbe" },
       { email: "mvalgy@mz.ces-africa.com", firstName: "Maizer", lastName: "Valgy" },
-      { email: "isamo@mz.ces-africa.com", firstName: "Idário", lastName: "Samo" },
+      { email: "isamo@mz.ces-africa.com", firstName: "Id�rio", lastName: "Samo" },
       { email: "kzunguza@mz.ces-africa.com", firstName: "Kelven", lastName: "Zunguza" },
     ],
     techPro: [
-      { email: "isamo@mz.ces-africa.com", firstName: "Idário", lastName: "Samo" },
+      { email: "isamo@mz.ces-africa.com", firstName: "Id�rio", lastName: "Samo" },
     ],
     bootcamp: [
       { email: "sthomas@mz.ces-africa.com", firstName: "Samuel", lastName: "Thomas" },
