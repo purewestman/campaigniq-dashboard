@@ -5,6 +5,8 @@
  * "Soft Terrain" design: muted teal, violet, rose, amber palette
  */
 
+import { trainingData } from "./trainingData";
+
 // ─── Program Tier Types ────────────────────────────────────
 
 export type ProgramTier = "authorized" | "preferred" | "elite" | "ambassador";
@@ -311,7 +313,14 @@ function makePartner(
   financials: PartnerFinancials | null = null,
   meta: PartnerMeta | null = null
 ): Partner {
-  const requirements = buildRequirements(programTier, sp, tsp, boot, impl);
+  // Use CSV-derived trainingData as the single source of truth for obtained counts.
+  // The sp/tsp/boot/impl args serve only as fallbacks when no CSV data exists for this partner.
+  const td = trainingData[id];
+  const resolvedSp   = td ? td.salesPro.length  : sp;
+  const resolvedTsp  = td ? td.techPro.length   : tsp;
+  const resolvedBoot = td ? td.bootcamp.length  : boot;
+  const resolvedImpl = td ? td.implSpec.length  : impl;
+  const requirements = buildRequirements(programTier, resolvedSp, resolvedTsp, resolvedBoot, resolvedImpl);
   const totalExams = exams.reduce((s, e) => s + e.certifications.length, 0);
   const tierDef = TIER_DEFINITIONS[programTier];
   const enablementComp = isEnablementCompliant(requirements);
@@ -353,9 +362,9 @@ function makePartner(
     financials,
     revenueData,
     trainingContacts: {
-      salesProContacts: sp,
-      techSalesProContacts: tsp,
-      seBootcampContacts: boot,
+      salesProContacts: resolvedSp,
+      techSalesProContacts: resolvedTsp,
+      seBootcampContacts: resolvedBoot,
     },
     meta,
   };
