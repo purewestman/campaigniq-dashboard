@@ -69,9 +69,9 @@ const categoryLabels: Record<GapCategory, string> = {
 
 /** Progress bar with override toggle for a single requirement category */
 const CERT_KEYWORDS: Record<GapCategory, string[]> = {
-  salesPro: ["platform positioning", "platform solutions", "sales professional"],
-  techPro: ["architect"],
-  bootcamp: ["implementation specialist"],
+  salesPro: ["sales professional"],
+  techPro: ["technical sales professional"],
+  bootcamp: ["se bootcamp", "bootcamp"],
   implSpec: ["implementation specialist", "support specialist"],
 };
 

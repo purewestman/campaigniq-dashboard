@@ -59,9 +59,9 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
   const [certPopover, setCertPopover] = useState<{ partnerId: number; category: string } | null>(null);
 
   const CERT_KEYWORDS: Record<string, string[]> = {
-    salesPro: ["platform positioning", "platform solutions", "sales professional"],
-    techPro: ["architect"],
-    bootcamp: ["implementation specialist"],
+    salesPro: ["sales professional"],
+    techPro: ["technical sales professional"],
+    bootcamp: ["se bootcamp", "bootcamp"],
     implSpec: ["implementation specialist", "support specialist"],
   };
 
