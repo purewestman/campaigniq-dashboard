@@ -33,7 +33,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center justify-center shrink-0">
              <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-               <path fillRule="evenodd" clipRule="evenodd" d="M50 0L6.7 25V75L50 100L93.3 75V50H70V65L50 76.5L30 65V35L50 23.5L70 35H93.3V25Z" fill="var(--color-pure-orange)"/>
+               <path fillRule="evenodd" clipRule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="var(--color-pure-orange)"/>
              </svg>
           </div>
           <div>
