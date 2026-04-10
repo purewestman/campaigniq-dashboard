@@ -150,7 +150,7 @@ function sectionEnablementProgress(partner: Partner) {
   }
 
   return `
-    <div style="margin-top:20px;">
+    <div class="section-wrap">
       <div class="section-title">📊 Enablement Progress</div>
       <div class="grid-2">
         ${categoryBlock("Sales Professional", "salesPro", "salesPro", "💼")}
@@ -205,7 +205,7 @@ function sectionCandidates(partner: Partner) {
 
   if (gaps.length === 0) {
     return `
-      <div style="margin-top:20px;">
+      <div class="section-wrap">
         <div class="section-title">🎯 Recommended Training Candidates</div>
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;color:#15803d;font-size:13px;font-weight:600;">
           ✅ All enablement requirements met. No additional training candidates required.
@@ -252,7 +252,7 @@ function sectionCandidates(partner: Partner) {
   });
 
   return `
-    <div style="margin-top:20px;">
+    <div class="section-wrap">
       <div class="section-title">🎯 Recommended Training Candidates</div>
       <div class="grid-2">${rows.join("")}</div>
       <div style="margin-top:8px;font-size:10px;color:#6b7280;">★ = Priority contact (listed in partner target contacts)</div>
@@ -265,7 +265,7 @@ function sectionCourseSummary(partner: Partner) {
   const td = trainingData[partner.id];
   if (!td) {
     return `
-      <div style="margin-top:20px;">
+      <div class="section-wrap">
         <div class="section-title">📚 Online Course Summary</div>
         <div style="color:#6b7280;font-size:13px;font-style:italic;">No online training data available for this partner.</div>
       </div>`;
@@ -310,7 +310,7 @@ function sectionCourseSummary(partner: Partner) {
     </div>`);
 
   return `
-    <div style="margin-top:20px;">
+    <div class="section-wrap">
       <div class="section-title">📚 Online Course Summary</div>
       <div class="grid-2">${rows.join("")}</div>
     </div>`;
@@ -365,7 +365,7 @@ function sectionAsp(partner: Partner, aspOverride: AspOverride | undefined) {
   ].filter(Boolean) : ["No ASP training data recorded"];
 
   return `
-    <div style="margin-top:20px;">
+    <div class="section-wrap">
       <div class="section-title">🛠️ ASP Eligibility — Authorized Support Partner</div>
       <div style="border:2px solid ${isEligible ? "#e8571a" : "#e5e7eb"};border-radius:12px;padding:20px;background:${isEligible ? "#fff7f3" : "#fafafa"};">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -426,7 +426,7 @@ function sectionBusiness(partner: Partner) {
   }
 
   return `
-    <div style="margin-top:20px;">
+    <div class="section-wrap">
       <div class="section-title">💰 Business Metrics</div>
       <div class="grid-3">
         ${metricCard("Bookings (USD)", bm.bookingsUSD, thresholds.bookingsUSD, (v) => formatCurrency(v, true))}
@@ -490,26 +490,52 @@ export function generateEnablementPlanHtml(
   .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
   .asp-steps { display: flex; gap: 12px; }
   .asp-steps > div { flex: 1; }
+  .section-wrap { margin-top: 20px; }
 
   /* ── Page-break control ─────────────────────────────── */
-  /* Titles always stay with the content that follows */
-  .section-title { break-after: avoid; page-break-after: avoid; }
+  /* Section titles always stay glued to their content */
+  .section-title { break-after: avoid; page-break-after: avoid; margin-bottom: 12px; }
+
   /* Every direct child card of a grid must not split */
   .grid-2 > div,
   .grid-3 > div,
-  .asp-steps > div,
-  .section-wrap { break-inside: avoid; page-break-inside: avoid; }
+  .asp-steps > div { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Entire section wrappers must stay together — push to next page if needed */
+  .section-wrap {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
 
   @media print {
     body { background: #fff; }
     .page-wrap { box-shadow: none; max-width: 100%; }
     .no-print { display: none; }
     @page { margin: 1.2cm 1.5cm; size: A4; }
-    .section-title { break-after: avoid !important; page-break-after: avoid !important; }
+
+    /* Force section titles to stay with content */
+    .section-title {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
+    }
+
+    /* All grid items unbreakable */
     .grid-2 > div,
     .grid-3 > div,
-    .asp-steps > div,
-    .section-wrap { break-inside: avoid !important; page-break-inside: avoid !important; }
+    .asp-steps > div {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    /* Entire sections must not be split — push to next page if not enough room */
+    .section-wrap {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      orphans: 10 !important;
+      widows: 10 !important;
+    }
   }
 </style>
 </head>
