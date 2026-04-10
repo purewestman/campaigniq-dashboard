@@ -106,8 +106,7 @@ export default function Home() {
             }}
           />
         );
-      case "asp":
-        return <AspTrackingPage />;
+
       case "settings":
         return (
           <div className="space-y-6">
@@ -180,6 +179,17 @@ export default function Home() {
               />
             </section>
 
+            {/* Partner Tier Compliance Table — moved above charts */}
+            <section className="mb-6">
+              <PartnerTable
+                partners={filteredPartners}
+                activeFilter={complianceFilter}
+                onFilterChange={setComplianceFilter}
+                searchQuery={searchQuery}
+                onNavigateToActivity={navigateToActivity}
+              />
+            </section>
+
             {/* Charts Row: Gap Analysis (60%) + Enablement Donut (40%) */}
             <section className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
               <div className="lg:col-span-3">
@@ -190,15 +200,9 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Partner Tier Compliance Table */}
+            {/* ASP Qualification Tracking — embedded from standalone page */}
             <section className="mb-8">
-              <PartnerTable
-                partners={filteredPartners}
-                activeFilter={complianceFilter}
-                onFilterChange={setComplianceFilter}
-                searchQuery={searchQuery}
-                onNavigateToActivity={navigateToActivity}
-              />
+              <AspTrackingPage />
             </section>
           </>
         );

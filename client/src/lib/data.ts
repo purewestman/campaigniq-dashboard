@@ -745,6 +745,5 @@ export const navItems: NavItem[] = [
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassedCount },
   { id: "activity", label: "Activity Tracer", icon: "Activity" },
-  { id: "asp", label: "ASP Tracker", icon: "ShieldAlert" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];
