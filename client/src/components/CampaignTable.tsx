@@ -17,17 +17,8 @@ import {
   formatCurrency,
   formatPercent,
   getRevenueAttainment,
-<<<<<<< HEAD
 } from "@/lib/data";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
-=======
-  generateRecommendedAction,
-} from "@/lib/data";
-import { trainingData, type TrainingPerson } from "@/lib/trainingData";
-import { aspData, type AspPerson } from "@/lib/aspData";
-import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
-import { openEnablementPlan } from "@/lib/enablementPlanPdf";
->>>>>>> user_github/main
 import {
   ArrowUpDown,
   MoreHorizontal,
@@ -48,15 +39,6 @@ import {
   DollarSign,
   Users,
   GraduationCap,
-<<<<<<< HEAD
-=======
-  Wrench,
-  BadgeCheck,
-  CircleAlert,
-  FileDown,
-  ToggleLeft,
-  ToggleRight,
->>>>>>> user_github/main
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -66,11 +48,7 @@ type SortKey = "name" | "totalGaps" | "enablementScore" | "totalExams";
 interface PartnerTableProps {
   partners: Partner[];
   activeFilter: string;
-<<<<<<< HEAD
   onFilterChange: (filter: string) => void;
-=======
-  onFilterChange: (filter: ComplianceFilter) => void;
->>>>>>> user_github/main
   searchQuery: string;
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
 }
@@ -96,11 +74,6 @@ function RequirementBarWithOverride({
   obtained,
   required,
   partnerId,
-<<<<<<< HEAD
-=======
-  partnerName,
-  onNavigateToActivity,
->>>>>>> user_github/main
 }: {
   label: string;
   category: GapCategory;
@@ -118,11 +91,6 @@ function RequirementBarWithOverride({
 
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
-<<<<<<< HEAD
-=======
-  const [showPeople, setShowPeople] = useState(false);
-  const trainingPeople: TrainingPerson[] = trainingData[partnerId]?.[category] ?? [];
->>>>>>> user_github/main
 
   const handleMarkComplete = () => {
     addOverride({ partnerId, category, comment: comment.trim(), completedBy: "Admin" });
@@ -187,7 +155,6 @@ function RequirementBarWithOverride({
           />
         </div>
         
-<<<<<<< HEAD
         {/* Navigation link to activity tracker */}
         <button
           onClick={(e) => {
@@ -202,19 +169,6 @@ function RequirementBarWithOverride({
           title={`View ${label} details`}
         >
           View Individuals
-=======
-        {/* Toggle certified people */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowPeople((p) => !p); }}
-          className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:bg-black/10 active:scale-95 shrink-0"
-          style={{
-            background: showPeople ? "oklch(0.58 0.16 290 / 0.16)" : "oklch(0.58 0.16 290 / 0.08)",
-            color: "oklch(0.48 0.16 290)",
-          }}
-          title={`View ${label} certified individuals`}
-        >
-          {showPeople ? "Hide" : "Who?"}
->>>>>>> user_github/main
         </button>
         {/* Override / Undo buttons */}
         {gap > 0 && !override && (
@@ -251,45 +205,6 @@ function RequirementBarWithOverride({
         )}
       </div>
 
-<<<<<<< HEAD
-=======
-      {/* Certified individuals panel */}
-      <AnimatePresence>
-        {showPeople && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-2 overflow-hidden"
-          >
-            <div
-              className="rounded-lg px-3 py-2.5 border"
-              style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.90 0.02 220)" }}
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "oklch(0.48 0.16 290)" }}>
-                {label} — Completed ({trainingPeople.length})
-              </p>
-              {trainingPeople.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
-              ) : (
-                <div className="space-y-1">
-                  {trainingPeople.map((person) => (
-                    <div key={person.email} className="flex items-center gap-2">
-                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
-                      <span className="text-[11px] font-medium text-foreground">
-                        {person.firstName} {person.lastName}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
->>>>>>> user_github/main
       {/* Comment input for override */}
       <AnimatePresence>
         {showComment && (
@@ -357,290 +272,10 @@ function RequirementBarWithOverride({
   );
 }
 
-<<<<<<< HEAD
 /** Expanded detail row for a partner */
 function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNavigateToActivity?: (partner: string, course?: string, search?: string) => void }) {
   const { getPartnerOverrides } = useOverrides();
   const partnerOverrides = getPartnerOverrides(partner.id);
-=======
-// ─── ASP Eligibility Panel ───────────────────────────────────────────────────
-
-const ASP_ORANGE = "#e8571a"; // Pure Storage brand orange
-
-interface AspStepProps {
-  step: number;
-  label: string;
-  sublabel: string;
-  required: number;
-  people: AspPerson[];
-}
-
-function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
-  const [open, setOpen] = useState(false);
-  const met = people.length >= required;
-  return (
-    <div className="flex-1 min-w-0">
-      {/* Step pill */}
-      <div className="flex items-center gap-2 mb-2">
-        <div
-          className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 border-2"
-          style={met
-            ? { background: ASP_ORANGE, borderColor: ASP_ORANGE, color: "#fff" }
-            : { background: "#fff", borderColor: "#d1d5db", color: "#6b7280" }}
-        >
-          {met ? "✓" : step}
-        </div>
-        <div className="min-w-0">
-          <p className="text-[11px] font-bold leading-tight text-foreground truncate">{label}</p>
-          <p className="text-[10px] text-muted-foreground leading-tight">{sublabel}</p>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="h-1.5 rounded-full bg-black/[0.06] mb-1.5 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{
-            width: `${Math.min(100, (people.length / required) * 100)}%`,
-            background: met ? ASP_ORANGE : "#d1d5db",
-          }}
-        />
-      </div>
-      <p className="text-[10px] font-semibold mb-2" style={{ color: met ? ASP_ORANGE : "#6b7280" }}>
-        {people.length}/{required} individuals
-      </p>
-
-      {/* Who? popover */}
-      {people.length > 0 && (
-        <div className="relative">
-          <button
-            onClick={() => setOpen(o => !o)}
-            className="text-[10px] font-medium underline underline-offset-2 transition-colors"
-            style={{ color: ASP_ORANGE }}
-          >
-            {open ? "Hide" : "Who?"}
-          </button>
-          {open && (
-            <div
-              className="absolute z-30 left-0 top-6 w-64 rounded-xl shadow-lg border p-3 space-y-1.5"
-              style={{ background: "#fff", borderColor: "#e5e7eb" }}
-            >
-              <p className="text-[10px] uppercase tracking-wider font-bold mb-2" style={{ color: ASP_ORANGE }}>
-                {label.toUpperCase()} — {people.length} INDIVIDUAL{people.length !== 1 ? "S" : ""}
-              </p>
-              {people.map(p => (
-                <div key={p.email} className="flex items-center gap-1.5 text-[11px]">
-                  <GraduationCap className="w-3 h-3 shrink-0" style={{ color: ASP_ORANGE }} />
-                  <span className="font-medium text-foreground">{p.firstName} {p.lastName}</span>
-                  <span className="text-muted-foreground truncate text-[10px]">{p.email}</span>
-                </div>
-              ))}
-              {people.length < required && (
-                <p className="text-[10px] text-muted-foreground pt-1 border-t border-black/10">
-                  Need {required - people.length} more to qualify.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
-  const asp = aspData[partnerId];
-  const { getAspOverride, setAspOverride, removeAspOverride } = useOverrides();
-  const aspOverride = getAspOverride(partnerId);
-  const isManuallyApproved = !!aspOverride;
-  const isEligible = asp?.eligible || isManuallyApproved;
-
-  const [noteInput, setNoteInput] = useState("");
-  const [showNoteField, setShowNoteField] = useState(false);
-
-  // No ASP data at all for this partner
-  const hasAnyData = asp && (
-    asp.foundations.length > 0 || asp.storageProCert.length > 0 || asp.supportSpecCert.length > 0
-  );
-
-  const handleToggleOverride = () => {
-    if (isManuallyApproved) {
-      removeAspOverride(partnerId);
-      toast.success("ASP manual approval removed");
-      setShowNoteField(false);
-      setNoteInput("");
-    } else {
-      if (!showNoteField) {
-        setShowNoteField(true);
-      } else {
-        setAspOverride(partnerId, noteInput.trim());
-        toast.success("Partner marked as ASP — approval saved");
-        setShowNoteField(false);
-        setNoteInput("");
-      }
-    }
-  };
-
-  return (
-    <div
-      className="rounded-xl border-2 p-4"
-      style={{
-        borderColor: isEligible ? ASP_ORANGE : "#e5e7eb",
-        background: isEligible ? `${ASP_ORANGE}08` : "oklch(0.99 0.003 85)",
-      }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: `${ASP_ORANGE}18` }}
-          >
-            <Wrench className="w-4 h-4" style={{ color: ASP_ORANGE }} />
-          </div>
-          <div>
-            <p className="text-[13px] font-bold text-foreground">ASP Eligibility</p>
-            <p className="text-[10px] text-muted-foreground">Authorized Support Partner — requires ≥2 individuals per step</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {isEligible ? (
-            <span
-              className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
-              style={{ background: `${ASP_ORANGE}18`, color: ASP_ORANGE }}
-            >
-              <BadgeCheck className="w-3.5 h-3.5" />
-              {isManuallyApproved ? "APPROVED (Manual)" : "ELIGIBLE"}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-black/[0.05] text-muted-foreground">
-              <CircleAlert className="w-3.5 h-3.5" />
-              NOT YET
-            </span>
-          )}
-          {/* Manual override toggle */}
-          <button
-            onClick={(e) => { e.stopPropagation(); handleToggleOverride(); }}
-            title={isManuallyApproved ? "Remove manual ASP approval" : "Manually approve as ASP"}
-            className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all"
-            style={{
-              background: isManuallyApproved ? "#fef2f2" : "oklch(0.99 0.003 85)",
-              borderColor: isManuallyApproved ? "#fca5a5" : "#e5e7eb",
-              color: isManuallyApproved ? "#dc2626" : "oklch(0.45 0.02 55)",
-            }}
-          >
-            {isManuallyApproved
-              ? <><ToggleRight className="w-3.5 h-3.5" /> Remove Override</>
-              : <><ToggleLeft className="w-3.5 h-3.5" /> Mark as ASP</>}
-          </button>
-        </div>
-      </div>
-
-      {/* Note input when approving */}
-      {showNoteField && !isManuallyApproved && (
-        <div
-          className="mb-4 p-3 rounded-lg border flex gap-2"
-          style={{ background: "#fff7ed", borderColor: "#fed7aa" }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input
-            autoFocus
-            placeholder="Optional note (reason for approval)…"
-            value={noteInput}
-            onChange={(e) => setNoteInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleToggleOverride(); if (e.key === "Escape") setShowNoteField(false); }}
-            className="flex-1 bg-transparent outline-none text-[12px] text-foreground placeholder:text-muted-foreground"
-          />
-          <button
-            onClick={handleToggleOverride}
-            className="text-[11px] font-bold px-3 py-1 rounded-lg text-white"
-            style={{ background: ASP_ORANGE }}
-          >
-            Confirm
-          </button>
-          <button
-            onClick={() => setShowNoteField(false)}
-            className="text-[11px] px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {/* Manual approval note display */}
-      {isManuallyApproved && aspOverride.note && (
-        <div
-          className="mb-4 p-2.5 rounded-lg text-[11px]"
-          style={{ background: `${ASP_ORANGE}10`, color: "oklch(0.40 0.12 30)" }}
-        >
-          <span className="font-bold">Approval note:</span> {aspOverride.note}
-          <span className="ml-2 text-muted-foreground">
-            · {new Date(aspOverride.approvedAt).toLocaleDateString()}
-          </span>
-        </div>
-      )}
-
-      {/* Process steps — horizontal timeline */}
-      <div className="flex items-stretch gap-3 relative">
-        {/* Connecting line */}
-        <div
-          className="absolute top-3 left-4 right-4 h-px"
-          style={{ background: "#e5e7eb", zIndex: 0 }}
-        />
-        <AspStep
-          step={1}
-          label="ASP Foundations"
-          sublabel="FlashArray / FlashBlade Foundations Training & Assessment"
-          required={2}
-          people={asp?.foundations ?? []}
-        />
-        <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
-        <AspStep
-          step={2}
-          label="Storage Pro Cert"
-          sublabel="FlashArray / FlashBlade Storage Professional Certification"
-          required={2}
-          people={asp?.storageProCert ?? []}
-        />
-        <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
-        <AspStep
-          step={3}
-          label="Support Spec Cert"
-          sublabel="FlashArray / FlashBlade Support Specialist Certification"
-          required={2}
-          people={asp?.supportSpecCert ?? []}
-        />
-      </div>
-
-      {/* Gap summary when not eligible */}
-      {!isEligible && (
-        <div className="mt-3 pt-3 border-t border-black/[0.06]">
-          {!hasAnyData ? (
-            <p className="text-[11px] text-muted-foreground italic">
-              No ASP training or certification activity recorded for this partner yet.
-            </p>
-          ) : (
-            <p className="text-[11px] text-muted-foreground">
-              <span className="font-semibold text-foreground">Gaps: </span>
-              {[
-                asp && asp.foundations.length < 2 && `Foundations (${asp.foundations.length}/2)`,
-                asp && asp.storageProCert.length < 2 && `Storage Pro Cert (${asp.storageProCert.length}/2)`,
-                asp && asp.supportSpecCert.length < 2 && `Support Spec Cert (${asp.supportSpecCert.length}/2)`,
-              ].filter(Boolean).join(" · ")}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Expanded detail row for a partner */
-function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNavigateToActivity?: (partner: string, course?: string, search?: string) => void }) {
-  const { getPartnerOverrides, getAspOverride } = useOverrides();
-  const partnerOverrides = getPartnerOverrides(partner.id);
-  const aspOverride = getAspOverride(partner.id);
->>>>>>> user_github/main
   const reqs = partner.requirements;
 
   return (
@@ -738,11 +373,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
               Recommended Action
             </p>
-<<<<<<< HEAD
             <p className="text-[13px] text-foreground leading-relaxed mb-3">{partner.action}</p>
-=======
-            <p className="text-[13px] text-foreground leading-relaxed mb-3">{generateRecommendedAction(partner)}</p>
->>>>>>> user_github/main
 
             {/* Target Contacts */}
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
@@ -778,23 +409,14 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             </p>
             <div className="grid grid-cols-2 gap-2">
               {[
-<<<<<<< HEAD
                 { label: "FY27 Revenue", value: formatCurrency(partner.revenueData.fy27Revenue, true) },
-=======
-                { label: "FY27 Revenue", value: formatCurrency(partner.revenueData.revenueFY27, true) },
->>>>>>> user_github/main
                 { label: "FY27 Target", value: formatCurrency(partner.revenueData.targetFY27, true) },
                 { label: "Attainment", value: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
                 { label: "Pipeline", value: formatCurrency(partner.revenueData.pipelineFY27, true) },
                 { label: "Contribution", value: formatPercent(partner.revenueData.contributionFY27) },
                 { label: "DR (P-S)", value: formatCurrency(partner.revenueData.drFY27, true) },
-<<<<<<< HEAD
                 { label: "FY26 Rev", value: formatCurrency(partner.revenueData.fy26Revenue, true) },
                 { label: "FY25 Rev", value: formatCurrency(partner.revenueData.fy25Revenue, true) },
-=======
-                { label: "FY26 Rev", value: formatCurrency(partner.revenueData.revenueFY26, true) },
-                { label: "FY25 Rev", value: formatCurrency(partner.revenueData.revenueFY25, true) },
->>>>>>> user_github/main
               ].map((item) => (
                 <div
                   key={item.label}
@@ -808,7 +430,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             </div>
           </div>
 
-<<<<<<< HEAD
           {/* Training Contacts (Consolidated P-T) */}
           <div>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3 font-semibold flex items-center gap-1.5">
@@ -841,26 +462,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 );
               })}
             </div>
-=======
-          {/* ── ASP Eligibility Panel ──────────────────────────────── */}
-          <div className="md:col-span-2">
-            <AspEligibilityPanel partnerId={partner.id} />
-          </div>
-
-          {/* ── Export Enablement Plan ──────────────────────────────── */}
-          <div className="md:col-span-2 flex justify-end pt-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                openEnablementPlan(partner, aspOverride);
-              }}
-              className="flex items-center gap-2 text-[12px] font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-90"
-              style={{ background: "#e8571a", color: "#fff" }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Export Enablement Plan PDF
-            </button>
->>>>>>> user_github/main
           </div>
 
           {/* Exam/Certification Records */}
@@ -924,11 +525,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-<<<<<<< HEAD
   const { getOverrideCount } = useOverrides();
-=======
-  const { getOverrideCount, isAspEligible } = useOverrides();
->>>>>>> user_github/main
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -1043,12 +640,6 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
               </th>
               <SortHeader label="Gaps" sortKeyName="totalGaps" align="right" />
               <SortHeader label="Exams" sortKeyName="totalExams" align="right" />
-<<<<<<< HEAD
-=======
-              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-center" style={{ color: "#e8571a" }}>
-                ASP
-              </th>
->>>>>>> user_github/main
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">
                 FY27 Revenue
               </th>
@@ -1190,34 +781,9 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           <span className="text-[12px] text-muted-foreground">—</span>
                         )}
                       </td>
-<<<<<<< HEAD
                       <td className="px-4 py-3.5 text-right">
                         <span className="text-[12px] font-semibold text-foreground">
                           {formatCurrency(partner.revenueData.fy27Revenue, true)}
-=======
-                      <td className="px-4 py-3.5 text-center">
-                        {isAspEligible(partner.id, !!aspData[partner.id]?.eligible) ? (
-                          <span
-                            className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                            style={{ background: "#e8571a18", color: "#e8571a" }}
-                            title={aspData[partner.id]?.eligible ? "Auto-eligible" : "Manually approved"}
-                          >
-                            <BadgeCheck className="w-3 h-3" />
-                            ASP{!aspData[partner.id]?.eligible ? " ★" : ""}
-                          </span>
-                        ) : aspData[partner.id] && (aspData[partner.id].foundations.length > 0 || aspData[partner.id].storageProCert.length > 0 || aspData[partner.id].supportSpecCert.length > 0) ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] text-muted-foreground">
-                            <Wrench className="w-3 h-3" />
-                            Prog.
-                          </span>
-                        ) : (
-                          <span className="text-[12px] text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5 text-right">
-                        <span className="text-[12px] font-semibold text-foreground">
-                          {formatCurrency(partner.revenueData.revenueFY27, true)}
->>>>>>> user_github/main
                         </span>
                       </td>
                       <td className="px-4 py-3.5">

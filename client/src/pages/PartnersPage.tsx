@@ -16,13 +16,7 @@ import {
   formatCurrency,
   formatPercent,
   getRevenueAttainment,
-<<<<<<< HEAD
 } from "@/lib/data";
-=======
-  generateRecommendedAction,
-} from "@/lib/data";
-import { trainingData } from "@/lib/trainingData";
->>>>>>> user_github/main
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import ModifyGapModal from "@/components/ModifyGapModal";
@@ -44,10 +38,6 @@ import {
   X,
   Pencil,
   DollarSign,
-<<<<<<< HEAD
-=======
-  GraduationCap,
->>>>>>> user_github/main
 } from "lucide-react";
 
 const tierIcons: Record<ProgramTier, React.ElementType> = {
@@ -66,11 +56,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [modifyPartner, setModifyPartner] = useState<Partner | null>(null);
-<<<<<<< HEAD
-=======
-  const [certPopover, setCertPopover] = useState<{ partnerId: number; category: string } | null>(null);
-
->>>>>>> user_github/main
   const { getOverrideCount } = useOverrides();
   const { modifiedPartners, getModification } = useModifications();
 
@@ -295,7 +280,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           ]).map(({ label, key }) => {
                             const req = partner.requirements[key];
                             const met = req.obtained >= req.required;
-<<<<<<< HEAD
                             return (
                               <div 
                                 key={key} 
@@ -304,28 +288,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onNavigateToActivity?.(partner.name, undefined, label);
-=======
-                            const isActive = certPopover?.partnerId === partner.id && certPopover?.category === key;
-                            return (
-                              <div
-                                key={key}
-                                className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-                                style={{
-                                  background: isActive
-                                    ? "oklch(0.58 0.16 290 / 0.12)"
-                                    : met ? "oklch(0.60 0.12 175 / 0.06)"
-                                    : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)"
-                                    : "oklch(0.62 0.19 15 / 0.04)",
-                                  outline: isActive ? "1.5px solid oklch(0.58 0.16 290 / 0.4)" : "none",
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setCertPopover((prev) =>
-                                    prev?.partnerId === partner.id && prev?.category === key
-                                      ? null
-                                      : { partnerId: partner.id, category: key }
-                                  );
->>>>>>> user_github/main
                                 }}
                               >
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
@@ -336,42 +298,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             );
                           })}
                         </div>
-<<<<<<< HEAD
-=======
-                        {/* Training people popover */}
-                        {certPopover?.partnerId === partner.id && (() => {
-                          const cat = certPopover.category as "salesPro" | "techPro" | "bootcamp" | "implSpec";
-                          const people = trainingData[partner.id]?.[cat] ?? [];
-                          const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[cat] ?? cat;
-                          return (
-                            <div className="mt-2 rounded-lg p-3 border" style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.88 0.03 220)" }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "oklch(0.48 0.16 290)" }}>
-                                  {catLabel} — Completed ({people.length})
-                                </p>
-                                <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                              {people.length === 0 ? (
-                                <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
-                              ) : (
-                                <div className="space-y-1">
-                                  {people.map((person) => (
-                                    <div key={person.email} className="flex items-center gap-2">
-                                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
-                                      <span className="text-[11px] font-medium text-foreground">
-                                        {person.firstName} {person.lastName}
-                                      </span>
-                                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
->>>>>>> user_github/main
                       </div>
 
                       {/* Business Metrics */}
@@ -411,11 +337,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         </p>
                         <div className="grid grid-cols-4 gap-2">
                           {[
-<<<<<<< HEAD
                             { label: "Revenue", val: formatCurrency(partner.revenueData.fy27Revenue, true) },
-=======
-                            { label: "Revenue", val: formatCurrency(partner.revenueData.revenueFY27, true) },
->>>>>>> user_github/main
                             { label: "Target", val: formatCurrency(partner.revenueData.targetFY27, true) },
                             { label: "Attainment", val: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
                             { label: "Pipeline", val: formatCurrency(partner.revenueData.pipelineFY27, true) },
@@ -430,13 +352,8 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           {[
                             { label: "Contribution", val: formatPercent(partner.revenueData.contributionFY27) },
                             { label: "DR (P-S)", val: formatCurrency(partner.revenueData.drFY27, true) },
-<<<<<<< HEAD
                             { label: "FY26 Rev", val: formatCurrency(partner.revenueData.fy26Revenue, true) },
                             { label: "FY25 Rev", val: formatCurrency(partner.revenueData.fy25Revenue, true) },
-=======
-                            { label: "FY26 Rev", val: formatCurrency(partner.revenueData.revenueFY26, true) },
-                            { label: "FY25 Rev", val: formatCurrency(partner.revenueData.revenueFY25, true) },
->>>>>>> user_github/main
                           ].map((item) => (
                             <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
                               <p className="text-[10px] text-muted-foreground">{item.label}</p>
@@ -446,7 +363,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         </div>
                       </div>
 
-<<<<<<< HEAD
                       {/* Training Contacts (P-T) */}
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">
@@ -465,8 +381,6 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           ))}
                         </div>
                       </div>
-=======
->>>>>>> user_github/main
 
                       {/* Last Modification Comment */}
                       {modification && (
@@ -483,11 +397,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                       {/* Action */}
                       <div>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Recommended Action</p>
-<<<<<<< HEAD
                         <p className="text-[12px] text-foreground leading-relaxed">{partner.action}</p>
-=======
-                        <p className="text-[12px] text-foreground leading-relaxed">{generateRecommendedAction(partner)}</p>
->>>>>>> user_github/main
                       </div>
 
                       {/* Contacts */}

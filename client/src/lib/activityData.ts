@@ -8777,7 +8777,7 @@ export const activityData: Record<string, ActivityRecord[]> = {
   ],
   "Total": [
     {
-      "email": "1510",
+      "email": 1510,
       "name": "1510",
       "activity": "Sales Professional FY26 - Knowledge Check",
       "date": null

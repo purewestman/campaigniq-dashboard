@@ -5,8 +5,6 @@
  * "Soft Terrain" design: muted teal, violet, rose, amber palette
  */
 
-import { trainingData } from "./trainingData";
-
 // ─── Program Tier Types ────────────────────────────────────
 
 export type ProgramTier = "authorized" | "preferred" | "elite" | "ambassador";
@@ -75,22 +73,6 @@ export interface PartnerFinancials {
   fy24Revenue: number;
 }
 
-export interface RevenueData {
-  revenueFY27: number;
-  targetFY27: number;
-  pipelineFY27: number;
-  contributionFY27: number;
-  drFY27: number;
-  revenueFY26: number;
-  revenueFY25: number;
-}
-
-export interface TrainingContacts {
-  salesProContacts: number;
-  techSalesProContacts: number;
-  seBootcampContacts: number;
-}
-
 export interface PartnerMeta {
   region: string;
   pam: string;
@@ -118,9 +100,7 @@ export interface Partner {
   targetEmails: string[];
   exams: ExamRecord[];
   totalExams: number;
-  financials: PartnerFinancials | null;
-  revenueData: RevenueData;
-  trainingContacts: TrainingContacts;
+  revenueData: PartnerFinancials | null;
   meta: PartnerMeta | null;
 }
 
@@ -213,98 +193,10 @@ export const TIER_CONFIG = {
   tier3: { ...TIER_DEFINITIONS.authorized },
 };
 
-// ─── Formatting Utilities ──────────────────────────────────
-
-export function formatCurrency(value: number | null | undefined, compact = false): string {
-  if (value === null || value === undefined) return "—";
-  if (compact) {
-    if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-    if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
-  }
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
-}
-
-export function formatPercent(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
-  return `${value.toFixed(1)}%`;
-}
-
-export function getRevenueAttainment(partner: Partner): number | null {
-  const { revenueFY27, targetFY27 } = partner.revenueData;
-  if (!targetFY27) return null;
-  return Math.round((revenueFY27 / targetFY27) * 100);
-}
-
 // ─── Helper Functions ──────────────────────────────────────
 
 export function getTierDef(tier: ProgramTier): TierDefinition {
   return TIER_DEFINITIONS[tier];
-}
-
-/**
- * Generates a recommended action string for a partner based on their CURRENT
- * enablement and business metric gaps. Always reflects the live data — never
- * hard-coded — so it cannot fall out of sync with training or financial updates.
- */
-export function generateRecommendedAction(partner: Partner): string {
-  const tierDef = TIER_DEFINITIONS[partner.programTier];
-  const { requirements, businessMetrics } = partner;
-
-  // ── Enablement gaps ───────────────────────────────────────
-  const enablementGaps: string[] = [];
-  if (requirements.salesPro.obtained < requirements.salesPro.required) {
-    const n = requirements.salesPro.required - requirements.salesPro.obtained;
-    enablementGaps.push(`${n} more Sales Pro completion${n !== 1 ? "s" : ""} (${requirements.salesPro.obtained}/${requirements.salesPro.required})`);
-  }
-  if (requirements.techPro.obtained < requirements.techPro.required) {
-    const n = requirements.techPro.required - requirements.techPro.obtained;
-    enablementGaps.push(`${n} more Tech Pro completion${n !== 1 ? "s" : ""} (${requirements.techPro.obtained}/${requirements.techPro.required})`);
-  }
-  if (requirements.bootcamp.obtained < requirements.bootcamp.required) {
-    const n = requirements.bootcamp.required - requirements.bootcamp.obtained;
-    enablementGaps.push(`${n} more SE Bootcamp completion${n !== 1 ? "s" : ""} (${requirements.bootcamp.obtained}/${requirements.bootcamp.required})`);
-  }
-  if (requirements.implSpec.obtained < requirements.implSpec.required) {
-    const n = requirements.implSpec.required - requirements.implSpec.obtained;
-    enablementGaps.push(`${n} more Impl Spec completion${n !== 1 ? "s" : ""} (${requirements.implSpec.obtained}/${requirements.implSpec.required})`);
-  }
-
-  // ── Business metric gaps ──────────────────────────────────
-  const businessGaps: string[] = [];
-  const bm = tierDef.businessMetrics;
-  if (bm.bookingsUSD !== null) {
-    const current = businessMetrics.bookingsUSD ?? 0;
-    if (current < bm.bookingsUSD) {
-      const remaining = formatCurrency(bm.bookingsUSD - current, true);
-      businessGaps.push(`${remaining} more in bookings (${formatCurrency(current, true)} of ${formatCurrency(bm.bookingsUSD, true)} required)`);
-    }
-  }
-  if (bm.uniqueCustomers !== null) {
-    const current = businessMetrics.uniqueCustomers ?? 0;
-    if (current < bm.uniqueCustomers) {
-      businessGaps.push(`${bm.uniqueCustomers - current} more unique customer${bm.uniqueCustomers - current !== 1 ? "s" : ""} (${current}/${bm.uniqueCustomers} required)`);
-    }
-  }
-  if (bm.partnerDeliveredServices !== null) {
-    const current = businessMetrics.partnerDeliveredServices ?? 0;
-    if (current < bm.partnerDeliveredServices) {
-      businessGaps.push(`${bm.partnerDeliveredServices - current} more partner-delivered installation${bm.partnerDeliveredServices - current !== 1 ? "s" : ""} (${current}/${bm.partnerDeliveredServices} required)`);
-    }
-  }
-
-  // ── Build output ──────────────────────────────────────────
-  if (enablementGaps.length === 0 && businessGaps.length === 0) {
-    return `All ${tierDef.label} tier requirements met. Sustain training activity and business metrics to maintain ${tierDef.shortLabel} status.`;
-  }
-
-  const lines: string[] = [];
-  if (enablementGaps.length > 0) {
-    lines.push(`Enablement outstanding — complete: ${enablementGaps.join("; ")}.`);
-  }
-  if (businessGaps.length > 0) {
-    lines.push(`Business criteria outstanding — close: ${businessGaps.join("; ")}.`);
-  }
-  return lines.join(" ");
 }
 
 export function computeEnablementGaps(reqs: EnablementRequirements): number {
@@ -379,43 +271,18 @@ function makePartner(
   financials: PartnerFinancials | null = null,
   meta: PartnerMeta | null = null
 ): Partner {
-  // Use CSV-derived trainingData as the single source of truth for obtained counts.
-  // The sp/tsp/boot/impl args serve only as fallbacks when no CSV data exists for this partner.
-  const td = trainingData[id];
-  const resolvedSp   = td ? td.salesPro.length  : sp;
-  const resolvedTsp  = td ? td.techPro.length   : tsp;
-  const resolvedBoot = td ? td.bootcamp.length  : boot;
-  const resolvedImpl = td ? td.implSpec.length  : impl;
-  const requirements = buildRequirements(programTier, resolvedSp, resolvedTsp, resolvedBoot, resolvedImpl);
+  const requirements = buildRequirements(programTier, sp, tsp, boot, impl);
   const totalExams = exams.reduce((s, e) => s + e.certifications.length, 0);
   const tierDef = TIER_DEFINITIONS[programTier];
   const enablementComp = isEnablementCompliant(requirements);
-
-  // Revenue = Bookings USD — auto-populate bookingsUSD from fy27Revenue if not explicitly set
-  const resolvedBm: BusinessMetrics = {
-    ...bm,
-    bookingsUSD: bm.bookingsUSD !== null ? bm.bookingsUSD : (financials ? financials.fy27Revenue : null),
-  };
-  const businessComp = isBusinessCompliant(resolvedBm, tierDef.businessMetrics);
-
-  const revenueData: RevenueData = financials
-    ? {
-        revenueFY27: financials.fy27Revenue,
-        targetFY27: financials.targetFY27,
-        pipelineFY27: financials.pipelineFY27,
-        contributionFY27: financials.contributionFY27,
-        drFY27: financials.drFY27,
-        revenueFY26: financials.fy26Revenue,
-        revenueFY25: financials.fy25Revenue,
-      }
-    : { revenueFY27: 0, targetFY27: 0, pipelineFY27: 0, contributionFY27: 0, drFY27: 0, revenueFY26: 0, revenueFY25: 0 };
+  const businessComp = isBusinessCompliant(bm, tierDef.businessMetrics);
 
   return {
     id,
     name,
     programTier,
     requirements,
-    businessMetrics: resolvedBm,
+    businessMetrics: bm,
     totalGaps: computeEnablementGaps(requirements),
     enablementScore: computeEnablementScore(requirements),
     enablementCompliant: enablementComp,
@@ -425,12 +292,16 @@ function makePartner(
     targetEmails: emails,
     exams,
     totalExams,
-    financials,
-    revenueData,
-    trainingContacts: {
-      salesProContacts: resolvedSp,
-      techSalesProContacts: resolvedTsp,
-      seBootcampContacts: resolvedBoot,
+    revenueData: financials || {
+      targetFY27: 0,
+      pipelineFY27: 0,
+      fy27Revenue: 0,
+      contributionFY27: 0,
+      drFY27: 0,
+      fy26Revenue: 0,
+      contributionFY26: 0,
+      fy25Revenue: 0,
+      fy24Revenue: 0,
     },
     meta,
   };
@@ -441,149 +312,77 @@ function makePartner(
 
 export const partners: Partner[] = [
   // ── Tier 1: FULLY COMPLIANT (8 partners) ──
-  makePartner(1, "Data Sciences Corporation", "elite", 13, 3, 4, 13,
-    "Gap CLOSED. 18 certs across 11 SEs. $681K FY27 revenue, $21.2M pipeline.",
-    ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"],
-    [
-      { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "jp.marais@datasciences.co.za", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "nelson.lopes@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam"] },
-      { email: "antony@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "koos.hattingh@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate"] },
-      { email: "mekeal.beepath@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "kenny.thiart@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam"] },
-      { email: "mndeni.msibi@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
-      { email: "irtond@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam", "Pure Platform Positioning Certificate", "Pure Storage Platform Solutions Associate"] },
-      { email: "rukaya.najam@datasciences.co.za", certifications: ["Pure Storage FlashBlade Architect Associate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: 4, partnerDeliveredServices: 9 },
-    { targetFY27: 1000000, pipelineFY27: 21210081, fy27Revenue: 681950, contributionFY27: 0.37, drFY27: 87, fy26Revenue: 5111976, contributionFY26: 0.34, fy25Revenue: 6122066, fy24Revenue: 12991230 }),
+  makePartner(1, "Data Sciences Corporation", "elite", 6, 2, 2, 1,
+    "Gap CLOSED. 2 SEs compliant, 9 exams. Maintaining strong alignment.",
+    ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"]),
 
   makePartner(2, "AXIZ (PTY) LTD", "elite", 6, 3, 2, 1,
-    "Gap CLOSED. 7 certs across 3 SEs. Maintain Elite status.",
-    ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
-    [
-      { email: "adolph.strydom@axiz.com", certifications: ["Pure Storage FlashBlade Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashArray Implementation Specialist", "Pure Storage Platform Solutions Associate", "Pure Storage Certified Architect Associate FlashArray"] },
-      { email: "oscar.ronander@axiz.com", certifications: ["Pure Platform Positioning Exam"] },
-      { email: "lerato.mabunda@axiz.com", certifications: ["Pure Platform Positioning Certificate"] },
-    ]),
+    "Gap CLOSED. 3+ SEs compliant, 7 exams. Maintain Elite status.",
+    ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"]),
 
-  makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 4, 2, 2, 5,
-    "Gap CLOSED. 15 certs across 8 SEs. $68K FY27 revenue, $14.7M pipeline.",
-    ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"],
-    [
-      { email: "mannes.nijeboer@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
-      { email: "morne.frans@dimensiondata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Implementation Specialist"] },
-      { email: "kayode.fatoki@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
-      { email: "angelo.campbell@global.ntt", certifications: ["Pure Storage FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
-      { email: "thulani.kunene@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "kamalan.naraidoo@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
-      { email: "peetri.riekert@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "lourens.jvrensburg@nttdata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage Certified Architect Associate FlashBlade"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 14663939, fy27Revenue: 68427, contributionFY27: 0.04, drFY27: 34, fy26Revenue: 2582381, contributionFY26: 0.17, fy25Revenue: 917409, fy24Revenue: 0 }),
+  makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 6, 4, 2, 2,
+    "Gap CLOSED. 3 SEs compliant. Converting $14.7M pipeline is the focus.",
+    ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"]),
 
-  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 6, 1, 2, 2,
-    "Gap CLOSED. 3 certs, $11.8M pipeline. Focus on conversion.",
-    ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"],
-    [
-      { email: "merwe.erasmus@nec.xon.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Associate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 11754114, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 29, fy26Revenue: 2313276, contributionFY26: 0.15, fy25Revenue: 1786458, fy24Revenue: 2009087 }),
+  makePartner(4, "NEC XON SYSTEMS (PTY) LTD", "elite", 5, 3, 2, 1,
+    "Gap CLOSED. 3 SEs compliant. Huge pipeline potential.",
+    ["monique.pretorius@nec.xon.co.za", "peter.mcguigan@nec.xon.co.za"]),
 
-  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 18, 1, 4, 6,
-    "Gap CLOSED. $369K FY27 revenue, $1.5M pipeline. 1 customer, 1 installation.",
-    ["steliosk@ftechkzn.co.za"],
-    [],
-    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
-    { targetFY27: 1000000, pipelineFY27: 1474699, fy27Revenue: 368798, contributionFY27: 0.20, drFY27: 17, fy26Revenue: 1161197, contributionFY26: 0.08, fy25Revenue: 0, fy24Revenue: 0 }),
+  makePartner(5, "FIRST TECHNOLOGY KWAZULU NATAL (PTY) LTD", "elite", 6, 4, 2, 1,
+    "Gap CLOSED. 3 SEs compliant. Strong Mauritian contribution.",
+    ["steliosk@ftechkzn.co.za"]),
 
-  makePartner(6, "iOCO Infrastructure Services", "elite", 7, 0, 1, 1,
-    "Gap CLOSED. $3M pipeline, focus on conversion. 6 DRs in flight.",
-    ["jacques.dejager@ioco.tech"],
-    [],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 3048476, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 6, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 751411, fy24Revenue: 2271293 }),
+  makePartner(6, "iOCO Infrastructure Services", "elite", 6, 4, 2, 1,
+    "Gap CLOSED. 6 SEs compliant. Focus on $3M pipeline conversion.",
+    ["jacques.dejager@ioco.tech"]),
 
-  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 4, 0, 0, 1,
-    "Gap CLOSED. High compliance. $1M pipeline, 4 DRs registered.",
-    [],
-    [],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 1049129, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 4, fy26Revenue: 722318, contributionFY26: 0.05, fy25Revenue: 723226, fy24Revenue: 1476692 }),
+  makePartner(7, "SITHABILE TECHNOLOGY SERVICES (PTY) LTD", "elite", 6, 4, 2, 1,
+    "Gap CLOSED. High compliance across all metrics.",
+    []),
 
-  makePartner(8, "Technology Corporate Management", "elite", 6, 0, 5, 3,
-    "Gap CLOSED. $49K FY27 revenue, $1.6M pipeline. 3 certs on file.",
-    ["vishnu.naidoo@tcm.co.za"],
-    [
-      { email: "dierk.lobbecke@tcm.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "vishnu.naidoo@tcm.co.za", certifications: ["Pure Platform Positioning Certificate", "Pure Storage Platform Solutions Associate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 1 },
-    { targetFY27: 1000000, pipelineFY27: 1636573, fy27Revenue: 49390, contributionFY27: 0.03, drFY27: 14, fy26Revenue: 749572, contributionFY26: 0.05, fy25Revenue: 400457, fy24Revenue: 1370355 }),
+  makePartner(8, "Technology Corporate Management", "elite", 6, 4, 2, 1,
+    "Gap CLOSED. Strategic account alignment in progress.",
+    ["vishnu.naidoo@tcm.co.za"]),
 
   // ── Tier 2: PARTIAL PROGRESS (5 partners) ──
-  makePartner(9, "Altron Digital Business", "preferred", 10, 3, 3, 2,
-    "Strong training activity. 6 certs on file. $194K pipeline, 2 DRs registered.",
-    ["robert.mlombile@altron.com"],
-    [
-      { email: "zane.maphalle@altron.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
-      { email: "johan.westman@altron.com", certifications: ["Pure Platform Positioning Exam"] },
-      { email: "williamrobert.souter@altron.com", certifications: ["Pure Platform Positioning Certificate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: 0, partnerDeliveredServices: 0 },
-    { targetFY27: 1000000, pipelineFY27: 194302, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 0, fy24Revenue: 0 }),
+  makePartner(9, "Altron Digital Business", "preferred", 3, 1, 0, 0,
+    "Gap of 2. Need Mpho Mpya and Paulina Moagi to complete TSP.",
+    ["robert.mlombile@altron.com"]),
 
-  makePartner(10, "ITgility PTY (Ltd)", "preferred", 2, 1, 1, 1,
-    "Gap of 1. 1 cert on file. $179K pipeline, 2 DRs registered.",
-    ["envorp@itgility.co.za"],
-    [
-      { email: "jamesb@itgility.co.za", certifications: ["Pure Platform Positioning Certificate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 178588, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 248321, contributionFY26: 0.02, fy25Revenue: 405146, fy24Revenue: 0 }),
+  makePartner(10, "ITgility PTY (Ltd)", "preferred", 1, 1, 0, 0,
+    "Gap of 2. 1 exam completed.",
+    ["envorp@itgility.co.za"]),
 
   makePartner(11, "BCX", "preferred", 1, 1, 0, 0,
     "Gap of 2. Initial certifications in progress.",
     []),
 
-  makePartner(12, "Triple H Technology Group", "preferred", 2, 0, 0, 0,
-    "Gap of 2. 1 cert on file. $1.4M pipeline, 12 DRs registered.",
-    ["frederiks@triplehgroup.co.za"],
-    [
-      { email: "frederiks@triplehgroup.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
-    ],
-    { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: 0 },
-    { targetFY27: 1000000, pipelineFY27: 1397860, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 12, fy26Revenue: 151860, contributionFY26: 0.01, fy25Revenue: 153427, fy24Revenue: 246160 }),
+  makePartner(12, "Triple H Technology Group", "preferred", 1, 0, 0, 0,
+    "Gap of 3. Cross-training scheduled.",
+    ["frederiks@triplehgroup.co.za"]),
 
-  makePartner(13, "Lekonakonetsi Consulting Services (PTY) LTD", "preferred", 3, 0, 0, 0,
-    "Gap of 1. Sales path in progress. Push for Tech Pro and Bootcamp completions.",
+  makePartner(13, "Lekonakonetsi Consulting Services (PTY) LTD", "preferred", 1, 0, 0, 0,
+    "Gap of 3. Target engineers starting path.",
     []),
 
   // ── Tier 3: AUTHORIZED / NEW SCOPE (18 partners) ──
   makePartner(14, "ALTRON FINANCE", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement roadmap needed.", []),
 
-  makePartner(15, "BILLION ROWS (PTY) LTD", "authorized", 1, 0, 0, 0,
-    "1 sales path completion. Push for remaining enablement.", []),
+  makePartner(15, "BILLION ROWS (PTY) LTD", "authorized", 0, 0, 0, 0,
+    "High Gap. Initial engagement pending.", []),
 
   makePartner(16, "Bottomline IT", "authorized", 0, 0, 0, 0,
     "High Gap. No completions recorded.", []),
 
-  makePartner(17, "Complete Enterprise Solutions Mozambique, Limitada", "authorized", 9, 1, 1, 2,
-    "Strong training activity for regional partner. Push for Tech Pro and Impl Spec completions.", []),
+  makePartner(17, "Complete Enterprise Solutions Mozambique, Limitada", "authorized", 0, 0, 0, 0,
+    "High Gap. Regional expansion target.", []),
 
   makePartner(18, "Complete Enterprise Solutions Namibia PTY Ltd", "authorized", 0, 0, 0, 0,
-    "High Gap. $1.1M pipeline, 8 DRs registered.", [],
-    [],
-    { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
-    { targetFY27: 1000000, pipelineFY27: 1079690, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 8, fy26Revenue: 293007, contributionFY26: 0.02, fy25Revenue: 0, fy24Revenue: 0 }),
+    "High Gap. Regional expansion target.", []),
 
-  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 1, 0, 1, 0,
-    "Good Bootcamp completions. Prioritise Sales Pro and Tech Pro paths.", []),
+  makePartner(19, "Complete Enterprise Solutions Zambia, Ltd", "authorized", 0, 0, 0, 0,
+    "High Gap. Regional expansion target.", []),
 
   makePartner(20, "Data Sciences Corporation UK", "authorized", 0, 0, 0, 0,
     "High Gap. Subsidiary enablement pending.", []),
@@ -594,8 +393,8 @@ export const partners: Partner[] = [
   makePartner(22, "First Technology - Gauteng", "authorized", 0, 0, 0, 0,
     "High Gap. Zero completions.", []),
 
-  makePartner(23, "FIRST TECHNOLOGY GROUP (PTY) LTD", "authorized", 0, 1, 0, 0,
-    "1 Tech Pro completion. Prioritise Sales Pro, Bootcamp, and Impl Spec paths.", ["calvinm@firsttech.co.za"]),
+  makePartner(23, "FIRST TECHNOLOGY GROUP (PTY) LTD", "authorized", 0, 0, 0, 0,
+    "High Gap. All metrics required.", ["calvinm@firsttech.co.za"]),
 
   makePartner(24, "FirstNet", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement plan required.", []),
@@ -609,8 +408,8 @@ export const partners: Partner[] = [
   makePartner(27, "Lcs Holdings", "authorized", 0, 0, 0, 0,
     "High Gap. Enablement roadmap needed.", []),
 
-  makePartner(28, "MATLALA GROUP (PTY) LTD", "authorized", 1, 0, 0, 0,
-    "1 sales path completion. Push for remaining enablement.", []),
+  makePartner(28, "MATLALA GROUP (PTY) LTD", "authorized", 0, 0, 0, 0,
+    "High Gap. New partner entry.", []),
 
   makePartner(29, "MBULASE GROUP", "authorized", 0, 0, 0, 0,
     "High Gap. New partner entry.", []),
@@ -748,3 +547,31 @@ export const navItems: NavItem[] = [
   { id: "asp", label: "ASP Tracker", icon: "ShieldAlert" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];
+
+
+// ─── Revenue Formatting Helpers ────────────────────────────
+
+export function formatCurrency(value: number | null, abbreviate: boolean = false): string {
+  if (value === null || value === 0) return "—";
+  if (abbreviate) {
+    if (value >= 1_000_000) {
+      return `$${(value / 1_000_000).toFixed(1)}M`;
+    } else if (value >= 1_000) {
+      return `$${(value / 1_000).toFixed(1)}K`;
+    }
+  }
+  return `$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+}
+
+export function formatPercent(value: number | null): string {
+  if (value === null) return "—";
+  return `${Math.round(value)}%`;
+}
+
+export function getRevenueAttainment(partner: Partner): number | null {
+  if (!partner.revenueData || !partner.revenueData.targetFY27 || partner.revenueData.targetFY27 === 0) {
+    return null;
+  }
+  const attainment = (partner.revenueData.fy27Revenue / partner.revenueData.targetFY27) * 100;
+  return Math.round(attainment);
+}
