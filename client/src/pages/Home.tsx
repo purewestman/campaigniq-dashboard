@@ -27,7 +27,7 @@ import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
 import { useModifications } from "@/contexts/ModificationContext";
-import { type ComplianceFilter, TIER_DEFINITIONS } from "@/lib/data";
+import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
 import { Settings } from "lucide-react";
 
 export default function Home() {
@@ -56,7 +56,7 @@ export default function Home() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           TIER_DEFINITIONS[p.programTier].label.toLowerCase().includes(q) ||
-          p.action.toLowerCase().includes(q) ||
+          generateRecommendedAction(p).toLowerCase().includes(q) ||
           p.targetEmails.some((e) => e.toLowerCase().includes(q))
       );
     }
