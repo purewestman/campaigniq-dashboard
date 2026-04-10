@@ -1,8 +1,8 @@
 /*
- * Gap Override Context — CampaignIQ Dashboard
- * Manages manual gap overrides with comments, persisted to localStorage.
- * Each override marks a specific gap category for a partner as "complete"
- * with an optional comment and timestamp.
+ * Gap Override Context + ASP Override Context — CampaignIQ Dashboard
+ * Manages manual gap overrides and ASP approval overrides, persisted to localStorage.
+ * Gap overrides: mark a specific gap category for a partner as "complete" with a comment.
+ * ASP overrides: manually grant ASP status to a partner regardless of auto-eligibility.
  */
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
@@ -17,16 +17,32 @@ export interface GapOverride {
   completedBy: string; // user label
 }
 
+export interface AspOverride {
+  partnerId: number;
+  approvedAt: string; // ISO timestamp
+  approvedBy: string; // user label
+  note: string;
+}
+
 interface OverrideContextValue {
+  // Gap overrides
   overrides: GapOverride[];
   addOverride: (override: Omit<GapOverride, "completedAt">) => void;
   removeOverride: (partnerId: number, category: GapCategory) => void;
   getOverride: (partnerId: number, category: GapCategory) => GapOverride | undefined;
   getPartnerOverrides: (partnerId: number) => GapOverride[];
   getOverrideCount: (partnerId: number) => number;
+
+  // ASP overrides
+  aspOverrides: AspOverride[];
+  setAspOverride: (partnerId: number, approvedBy: string, note: string) => void;
+  removeAspOverride: (partnerId: number) => void;
+  getAspOverride: (partnerId: number) => AspOverride | undefined;
+  isAspEligible: (partnerId: number, autoEligible: boolean) => boolean;
 }
 
 const STORAGE_KEY = "campaigniq-gap-overrides";
+const ASP_STORAGE_KEY = "campaigniq-asp-overrides";
 
 function loadOverrides(): GapOverride[] {
   try {
@@ -45,11 +61,30 @@ function saveOverrides(overrides: GapOverride[]) {
   }
 }
 
+function loadAspOverrides(): AspOverride[] {
+  try {
+    const raw = localStorage.getItem(ASP_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAspOverrides(overrides: AspOverride[]) {
+  try {
+    localStorage.setItem(ASP_STORAGE_KEY, JSON.stringify(overrides));
+  } catch {
+    // silently fail if localStorage is full
+  }
+}
+
 const OverrideContext = createContext<OverrideContextValue | null>(null);
 
 export function OverrideProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<GapOverride[]>(loadOverrides);
+  const [aspOverrides, setAspOverrides] = useState<AspOverride[]>(loadAspOverrides);
 
+  // Gap Override Methods
   const addOverride = useCallback((override: Omit<GapOverride, "completedAt">) => {
     setOverrides((prev) => {
       // Remove existing override for same partner+category if any
@@ -91,9 +126,62 @@ export function OverrideProvider({ children }: { children: ReactNode }) {
     [overrides]
   );
 
+  // ASP Override Methods
+  const setAspOverride = useCallback((partnerId: number, approvedBy: string, note: string) => {
+    setAspOverrides((prev) => {
+      // Remove existing override for this partner if any
+      const filtered = prev.filter((o) => o.partnerId !== partnerId);
+      const next = [
+        ...filtered,
+        {
+          partnerId,
+          approvedBy,
+          note,
+          approvedAt: new Date().toISOString(),
+        },
+      ];
+      saveAspOverrides(next);
+      return next;
+    });
+  }, []);
+
+  const removeAspOverride = useCallback((partnerId: number) => {
+    setAspOverrides((prev) => {
+      const next = prev.filter((o) => o.partnerId !== partnerId);
+      saveAspOverrides(next);
+      return next;
+    });
+  }, []);
+
+  const getAspOverride = useCallback(
+    (partnerId: number) => aspOverrides.find((o) => o.partnerId === partnerId),
+    [aspOverrides]
+  );
+
+  const isAspEligible = useCallback(
+    (partnerId: number, autoEligible: boolean) => {
+      // Partner is ASP-eligible if they are either auto-eligible OR manually overridden
+      const hasOverride = aspOverrides.some((o) => o.partnerId === partnerId);
+      return autoEligible || hasOverride;
+    },
+    [aspOverrides]
+  );
+
   return (
     <OverrideContext.Provider
-      value={{ overrides, addOverride, removeOverride, getOverride, getPartnerOverrides, getOverrideCount }}
+      value={{
+        overrides,
+        addOverride,
+        removeOverride,
+        getOverride,
+        getPartnerOverrides,
+        getOverrideCount,
+        aspOverrides,
+        setAspOverride,
+        removeAspOverride,
+        getAspOverride,
+        isAspEligible,
+      }}
     >
       {children}
     </OverrideContext.Provider>
