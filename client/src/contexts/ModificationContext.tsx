@@ -304,10 +304,10 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
       const implMet = filtered.filter((p) => p.requirements.implSpec.obtained >= p.requirements.implSpec.required).length;
 
       return [
-        { category: "Sales Pro", count: spMet, percentage: Math.round((spMet / total) * 100), color: "oklch(0.60 0.12 175)" },
-        { category: "Tech Pro", count: tspMet, percentage: Math.round((tspMet / total) * 100), color: "oklch(0.58 0.16 290)" },
-        { category: "Bootcamp", count: bootMet, percentage: Math.round((bootMet / total) * 100), color: "oklch(0.75 0.14 75)" },
-        { category: "Impl Specialist", count: implMet, percentage: Math.round((implMet / total) * 100), color: "oklch(0.62 0.19 15)" },
+        { category: "Sales Pro", count: spMet, percentage: Math.round((spMet / total) * 100), color: "var(--color-pure-orange)" },
+        { category: "Tech Pro", count: tspMet, percentage: Math.round((tspMet / total) * 100), color: "var(--color-basil-green)" },
+        { category: "Bootcamp", count: bootMet, percentage: Math.round((bootMet / total) * 100), color: "var(--color-moss-green)" },
+        { category: "Impl Specialist", count: implMet, percentage: Math.round((implMet / total) * 100), color: "var(--color-cinnamon-brown)" },
       ];
     },
     []

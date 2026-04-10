@@ -34,16 +34,16 @@ import {
 } from "lucide-react";
 
 const CATEGORIES = [
-  { value: "general", label: "General", color: "oklch(0.55 0.02 55)" },
-  { value: "certification", label: "Certification", color: "oklch(0.55 0.15 160)" },
-  { value: "training", label: "Training", color: "oklch(0.55 0.16 290)" },
-  { value: "report", label: "Report", color: "oklch(0.55 0.15 30)" },
-  { value: "compliance", label: "Compliance", color: "oklch(0.55 0.15 200)" },
-  { value: "partner", label: "Partner", color: "oklch(0.55 0.15 130)" },
+  { value: "general", label: "General", color: "var(--color-walnut-brown)" },
+  { value: "certification", label: "Certification", color: "var(--color-pure-orange)" },
+  { value: "training", label: "Training", color: "var(--color-basil-green)" },
+  { value: "report", label: "Report", color: "var(--color-cinnamon-brown)" },
+  { value: "compliance", label: "Compliance", color: "var(--color-ash-gray)" },
+  { value: "partner", label: "Partner", color: "var(--color-ash-gray)" },
 ];
 
 function getCategoryColor(cat: string) {
-  return CATEGORIES.find((c) => c.value === cat)?.color ?? "oklch(0.55 0.02 55)";
+  return CATEGORIES.find((c) => c.value === cat)?.color ?? "var(--color-walnut-brown)";
 }
 
 function getCategoryLabel(cat: string) {
@@ -184,7 +184,7 @@ export default function FileStoragePage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <FolderOpen className="w-5 h-5" style={{ color: "oklch(0.55 0.15 160)" }} />
+          <FolderOpen className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
           File Storage
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -219,7 +219,7 @@ export default function FileStoragePage() {
       {/* Upload Section */}
       <div className="terrain-card p-5">
         <h3 className="text-[14px] font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Upload className="w-4 h-4" style={{ color: "oklch(0.55 0.15 160)" }} />
+          <Upload className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Upload Document
         </h3>
 
@@ -260,7 +260,7 @@ export default function FileStoragePage() {
         {/* Drop zone / file input */}
         <div
           className="relative border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer hover:border-teal-400/50 hover:bg-teal-50/30"
-          style={{ borderColor: "oklch(0.55 0.15 160 / 0.25)" }}
+          style={{ borderColor: "color-mix(in srgb, var(--color-pure-orange) 25%, transparent)" }}
           onClick={() => fileInputRef.current?.click()}
         >
           <input
@@ -272,12 +272,12 @@ export default function FileStoragePage() {
           />
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="w-8 h-8 animate-spin" style={{ color: "oklch(0.55 0.15 160)" }} />
+              <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--color-pure-orange)" }} />
               <p className="text-[13px] text-muted-foreground">Uploading...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <Upload className="w-8 h-8" style={{ color: "oklch(0.55 0.15 160 / 0.5)" }} />
+              <Upload className="w-8 h-8" style={{ color: "color-mix(in srgb, var(--color-pure-orange) 50%, transparent)" }} />
               <p className="text-[13px] text-foreground font-medium">
                 Click to select a file
               </p>
@@ -296,9 +296,9 @@ export default function FileStoragePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl"
-              style={{ background: "oklch(0.55 0.15 30 / 0.08)", border: "1px solid oklch(0.55 0.15 30 / 0.15)" }}
+              style={{ background: "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--color-cinnamon-brown) 15%, transparent)" }}
             >
-              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "oklch(0.55 0.15 30)" }} />
+              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "var(--color-cinnamon-brown)" }} />
               <span className="text-[12px] text-foreground">{uploadError}</span>
               <button onClick={() => setUploadError(null)} className="ml-auto">
                 <X className="w-3.5 h-3.5 text-muted-foreground" />
@@ -311,9 +311,9 @@ export default function FileStoragePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl"
-              style={{ background: "oklch(0.55 0.15 160 / 0.08)", border: "1px solid oklch(0.55 0.15 160 / 0.15)" }}
+              style={{ background: "color-mix(in srgb, var(--color-pure-orange) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--color-pure-orange) 15%, transparent)" }}
             >
-              <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "oklch(0.55 0.15 160)" }} />
+              <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: "var(--color-pure-orange)" }} />
               <span className="text-[12px] text-foreground">{uploadSuccess}</span>
             </motion.div>
           )}
@@ -353,12 +353,12 @@ export default function FileStoragePage() {
       <div className="terrain-card overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: "oklch(0.55 0.15 160)" }} />
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: "var(--color-pure-orange)" }} />
             <p className="text-[13px] text-muted-foreground">Loading files...</p>
           </div>
         ) : listError ? (
           <div className="p-12 text-center">
-            <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: "oklch(0.55 0.15 30)" }} />
+            <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--color-cinnamon-brown)" }} />
             <p className="text-[14px] font-medium text-foreground">Failed to load files</p>
             <p className="text-[12px] text-muted-foreground/60 mt-1">
               {listError.message || "An unexpected error occurred. Please try again later."}
@@ -366,7 +366,7 @@ export default function FileStoragePage() {
             <button
               onClick={() => utils.files.list.invalidate()}
               className="mt-3 px-4 py-2 rounded-xl text-[12px] font-medium transition-colors hover:opacity-80"
-              style={{ background: "oklch(0.55 0.15 160 / 0.1)", color: "oklch(0.55 0.15 160)" }}
+              style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)", color: "var(--color-pure-orange)" }}
             >
               Retry
             </button>
@@ -387,7 +387,7 @@ export default function FileStoragePage() {
           <div className="divide-y divide-border">
             {/* Table header */}
             <div className="grid grid-cols-12 gap-3 px-5 py-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
-              style={{ background: "oklch(0.97 0.005 85)" }}
+              style={{ background: "var(--color-cloud-white)" }}
             >
               <div className="col-span-5">File</div>
               <div className="col-span-2">Category</div>
@@ -472,7 +472,7 @@ export default function FileStoragePage() {
                       className="p-1.5 rounded-lg hover:bg-teal-50 transition-colors opacity-0 group-hover:opacity-100"
                       title="Download"
                     >
-                      <Download className="w-3.5 h-3.5" style={{ color: "oklch(0.55 0.15 160)" }} />
+                      <Download className="w-3.5 h-3.5" style={{ color: "var(--color-pure-orange)" }} />
                     </a>
 
                     {deleteConfirmId === file.id ? (

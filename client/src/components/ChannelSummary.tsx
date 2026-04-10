@@ -63,8 +63,8 @@ export default function ComplianceSummary({ activeFilter, onFilterChange }: Comp
           exit={{ opacity: 0, y: -8 }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
           style={{
-            background: "oklch(0.97 0.015 200 / 0.5)",
-            border: "1px solid oklch(0.90 0.02 200 / 0.3)",
+            background: "color-mix(in srgb, var(--color-ash-gray) 50%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-ash-gray) 30%, transparent)",
           }}
         >
           <span className="text-[12px] font-medium text-foreground">

@@ -6,7 +6,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { OverrideProvider } from "./contexts/OverrideContext";
 import { ModificationProvider } from "./contexts/ModificationContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Home from "./pages/Home";
+import LoginPage from "./pages/LoginPage";
 
 function AppRouter() {
   // Vite sets BASE_URL to /campaigniq-dashboard/ in prod, / in dev
@@ -24,20 +26,32 @@ function AppRouter() {
   );
 }
 
+function Root() {
+  const { isLoggedIn } = useAuth();
+  
+  if (!isLoggedIn) {
+    return <LoginPage />;
+  }
+
+  return <AppRouter />;
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
       >
-        <ModificationProvider>
-          <OverrideProvider>
-            <TooltipProvider>
-              <Toaster />
-              <AppRouter />
-            </TooltipProvider>
-          </OverrideProvider>
-        </ModificationProvider>
+        <AuthProvider>
+          <ModificationProvider>
+            <OverrideProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Root />
+              </TooltipProvider>
+            </OverrideProvider>
+          </ModificationProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

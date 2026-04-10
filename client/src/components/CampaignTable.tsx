@@ -130,8 +130,8 @@ function RequirementBarWithOverride({
             <span
               className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
               style={{
-                background: "oklch(0.62 0.19 15 / 0.10)",
-                color: "oklch(0.50 0.19 15)",
+                background: "color-mix(in srgb, var(--color-cinnamon-brown) 10%, transparent)",
+                color: "var(--color-cinnamon-brown)",
               }}
             >
               {gap} gap{gap !== 1 ? "s" : ""}
@@ -141,8 +141,8 @@ function RequirementBarWithOverride({
             <span
               className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
               style={{
-                background: "oklch(0.60 0.12 175 / 0.10)",
-                color: "oklch(0.45 0.12 175)",
+                background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
+                color: "var(--color-pure-orange)",
               }}
             >
               <CheckCircle2 className="w-2.5 h-2.5" />
@@ -154,17 +154,17 @@ function RequirementBarWithOverride({
       <div className="flex items-center gap-2">
         <div
           className="flex-1 h-2 rounded-full overflow-hidden"
-          style={{ background: "oklch(0.93 0.008 85)" }}
+          style={{ background: "var(--color-stone-gray)" }}
         >
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
               width: `${override ? 100 : pct}%`,
               background: isComplete
-                ? "oklch(0.60 0.12 175)"
+                ? "var(--color-pure-orange)"
                 : pct >= 50
-                ? "oklch(0.75 0.14 75)"
-                : "oklch(0.62 0.19 15)",
+                ? "var(--color-moss-green)"
+                : "var(--color-cinnamon-brown)",
             }}
           />
         </div>
@@ -174,8 +174,8 @@ function RequirementBarWithOverride({
           onClick={(e) => { e.stopPropagation(); setShowPeople((p) => !p); }}
           className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:bg-black/10 active:scale-95 shrink-0"
           style={{
-            background: showPeople ? "oklch(0.58 0.16 290 / 0.16)" : "oklch(0.58 0.16 290 / 0.08)",
-            color: "oklch(0.48 0.16 290)",
+            background: showPeople ? "color-mix(in srgb, var(--color-basil-green) 16%, transparent)" : "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
+            color: "var(--color-basil-green)",
           }}
           title={`View ${label} certified individuals`}
         >
@@ -190,8 +190,8 @@ function RequirementBarWithOverride({
             }}
             className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:scale-105"
             style={{
-              background: "oklch(0.60 0.12 175 / 0.08)",
-              color: "oklch(0.45 0.12 175)",
+              background: "color-mix(in srgb, var(--color-pure-orange) 8%, transparent)",
+              color: "var(--color-pure-orange)",
             }}
             title="Mark as complete"
           >
@@ -206,8 +206,8 @@ function RequirementBarWithOverride({
             }}
             className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:scale-105"
             style={{
-              background: "oklch(0.62 0.19 15 / 0.08)",
-              color: "oklch(0.50 0.19 15)",
+              background: "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
+              color: "var(--color-cinnamon-brown)",
             }}
             title="Undo override"
           >
@@ -227,9 +227,9 @@ function RequirementBarWithOverride({
           >
             <div
               className="rounded-lg px-3 py-2.5 border"
-              style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.90 0.02 220)" }}
+              style={{ background: "var(--color-ash-gray)", borderColor: "var(--color-ash-gray)" }}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "oklch(0.48 0.16 290)" }}>
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-basil-green)" }}>
                 {label} — Completed ({trainingPeople.length})
               </p>
               {trainingPeople.length === 0 ? (
@@ -238,7 +238,7 @@ function RequirementBarWithOverride({
                 <div className="space-y-1">
                   {trainingPeople.map((person) => (
                     <div key={person.email} className="flex items-center gap-2">
-                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "var(--color-moss-green)" }} />
                       <span className="text-[11px] font-medium text-foreground">
                         {person.firstName} {person.lastName}
                       </span>
@@ -264,8 +264,8 @@ function RequirementBarWithOverride({
             <div
               className="flex items-center gap-2 p-2 rounded-lg border"
               style={{
-                background: "oklch(0.99 0.003 85)",
-                borderColor: "oklch(0.92 0.01 85)",
+                background: "var(--color-cloud-white)",
+                borderColor: "var(--color-stone-gray)",
               }}
             >
               <MessageSquare className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -287,8 +287,8 @@ function RequirementBarWithOverride({
                 }}
                 className="p-1 rounded-md transition-colors"
                 style={{
-                  background: "oklch(0.60 0.12 175 / 0.12)",
-                  color: "oklch(0.45 0.12 175)",
+                  background: "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)",
+                  color: "var(--color-pure-orange)",
                 }}
               >
                 <Send className="w-3 h-3" />
@@ -442,7 +442,7 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
       className="rounded-xl border-2 p-4"
       style={{
         borderColor: isEligible ? ASP_ORANGE : "#e5e7eb",
-        background: isEligible ? `${ASP_ORANGE}08` : "oklch(0.99 0.003 85)",
+        background: isEligible ? `${ASP_ORANGE}08` : "var(--color-cloud-white)",
       }}
     >
       {/* Header */}
@@ -480,9 +480,9 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
             title={isManuallyApproved ? "Remove manual ASP approval" : "Manually approve as ASP"}
             className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all"
             style={{
-              background: isManuallyApproved ? "#fef2f2" : "oklch(0.99 0.003 85)",
+              background: isManuallyApproved ? "#fef2f2" : "var(--color-cloud-white)",
               borderColor: isManuallyApproved ? "#fca5a5" : "#e5e7eb",
-              color: isManuallyApproved ? "#dc2626" : "oklch(0.45 0.02 55)",
+              color: isManuallyApproved ? "#dc2626" : "var(--color-walnut-brown)",
             }}
           >
             {isManuallyApproved
@@ -527,7 +527,7 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
       {isManuallyApproved && aspOverride.note && (
         <div
           className="mb-4 p-2.5 rounded-lg text-[11px]"
-          style={{ background: `${ASP_ORANGE}10`, color: "oklch(0.40 0.12 30)" }}
+          style={{ background: `${ASP_ORANGE}10`, color: "var(--color-cinnamon-brown)" }}
         >
           <span className="font-bold">Approval note:</span> {aspOverride.note}
           <span className="ml-2 text-muted-foreground">
@@ -609,8 +609,8 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
         <div
           className="px-8 py-5 grid grid-cols-1 md:grid-cols-2 gap-6"
           style={{
-            background: "linear-gradient(135deg, oklch(0.97 0.01 85), oklch(0.98 0.005 200 / 0.3))",
-            borderTop: "1px solid oklch(0.92 0.01 85)",
+            background: "linear-gradient(135deg, var(--color-stone-gray), color-mix(in srgb, var(--color-ash-gray) 30%, transparent))",
+            borderTop: "1px solid var(--color-stone-gray)",
           }}
         >
           {/* Enablement Requirements */}
@@ -623,8 +623,8 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 <span
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
                   style={{
-                    background: "oklch(0.60 0.12 175 / 0.10)",
-                    color: "oklch(0.45 0.12 175)",
+                    background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
+                    color: "var(--color-pure-orange)",
                   }}
                 >
                   <CheckCircle2 className="w-3 h-3" />
@@ -677,10 +677,10 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 className="text-[12px] font-bold"
                 style={{
                   color: partner.enablementScore >= 80
-                    ? "oklch(0.45 0.12 175)"
+                    ? "var(--color-pure-orange)"
                     : partner.enablementScore >= 40
-                    ? "oklch(0.58 0.14 75)"
-                    : "oklch(0.50 0.19 15)",
+                    ? "var(--color-moss-green)"
+                    : "var(--color-cinnamon-brown)",
                 }}
               >
                 {partner.enablementScore}% compliant
@@ -706,8 +706,8 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                     key={email}
                     className="text-[11px] px-2.5 py-1 rounded-lg font-medium"
                     style={{
-                      background: "oklch(0.58 0.16 290 / 0.08)",
-                      color: "oklch(0.48 0.16 290)",
+                      background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
+                      color: "var(--color-basil-green)",
                     }}
                   >
                     {email}
@@ -741,7 +741,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 <div
                   key={item.label}
                   className="rounded-lg px-3 py-2 border"
-                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                  style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
                 >
                   <p className="text-[10px] text-muted-foreground">{item.label}</p>
                   <p className="text-[13px] font-semibold text-foreground">{item.value}</p>
@@ -783,13 +783,13 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                     key={exam.email}
                     className="rounded-xl px-4 py-3 border"
                     style={{
-                      background: "oklch(0.99 0.003 85)",
-                      borderColor: "oklch(0.93 0.01 85)",
+                      background: "var(--color-cloud-white)",
+                      borderColor: "var(--color-stone-gray)",
                     }}
                   >
                     <p
                       className="text-[11px] font-semibold mb-1.5 flex items-center gap-1.5"
-                      style={{ color: "oklch(0.48 0.16 290)" }}
+                      style={{ color: "var(--color-basil-green)" }}
                     >
                       <ShieldCheck className="w-3 h-3" />
                       {exam.email}
@@ -800,8 +800,8 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                           key={`${exam.email}-${cert}`}
                           className="text-[10px] px-2 py-0.5 rounded-md font-medium"
                           style={{
-                            background: "oklch(0.75 0.14 75 / 0.10)",
-                            color: "oklch(0.55 0.14 75)",
+                            background: "color-mix(in srgb, var(--color-moss-green) 10%, transparent)",
+                            color: "var(--color-moss-green)",
                           }}
                         >
                           {cert}
@@ -814,7 +814,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             ) : (
               <div
                 className="rounded-xl px-4 py-3 text-[12px] text-muted-foreground italic"
-                style={{ background: "oklch(0.96 0.005 85)" }}
+                style={{ background: "var(--color-stone-gray)" }}
               >
                 No certifications recorded yet. Encourage SEs to pursue FlashArray/FlashBlade exams.
               </div>
@@ -914,11 +914,11 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all duration-200"
                   style={{
                     background: isActive
-                      ? tierStyle ? tierStyle.bg : "oklch(0.22 0.02 200 / 0.10)"
+                      ? tierStyle ? tierStyle.bg : "color-mix(in srgb, var(--color-ash-gray) 10%, transparent)"
                       : "transparent",
                     color: isActive
-                      ? tierStyle ? tierStyle.color : "oklch(0.22 0.02 200)"
-                      : "oklch(0.55 0.02 55)",
+                      ? tierStyle ? tierStyle.color : "var(--color-ash-gray)"
+                      : "var(--color-walnut-brown)",
                     border: isActive ? "1px solid currentColor" : "1px solid transparent",
                     opacity: isActive ? 1 : 0.7,
                   }}
@@ -934,7 +934,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr style={{ background: "oklch(0.97 0.005 85)" }}>
+            <tr style={{ background: "var(--color-cloud-white)" }}>
               <th className="px-4 py-3 w-8" />
               <SortHeader label="Partner" sortKeyName="name" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
@@ -982,8 +982,8 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                       className="border-b border-border/50 hover:bg-accent/30 transition-colors cursor-pointer"
                       style={
                         i % 2 === 0
-                          ? { background: "oklch(0.99 0.003 85)" }
-                          : { background: "oklch(0.975 0.006 85)" }
+                          ? { background: "var(--color-cloud-white)" }
+                          : { background: "var(--color-stone-gray)" }
                       }
                       onClick={() => setExpandedId(isExpanded ? null : partner.id)}
                     >
@@ -1003,8 +1003,8 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                             <span
                               className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                               style={{
-                                background: "oklch(0.60 0.12 175 / 0.10)",
-                                color: "oklch(0.45 0.12 175)",
+                                background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
+                                color: "var(--color-pure-orange)",
                               }}
                               title={`${overrideCount} manual override${overrideCount !== 1 ? "s" : ""}`}
                             >
@@ -1029,10 +1029,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           style={{
                             color:
                               partner.enablementScore >= 80
-                                ? "oklch(0.45 0.12 175)"
+                                ? "var(--color-pure-orange)"
                                 : partner.enablementScore >= 40
-                                ? "oklch(0.58 0.14 75)"
-                                : "oklch(0.50 0.19 15)",
+                                ? "var(--color-moss-green)"
+                                : "var(--color-cinnamon-brown)",
                           }}
                         >
                           {partner.enablementScore}%
@@ -1040,17 +1040,17 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2">
-                          <div className="w-20 h-2 rounded-full overflow-hidden" style={{ background: "oklch(0.93 0.008 85)" }}>
+                          <div className="w-20 h-2 rounded-full overflow-hidden" style={{ background: "var(--color-stone-gray)" }}>
                             <div
                               className="h-full rounded-full"
                               style={{
                                 width: `${partner.enablementScore}%`,
                                 background:
                                   partner.enablementScore >= 80
-                                    ? "oklch(0.60 0.12 175)"
+                                    ? "var(--color-pure-orange)"
                                     : partner.enablementScore >= 40
-                                    ? "oklch(0.75 0.14 75)"
-                                    : "oklch(0.62 0.19 15)",
+                                    ? "var(--color-moss-green)"
+                                    : "var(--color-cinnamon-brown)",
                               }}
                             />
                           </div>
@@ -1065,10 +1065,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           style={{
                             color:
                               partner.totalGaps === 0
-                                ? "oklch(0.48 0.12 175)"
+                                ? "var(--color-pure-orange)"
                                 : partner.totalGaps <= 3
-                                ? "oklch(0.55 0.02 55)"
-                                : "oklch(0.50 0.19 15)",
+                                ? "var(--color-walnut-brown)"
+                                : "var(--color-cinnamon-brown)",
                           }}
                         >
                           {partner.totalGaps}
@@ -1079,8 +1079,8 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           <span
                             className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
                             style={{
-                              background: "oklch(0.75 0.14 75 / 0.12)",
-                              color: "oklch(0.55 0.14 75)",
+                              background: "color-mix(in srgb, var(--color-moss-green) 12%, transparent)",
+                              color: "var(--color-moss-green)",
                             }}
                           >
                             <Award className="w-3 h-3" />

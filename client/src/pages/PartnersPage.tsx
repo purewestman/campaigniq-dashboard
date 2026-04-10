@@ -93,7 +93,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Building2 className="w-5 h-5" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <Building2 className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
           Partner Directory
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -106,8 +106,8 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-xl border flex-1 min-w-[250px]"
           style={{
-            background: "oklch(0.99 0.003 85 / 0.95)",
-            borderColor: search ? "oklch(0.60 0.12 175 / 0.4)" : "oklch(0.92 0.01 85)",
+            background: "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)",
+            borderColor: search ? "color-mix(in srgb, var(--color-pure-orange) 40%, transparent)" : "var(--color-stone-gray)",
           }}
         >
           <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -138,11 +138,11 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                 className="text-[11px] font-medium px-3 py-1.5 rounded-full transition-all"
                 style={{
                   background: isActive
-                    ? def ? def.bg : "oklch(0.22 0.02 200 / 0.10)"
+                    ? def ? def.bg : "color-mix(in srgb, var(--color-ash-gray) 10%, transparent)"
                     : "transparent",
                   color: isActive
-                    ? def ? def.color : "oklch(0.22 0.02 200)"
-                    : "oklch(0.55 0.02 55)",
+                    ? def ? def.color : "var(--color-ash-gray)"
+                    : "var(--color-walnut-brown)",
                   border: isActive ? "1px solid currentColor" : "1px solid transparent",
                 }}
               >
@@ -182,7 +182,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
               >
                 {/* Modified indicator stripe */}
                 {modification && (
-                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: "oklch(0.58 0.16 290)" }} />
+                  <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" style={{ background: "var(--color-basil-green)" }} />
                 )}
 
                 {/* Header */}
@@ -191,12 +191,12 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-[14px] font-bold text-foreground leading-tight">{partner.name}</h3>
                       {modification && (
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.58 0.16 290 / 0.10)", color: "oklch(0.42 0.16 290)" }}>
+                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--color-basil-green) 10%, transparent)", color: "var(--color-basil-green)" }}>
                           <Pencil className="w-2.5 h-2.5" /> Modified
                         </span>
                       )}
                       {overrideCount > 0 && (
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.60 0.12 175 / 0.10)", color: "oklch(0.45 0.12 175)" }}>
+                        <span className="flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)", color: "var(--color-pure-orange)" }}>
                           <CheckCircle2 className="w-2.5 h-2.5" /> {overrideCount}
                         </span>
                       )}
@@ -210,7 +210,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                     <p
                       className="text-xl font-bold"
                       style={{
-                        color: partner.enablementScore >= 80 ? "oklch(0.45 0.12 175)" : partner.enablementScore >= 40 ? "oklch(0.58 0.14 75)" : "oklch(0.50 0.19 15)",
+                        color: partner.enablementScore >= 80 ? "var(--color-pure-orange)" : partner.enablementScore >= 40 ? "var(--color-moss-green)" : "var(--color-cinnamon-brown)",
                       }}
                     >
                       {partner.enablementScore}%
@@ -222,33 +222,33 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                 {/* Compliance Badges */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
-                    background: partner.enablementCompliant ? "oklch(0.60 0.12 175 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
-                    color: partner.enablementCompliant ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)",
+                    background: partner.enablementCompliant ? "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
+                    color: partner.enablementCompliant ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)",
                   }}>
                     {partner.enablementCompliant ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
                     Enablement
                   </span>
                   <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{
-                    background: partner.businessCompliant ? "oklch(0.58 0.16 290 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
-                    color: partner.businessCompliant ? "oklch(0.42 0.16 290)" : "oklch(0.50 0.19 15)",
+                    background: partner.businessCompliant ? "color-mix(in srgb, var(--color-basil-green) 10%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
+                    color: partner.businessCompliant ? "var(--color-basil-green)" : "var(--color-cinnamon-brown)",
                   }}>
                     {partner.businessCompliant ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
                     Business
                   </span>
                   {partner.overallCompliant && (
-                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.45 0.12 175 / 0.10)", color: "oklch(0.35 0.12 175)" }}>
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)", color: "var(--color-pure-orange)" }}>
                       <Shield className="w-2.5 h-2.5" /> Compliant
                     </span>
                   )}
                 </div>
 
                 {/* Progress Bar */}
-                <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: "oklch(0.93 0.008 85)" }}>
+                <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: "var(--color-stone-gray)" }}>
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${partner.enablementScore}%`,
-                      background: partner.enablementScore >= 80 ? "oklch(0.60 0.12 175)" : partner.enablementScore >= 40 ? "oklch(0.75 0.14 75)" : "oklch(0.62 0.19 15)",
+                      background: partner.enablementScore >= 80 ? "var(--color-pure-orange)" : partner.enablementScore >= 40 ? "var(--color-moss-green)" : "var(--color-cinnamon-brown)",
                     }}
                   />
                 </div>
@@ -292,11 +292,11 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                                 className="px-3 py-2 rounded-lg text-center cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
                                 style={{
                                   background: isActive
-                                    ? "oklch(0.58 0.16 290 / 0.12)"
-                                    : met ? "oklch(0.60 0.12 175 / 0.06)"
-                                    : req.required === 0 ? "oklch(0.97 0.005 85 / 0.6)"
-                                    : "oklch(0.62 0.19 15 / 0.04)",
-                                  outline: isActive ? "1.5px solid oklch(0.58 0.16 290 / 0.4)" : "none",
+                                    ? "color-mix(in srgb, var(--color-basil-green) 12%, transparent)"
+                                    : met ? "color-mix(in srgb, var(--color-pure-orange) 6%, transparent)"
+                                    : req.required === 0 ? "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)"
+                                    : "color-mix(in srgb, var(--color-cinnamon-brown) 4%, transparent)",
+                                  outline: isActive ? "1.5px solid color-mix(in srgb, var(--color-basil-green) 40%, transparent)" : "none",
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -308,7 +308,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                                 }}
                               >
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
-                                <p className="text-[14px] font-bold" style={{ color: req.required === 0 ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                                <p className="text-[14px] font-bold" style={{ color: req.required === 0 ? "var(--color-walnut-brown)" : met ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                                   {req.obtained}/{req.required}
                                 </p>
                               </div>
@@ -321,9 +321,9 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           const people = trainingData[partner.id]?.[cat] ?? [];
                           const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[cat] ?? cat;
                           return (
-                            <div className="mt-2 rounded-lg p-3 border" style={{ background: "oklch(0.98 0.004 220)", borderColor: "oklch(0.88 0.03 220)" }}>
+                            <div className="mt-2 rounded-lg p-3 border" style={{ background: "var(--color-ash-gray)", borderColor: "var(--color-ash-gray)" }}>
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "oklch(0.48 0.16 290)" }}>
+                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-basil-green)" }}>
                                   {catLabel} — Completed ({people.length})
                                 </p>
                                 <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -336,7 +336,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                                 <div className="space-y-1">
                                   {people.map((person) => (
                                     <div key={person.email} className="flex items-center gap-2">
-                                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "oklch(0.55 0.14 75)" }} />
+                                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "var(--color-moss-green)" }} />
                                       <span className="text-[11px] font-medium text-foreground">
                                         {person.firstName} {person.lastName}
                                       </span>
@@ -364,9 +364,9 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             const met = value !== null && threshold !== null && value >= threshold;
                             const na = threshold === null;
                             return (
-                              <div key={label} className="px-3 py-2 rounded-lg text-center" style={{ background: na ? "oklch(0.97 0.005 85 / 0.6)" : met ? "oklch(0.60 0.12 175 / 0.06)" : "oklch(0.62 0.19 15 / 0.04)" }}>
+                              <div key={label} className="px-3 py-2 rounded-lg text-center" style={{ background: na ? "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" : met ? "color-mix(in srgb, var(--color-pure-orange) 6%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 4%, transparent)" }}>
                                 <p className="text-[10px] text-muted-foreground">{label}</p>
-                                <p className="text-[13px] font-bold" style={{ color: na ? "oklch(0.55 0.02 55)" : met ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                                <p className="text-[13px] font-bold" style={{ color: na ? "var(--color-walnut-brown)" : met ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                                   {value !== null ? format(value) : "Not Set"}
                                 </p>
                                 {threshold !== null && (
@@ -392,7 +392,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             { label: "Attainment", val: (() => { const a = getRevenueAttainment(partner); return a !== null ? `${a}%` : "\u2014"; })() },
                             { label: "Pipeline", val: formatCurrency(partner.revenueData.pipelineFY27, true) },
                           ].map((item) => (
-                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.55 0.18 145 / 0.04)" }}>
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "color-mix(in srgb, var(--color-ash-gray) 4%, transparent)" }}>
                               <p className="text-[10px] text-muted-foreground">{item.label}</p>
                               <p className="text-[13px] font-bold text-foreground">{item.val}</p>
                             </div>
@@ -405,7 +405,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                             { label: "FY26 Rev", val: formatCurrency(partner.revenueData.revenueFY26, true) },
                             { label: "FY25 Rev", val: formatCurrency(partner.revenueData.revenueFY25, true) },
                           ].map((item) => (
-                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                            <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}>
                               <p className="text-[10px] text-muted-foreground">{item.label}</p>
                               <p className="text-[13px] font-bold text-foreground">{item.val}</p>
                             </div>
@@ -416,8 +416,8 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
 
                       {/* Last Modification Comment */}
                       {modification && (
-                        <div className="px-3 py-2.5 rounded-lg" style={{ background: "oklch(0.58 0.16 290 / 0.04)", border: "1px solid oklch(0.58 0.16 290 / 0.12)" }}>
-                          <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "oklch(0.42 0.16 290)" }}>Last Modification</p>
+                        <div className="px-3 py-2.5 rounded-lg" style={{ background: "color-mix(in srgb, var(--color-basil-green) 4%, transparent)", border: "1px solid color-mix(in srgb, var(--color-basil-green) 12%, transparent)" }}>
+                          <p className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: "var(--color-basil-green)" }}>Last Modification</p>
                           <p className="text-[12px] text-foreground/80 italic leading-relaxed">"{modification.comment}"</p>
                           <p className="text-[10px] text-muted-foreground mt-1">
                             — {modification.modifiedBy},{" "}
@@ -438,7 +438,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Contacts</p>
                           <div className="flex flex-wrap gap-1.5">
                             {partner.targetEmails.map((email) => (
-                              <a key={email} href={`mailto:${email}`} onClick={(e) => e.stopPropagation()} className="text-[10px] px-2 py-0.5 rounded-md font-medium hover:opacity-80 transition-opacity" style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.48 0.16 290)" }}>
+                              <a key={email} href={`mailto:${email}`} onClick={(e) => e.stopPropagation()} className="text-[10px] px-2 py-0.5 rounded-md font-medium hover:opacity-80 transition-opacity" style={{ background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)", color: "var(--color-basil-green)" }}>
                                 {email}
                               </a>
                             ))}
@@ -451,7 +451,7 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         <button
                           onClick={(e) => { e.stopPropagation(); setModifyPartner(partner); }}
                           className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:shadow-md"
-                          style={{ background: "oklch(0.50 0.12 175)", color: "white", boxShadow: "0 2px 8px oklch(0.50 0.12 175 / 0.25)" }}
+                          style={{ background: "var(--color-pure-orange)", color: "white", boxShadow: "0 2px 8px color-mix(in srgb, var(--color-pure-orange) 25%, transparent)" }}
                         >
                           <Pencil className="w-4 h-4" /> Modify Gaps
                         </button>

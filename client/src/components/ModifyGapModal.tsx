@@ -101,10 +101,10 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
   const tierDef = TIER_DEFINITIONS[selectedTier];
 
   const categories = [
-    { key: "salesPro" as const, label: "Sales Pro", required: tierDef.enablement.salesPro, color: "oklch(0.60 0.12 175)" },
-    { key: "techPro" as const, label: "Tech Pro", required: tierDef.enablement.techPro, color: "oklch(0.58 0.16 290)" },
-    { key: "bootcamp" as const, label: "Bootcamp", required: tierDef.enablement.bootcamp, color: "oklch(0.75 0.14 75)" },
-    { key: "implSpec" as const, label: "Impl Specialist", required: tierDef.enablement.implSpec, color: "oklch(0.62 0.19 15)" },
+    { key: "salesPro" as const, label: "Sales Pro", required: tierDef.enablement.salesPro, color: "var(--color-pure-orange)" },
+    { key: "techPro" as const, label: "Tech Pro", required: tierDef.enablement.techPro, color: "var(--color-basil-green)" },
+    { key: "bootcamp" as const, label: "Bootcamp", required: tierDef.enablement.bootcamp, color: "var(--color-moss-green)" },
+    { key: "implSpec" as const, label: "Impl Specialist", required: tierDef.enablement.implSpec, color: "var(--color-cinnamon-brown)" },
   ];
 
   // Preview computations
@@ -181,7 +181,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50"
-            style={{ background: "oklch(0.15 0.02 200 / 0.5)", backdropFilter: "blur(4px)" }}
+            style={{ background: "color-mix(in srgb, var(--color-ash-gray) 50%, transparent)", backdropFilter: "blur(4px)" }}
             onClick={onClose}
           />
 
@@ -197,28 +197,28 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
             <div
               className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl"
               style={{
-                background: "oklch(0.99 0.003 85)",
-                border: "1px solid oklch(0.92 0.01 85)",
+                background: "var(--color-cloud-white)",
+                border: "1px solid var(--color-stone-gray)",
               }}
             >
               {/* Header */}
               <div
                 className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b rounded-t-2xl"
                 style={{
-                  background: "oklch(0.22 0.04 200)",
-                  borderColor: "oklch(0.30 0.04 200)",
+                  background: "var(--color-ash-gray)",
+                  borderColor: "var(--color-ash-gray)",
                 }}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{ background: "oklch(0.60 0.12 175 / 0.20)" }}
+                    style={{ background: "color-mix(in srgb, var(--color-pure-orange) 20%, transparent)" }}
                   >
-                    <Pencil className="w-4 h-4" style={{ color: "oklch(0.80 0.10 175)" }} />
+                    <Pencil className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
                   </div>
                   <div>
                     <h3 className="text-[15px] font-bold text-white">Modify Partner</h3>
-                    <p className="text-[11px]" style={{ color: "oklch(0.75 0.02 200)" }}>
+                    <p className="text-[11px]" style={{ color: "var(--color-ash-gray)" }}>
                       {partner.name}
                     </p>
                   </div>
@@ -229,8 +229,8 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                       onClick={() => setShowHistory(!showHistory)}
                       className="p-2 rounded-lg transition-colors"
                       style={{
-                        background: showHistory ? "oklch(0.60 0.12 175 / 0.20)" : "transparent",
-                        color: "oklch(0.75 0.02 200)",
+                        background: showHistory ? "color-mix(in srgb, var(--color-pure-orange) 20%, transparent)" : "transparent",
+                        color: "var(--color-ash-gray)",
                       }}
                       title="View modification history"
                     >
@@ -240,7 +240,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   <button
                     onClick={onClose}
                     className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                    style={{ color: "oklch(0.75 0.02 200)" }}
+                    style={{ color: "var(--color-ash-gray)" }}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -255,9 +255,9 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden border-b"
-                    style={{ borderColor: "oklch(0.92 0.01 85)" }}
+                    style={{ borderColor: "var(--color-stone-gray)" }}
                   >
-                    <div className="px-6 py-4 space-y-3" style={{ background: "oklch(0.97 0.005 85)" }}>
+                    <div className="px-6 py-4 space-y-3" style={{ background: "var(--color-cloud-white)" }}>
                       <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
                         Modification History ({modHistory.length})
                       </p>
@@ -266,7 +266,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                           <div
                             key={i}
                             className="px-3 py-2 rounded-lg text-[11px]"
-                            style={{ background: "oklch(0.99 0.003 85)", border: "1px solid oklch(0.94 0.008 85)" }}
+                            style={{ background: "var(--color-cloud-white)", border: "1px solid var(--color-stone-gray)" }}
                           >
                             <div className="flex items-center justify-between mb-1">
                               <span className="font-semibold text-foreground">{h.modifiedBy}</span>
@@ -297,16 +297,16 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   <div
                     className="flex items-start gap-3 px-4 py-3 rounded-xl"
                     style={{
-                      background: "oklch(0.58 0.16 290 / 0.06)",
-                      border: "1px solid oklch(0.58 0.16 290 / 0.15)",
+                      background: "color-mix(in srgb, var(--color-basil-green) 6%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--color-basil-green) 15%, transparent)",
                     }}
                   >
-                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "oklch(0.48 0.16 290)" }} />
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-basil-green)" }} />
                     <div className="flex-1">
-                      <p className="text-[12px] font-semibold" style={{ color: "oklch(0.38 0.16 290)" }}>
+                      <p className="text-[12px] font-semibold" style={{ color: "var(--color-basil-green)" }}>
                         Previously Modified
                       </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "oklch(0.48 0.10 290)" }}>
+                      <p className="text-[11px] mt-0.5" style={{ color: "var(--color-basil-green)" }}>
                         Last modified by {existingMod.modifiedBy} on{" "}
                         {new Date(existingMod.modifiedAt).toLocaleDateString("en-ZA")}
                       </p>
@@ -314,7 +314,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                     <button
                       onClick={handleRevert}
                       className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition-colors hover:bg-white/60"
-                      style={{ color: "oklch(0.48 0.16 290)" }}
+                      style={{ color: "var(--color-basil-green)" }}
                     >
                       <Undo2 className="w-3 h-3" />
                       Revert
@@ -326,7 +326,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Shield className="w-4 h-4" style={{ color: tierDef.color }} />
-                    <h4 className="text-[13px] font-semibold" style={{ color: "oklch(0.30 0.02 260)" }}>
+                    <h4 className="text-[13px] font-semibold" style={{ color: "var(--color-basil-green)" }}>
                       Program Tier
                     </h4>
                   </div>
@@ -340,9 +340,9 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                           onClick={() => setSelectedTier(t)}
                           className="relative px-2 py-2 rounded-xl text-[11px] font-semibold transition-all border-2"
                           style={{
-                            borderColor: isActive ? td.color : "oklch(0.92 0.004 286)",
+                            borderColor: isActive ? td.color : "var(--color-basil-green)",
                             backgroundColor: isActive ? td.bg : "transparent",
-                            color: isActive ? td.color : "oklch(0.55 0.02 260)",
+                            color: isActive ? td.color : "var(--color-basil-green)",
                           }}
                         >
                           {td.shortLabel}
@@ -360,7 +360,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
 
                 {/* Enablement Categories */}
                 <div>
-                  <h4 className="text-[13px] font-semibold mb-3" style={{ color: "oklch(0.30 0.02 260)" }}>
+                  <h4 className="text-[13px] font-semibold mb-3" style={{ color: "var(--color-basil-green)" }}>
                     Enablement & Certifications
                   </h4>
                   <div className="space-y-3">
@@ -371,25 +371,25 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                       return (
                         <div key={cat.key}>
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[12px] font-medium" style={{ color: "oklch(0.40 0.02 260)" }}>
+                            <span className="text-[12px] font-medium" style={{ color: "var(--color-basil-green)" }}>
                               {cat.label}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-[11px]" style={{ color: "oklch(0.55 0.02 260)" }}>
+                              <span className="text-[11px]" style={{ color: "var(--color-basil-green)" }}>
                                 {partner.requirements[cat.key].obtained}
                               </span>
-                              <ArrowRight className="w-3 h-3" style={{ color: "oklch(0.65 0.02 260)" }} />
+                              <ArrowRight className="w-3 h-3" style={{ color: "var(--color-basil-green)" }} />
                               <span
                                 className="text-[12px] font-bold"
-                                style={{ color: met ? "oklch(0.45 0.15 160)" : cat.color }}
+                                style={{ color: met ? "var(--color-pure-orange)" : cat.color }}
                               >
                                 {val}
                               </span>
-                              <span className="text-[11px]" style={{ color: "oklch(0.60 0.02 260)" }}>
+                              <span className="text-[11px]" style={{ color: "var(--color-basil-green)" }}>
                                 / {cat.required}
                               </span>
                               {met ? (
-                                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "oklch(0.55 0.15 160)" }} />
+                                <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--color-pure-orange)" }} />
                               ) : (
                                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
                                   style={{ background: `${cat.color}15`, color: cat.color }}>
@@ -403,17 +403,17 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                               onClick={() => setValues((v) => ({ ...v, [cat.key]: Math.max(0, v[cat.key] - 1) }))}
                               className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
                               style={{
-                                background: "oklch(0.97 0.005 85)",
-                                border: "1px solid oklch(0.92 0.01 85)",
-                                color: "oklch(0.45 0.02 260)",
+                                background: "var(--color-cloud-white)",
+                                border: "1px solid var(--color-stone-gray)",
+                                color: "var(--color-basil-green)",
                               }}
                             >
                               −
                             </button>
-                            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "oklch(0.94 0.005 85)" }}>
+                            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--color-stone-gray)" }}>
                               <motion.div
                                 className="h-full rounded-full"
-                                style={{ background: met ? "oklch(0.55 0.15 160)" : cat.color }}
+                                style={{ background: met ? "var(--color-pure-orange)" : cat.color }}
                                 initial={false}
                                 animate={{ width: cat.required > 0 ? `${Math.min(100, (val / cat.required) * 100)}%` : "100%" }}
                                 transition={{ type: "spring", damping: 20 }}
@@ -423,9 +423,9 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                               onClick={() => setValues((v) => ({ ...v, [cat.key]: v[cat.key] + 1 }))}
                               className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
                               style={{
-                                background: "oklch(0.97 0.005 85)",
-                                border: "1px solid oklch(0.92 0.01 85)",
-                                color: "oklch(0.45 0.02 260)",
+                                background: "var(--color-cloud-white)",
+                                border: "1px solid var(--color-stone-gray)",
+                                color: "var(--color-basil-green)",
                               }}
                             >
                               +
@@ -439,17 +439,17 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
 
                 {/* Business Metrics */}
                 <div>
-                  <h4 className="text-[13px] font-semibold mb-3" style={{ color: "oklch(0.30 0.02 260)" }}>
+                  <h4 className="text-[13px] font-semibold mb-3" style={{ color: "var(--color-basil-green)" }}>
                     Business Metrics (Manual Entry)
                   </h4>
                   <div className="space-y-3">
                     {/* Bookings USD */}
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.60 0.12 175 / 0.10)" }}>
-                        <DollarSign className="w-4 h-4" style={{ color: "oklch(0.50 0.12 175)" }} />
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)" }}>
+                        <DollarSign className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[11px] font-medium block mb-1" style={{ color: "oklch(0.45 0.02 260)" }}>
+                        <label className="text-[11px] font-medium block mb-1" style={{ color: "var(--color-basil-green)" }}>
                           Bookings USD (Non-Renewal)
                         </label>
                         <input
@@ -460,23 +460,23 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                           disabled={tierDef.businessMetrics.bookingsUSD === null}
                           className="w-full px-3 py-2 rounded-xl text-[12px] border focus:outline-none focus:ring-2 disabled:opacity-50"
                           style={{
-                            borderColor: "oklch(0.92 0.01 85)",
-                            background: tierDef.businessMetrics.bookingsUSD === null ? "oklch(0.97 0.001 286)" : "white",
+                            borderColor: "var(--color-stone-gray)",
+                            background: tierDef.businessMetrics.bookingsUSD === null ? "var(--color-basil-green)" : "white",
                           }}
                         />
                       </div>
-                      <div className="text-[10px] w-16 text-right" style={{ color: "oklch(0.60 0.02 260)" }}>
+                      <div className="text-[10px] w-16 text-right" style={{ color: "var(--color-basil-green)" }}>
                         {tierDef.businessMetrics.bookingsUSD !== null ? `≥ ${formatCurrency(tierDef.businessMetrics.bookingsUSD)}` : "N/A"}
                       </div>
                     </div>
 
                     {/* Unique Customers */}
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.58 0.16 290 / 0.10)" }}>
-                        <Users className="w-4 h-4" style={{ color: "oklch(0.48 0.16 290)" }} />
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--color-basil-green) 10%, transparent)" }}>
+                        <Users className="w-4 h-4" style={{ color: "var(--color-basil-green)" }} />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[11px] font-medium block mb-1" style={{ color: "oklch(0.45 0.02 260)" }}>
+                        <label className="text-[11px] font-medium block mb-1" style={{ color: "var(--color-basil-green)" }}>
                           Unique Customers (Non-Renewal)
                         </label>
                         <input
@@ -486,21 +486,21 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                           placeholder={tierDef.businessMetrics.uniqueCustomers !== null ? `Target: ${tierDef.businessMetrics.uniqueCustomers}` : "N/A"}
                           disabled={tierDef.businessMetrics.uniqueCustomers === null}
                           className="w-full px-3 py-2 rounded-xl text-[12px] border focus:outline-none focus:ring-2 disabled:opacity-50"
-                          style={{ borderColor: "oklch(0.92 0.01 85)" }}
+                          style={{ borderColor: "var(--color-stone-gray)" }}
                         />
                       </div>
-                      <div className="text-[10px] w-16 text-right" style={{ color: "oklch(0.60 0.02 260)" }}>
+                      <div className="text-[10px] w-16 text-right" style={{ color: "var(--color-basil-green)" }}>
                         {tierDef.businessMetrics.uniqueCustomers !== null ? `≥ ${tierDef.businessMetrics.uniqueCustomers}` : "N/A"}
                       </div>
                     </div>
 
                     {/* PDS */}
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "oklch(0.75 0.14 75 / 0.10)" }}>
-                        <Wrench className="w-4 h-4" style={{ color: "oklch(0.60 0.14 75)" }} />
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "color-mix(in srgb, var(--color-moss-green) 10%, transparent)" }}>
+                        <Wrench className="w-4 h-4" style={{ color: "var(--color-moss-green)" }} />
                       </div>
                       <div className="flex-1">
-                        <label className="text-[11px] font-medium block mb-1" style={{ color: "oklch(0.45 0.02 260)" }}>
+                        <label className="text-[11px] font-medium block mb-1" style={{ color: "var(--color-basil-green)" }}>
                           Partner Delivered Services (Installations)
                         </label>
                         <input
@@ -511,12 +511,12 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                           disabled={tierDef.businessMetrics.partnerDeliveredServices === null}
                           className="w-full px-3 py-2 rounded-xl text-[12px] border focus:outline-none focus:ring-2 disabled:opacity-50"
                           style={{
-                            borderColor: "oklch(0.92 0.01 85)",
-                            background: tierDef.businessMetrics.partnerDeliveredServices === null ? "oklch(0.97 0.001 286)" : "white",
+                            borderColor: "var(--color-stone-gray)",
+                            background: tierDef.businessMetrics.partnerDeliveredServices === null ? "var(--color-basil-green)" : "white",
                           }}
                         />
                       </div>
-                      <div className="text-[10px] w-16 text-right" style={{ color: "oklch(0.60 0.02 260)" }}>
+                      <div className="text-[10px] w-16 text-right" style={{ color: "var(--color-basil-green)" }}>
                         {tierDef.businessMetrics.partnerDeliveredServices !== null ? `≥ ${tierDef.businessMetrics.partnerDeliveredServices}` : "N/A"}
                       </div>
                     </div>
@@ -528,39 +528,39 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   className="rounded-xl p-4"
                   style={{
                     background: preview.overall
-                      ? "oklch(0.60 0.12 175 / 0.06)"
-                      : "oklch(0.75 0.14 75 / 0.06)",
-                    border: `1px solid ${preview.overall ? "oklch(0.60 0.12 175 / 0.15)" : "oklch(0.75 0.14 75 / 0.15)"}`,
+                      ? "color-mix(in srgb, var(--color-pure-orange) 6%, transparent)"
+                      : "color-mix(in srgb, var(--color-moss-green) 6%, transparent)",
+                    border: `1px solid ${preview.overall ? "color-mix(in srgb, var(--color-pure-orange) 15%, transparent)" : "color-mix(in srgb, var(--color-moss-green) 15%, transparent)"}`,
                   }}
                 >
-                  <p className="text-[10px] uppercase tracking-wider font-semibold mb-2" style={{ color: "oklch(0.50 0.02 260)" }}>
+                  <p className="text-[10px] uppercase tracking-wider font-semibold mb-2" style={{ color: "var(--color-basil-green)" }}>
                     Compliance Preview
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
-                      <div className="text-lg font-bold" style={{ color: preview.enableComp ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                      <div className="text-lg font-bold" style={{ color: preview.enableComp ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                         {preview.score}%
                       </div>
-                      <div className="text-[10px]" style={{ color: "oklch(0.55 0.02 260)" }}>Enablement</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: preview.enableComp ? "oklch(0.50 0.15 160)" : "oklch(0.55 0.20 50)" }}>
+                      <div className="text-[10px]" style={{ color: "var(--color-basil-green)" }}>Enablement</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: preview.enableComp ? "var(--color-pure-orange)" : "var(--color-ash-gray)" }}>
                         {preview.enableComp ? "✓ Met" : `${preview.gaps} gaps`}
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold" style={{ color: preview.bizComp ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                      <div className="text-lg font-bold" style={{ color: preview.bizComp ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                         {preview.bizComp ? "Met" : "—"}
                       </div>
-                      <div className="text-[10px]" style={{ color: "oklch(0.55 0.02 260)" }}>Business</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: preview.bizComp ? "oklch(0.50 0.15 160)" : "oklch(0.55 0.20 50)" }}>
+                      <div className="text-[10px]" style={{ color: "var(--color-basil-green)" }}>Business</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: preview.bizComp ? "var(--color-pure-orange)" : "var(--color-ash-gray)" }}>
                         {preview.bizComp ? "✓ Met" : "Pending"}
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold" style={{ color: preview.overall ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)" }}>
+                      <div className="text-lg font-bold" style={{ color: preview.overall ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                         {preview.overall ? "✓" : "✗"}
                       </div>
-                      <div className="text-[10px]" style={{ color: "oklch(0.55 0.02 260)" }}>Overall</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: preview.overall ? "oklch(0.50 0.15 160)" : "oklch(0.55 0.20 50)" }}>
+                      <div className="text-[10px]" style={{ color: "var(--color-basil-green)" }}>Overall</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: preview.overall ? "var(--color-pure-orange)" : "var(--color-ash-gray)" }}>
                         {preview.overall ? "Compliant" : "Not met"}
                       </div>
                     </div>
@@ -569,8 +569,8 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
 
                 {/* Comment */}
                 <div>
-                  <label className="text-[12px] font-semibold block mb-2" style={{ color: "oklch(0.30 0.02 260)" }}>
-                    Justification Comment <span style={{ color: "oklch(0.62 0.19 15)" }}>*</span>
+                  <label className="text-[12px] font-semibold block mb-2" style={{ color: "var(--color-basil-green)" }}>
+                    Justification Comment <span style={{ color: "var(--color-cinnamon-brown)" }}>*</span>
                   </label>
                   <textarea
                     value={comment}
@@ -581,10 +581,10 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                     placeholder="Explain the reason for this modification..."
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl text-[12px] border focus:outline-none focus:ring-2 resize-none"
-                    style={{ borderColor: error ? "oklch(0.62 0.19 15)" : "oklch(0.92 0.01 85)" }}
+                    style={{ borderColor: error ? "var(--color-cinnamon-brown)" : "var(--color-stone-gray)" }}
                   />
                   {error && (
-                    <p className="text-[11px] mt-1 flex items-center gap-1" style={{ color: "oklch(0.55 0.19 15)" }}>
+                    <p className="text-[11px] mt-1 flex items-center gap-1" style={{ color: "var(--color-cinnamon-brown)" }}>
                       <AlertCircle className="w-3 h-3" />
                       {error}
                     </p>
@@ -596,14 +596,14 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
               <div
                 className="sticky bottom-0 flex items-center justify-between px-6 py-4 border-t rounded-b-2xl"
                 style={{
-                  background: "oklch(0.99 0.003 85)",
-                  borderColor: "oklch(0.92 0.01 85)",
+                  background: "var(--color-cloud-white)",
+                  borderColor: "var(--color-stone-gray)",
                 }}
               >
                 <button
                   onClick={handleRevert}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-medium transition-colors hover:bg-gray-100"
-                  style={{ color: "oklch(0.50 0.02 260)" }}
+                  style={{ color: "var(--color-basil-green)" }}
                 >
                   <Undo2 className="w-3.5 h-3.5" />
                   Revert to Base
@@ -612,7 +612,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   onClick={handleSave}
                   disabled={!comment.trim()}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all disabled:opacity-40"
-                  style={{ background: "oklch(0.50 0.12 175)" }}
+                  style={{ background: "var(--color-pure-orange)" }}
                 >
                   <Save className="w-4 h-4" />
                   Save Changes

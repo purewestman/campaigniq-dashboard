@@ -85,14 +85,14 @@ export default function CertificationsPage() {
   }, [allExams]);
 
   const certColors = [
-    "oklch(0.60 0.12 175)",
-    "oklch(0.58 0.16 290)",
-    "oklch(0.75 0.14 75)",
-    "oklch(0.62 0.19 15)",
-    "oklch(0.55 0.12 220)",
-    "oklch(0.65 0.10 150)",
-    "oklch(0.50 0.14 330)",
-    "oklch(0.70 0.12 45)",
+    "var(--color-pure-orange)",
+    "var(--color-basil-green)",
+    "var(--color-moss-green)",
+    "var(--color-cinnamon-brown)",
+    "var(--color-ash-gray)",
+    "var(--color-ash-gray)",
+    "var(--color-ash-gray)",
+    "var(--color-ash-gray)",
   ];
 
   // Individual leaderboard
@@ -132,7 +132,7 @@ export default function CertificationsPage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Award className="w-5 h-5" style={{ color: "oklch(0.58 0.16 290)" }} />
+          <Award className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
           Certifications
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -143,10 +143,10 @@ export default function CertificationsPage() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Certifications", value: totalCerts, icon: Award, color: "oklch(0.58 0.16 290)" },
-          { label: "Unique Holders", value: uniqueHolders, icon: User, color: "oklch(0.60 0.12 175)" },
-          { label: "Partners with Certs", value: partnersWithCerts, icon: BookOpen, color: "oklch(0.75 0.14 75)" },
-          { label: "Cert Types", value: certTypes.length, icon: FileCheck, color: "oklch(0.62 0.19 15)" },
+          { label: "Total Certifications", value: totalCerts, icon: Award, color: "var(--color-basil-green)" },
+          { label: "Unique Holders", value: uniqueHolders, icon: User, color: "var(--color-pure-orange)" },
+          { label: "Partners with Certs", value: partnersWithCerts, icon: BookOpen, color: "var(--color-moss-green)" },
+          { label: "Cert Types", value: certTypes.length, icon: FileCheck, color: "var(--color-cinnamon-brown)" },
         ].map((kpi, i) => (
           <motion.div key={kpi.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="terrain-card p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -165,7 +165,7 @@ export default function CertificationsPage() {
         {/* Partner Certification Leaderboard */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="terrain-card p-5">
           <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-            <Trophy className="w-4 h-4" style={{ color: "oklch(0.75 0.14 75)" }} />
+            <Trophy className="w-4 h-4" style={{ color: "var(--color-moss-green)" }} />
             Partner Certification Leaderboard
           </h3>
           <p className="text-[11px] text-muted-foreground mb-4">Partners ranked by total certifications earned</p>
@@ -181,8 +181,8 @@ export default function CertificationsPage() {
                 layout="vertical"
                 margin={{ left: 130, right: 20, top: 5, bottom: 5 }}
               >
-                <XAxis type="number" tick={{ fontSize: 10, fill: "oklch(0.55 0.02 55)" }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "oklch(0.45 0.02 55)" }} width={125} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} width={125} />
                 <Tooltip
                   content={({ payload }) => {
                     if (!payload?.[0]) return null;
@@ -249,7 +249,7 @@ export default function CertificationsPage() {
       {/* Individual Leaderboard */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="terrain-card p-5">
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <User className="w-4 h-4" style={{ color: "oklch(0.60 0.12 175)" }} />
+          <User className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Top Certified Individuals
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">Engineers ranked by number of certifications earned</p>
@@ -268,7 +268,7 @@ export default function CertificationsPage() {
                 <tr key={person.email} className="border-b border-border/20 hover:bg-black/[0.02] transition-colors">
                   <td className="py-2 px-3">
                     {i < 3 ? (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white" style={{ background: i === 0 ? "oklch(0.75 0.14 75)" : i === 1 ? "oklch(0.65 0.02 55)" : "oklch(0.62 0.10 50)" }}>
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white" style={{ background: i === 0 ? "var(--color-moss-green)" : i === 1 ? "var(--color-stone-gray)" : "var(--color-ash-gray)" }}>
                         {i + 1}
                       </span>
                     ) : (
@@ -276,10 +276,10 @@ export default function CertificationsPage() {
                     )}
                   </td>
                   <td className="py-2 px-3">
-                    <a href={`mailto:${person.email}`} className="font-medium hover:underline" style={{ color: "oklch(0.48 0.16 290)" }}>{person.email}</a>
+                    <a href={`mailto:${person.email}`} className="font-medium hover:underline" style={{ color: "var(--color-basil-green)" }}>{person.email}</a>
                   </td>
                   <td className="py-2 px-3 text-foreground">{person.partner}</td>
-                  <td className="py-2 px-3 text-center font-bold" style={{ color: "oklch(0.58 0.16 290)" }}>{person.count}</td>
+                  <td className="py-2 px-3 text-center font-bold" style={{ color: "var(--color-basil-green)" }}>{person.count}</td>
                 </tr>
               ))}
             </tbody>
@@ -294,7 +294,7 @@ export default function CertificationsPage() {
             <h3 className="text-[14px] font-bold text-foreground">All Exam Records</h3>
             <p className="text-[11px] text-muted-foreground">{filteredExams.length} of {allExams.length} records</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]" style={{ background: "oklch(0.99 0.003 85 / 0.95)", borderColor: search ? "oklch(0.58 0.16 290 / 0.4)" : "oklch(0.92 0.01 85)" }}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)", borderColor: search ? "color-mix(in srgb, var(--color-basil-green) 40%, transparent)" : "var(--color-stone-gray)" }}>
             <Search className="w-3.5 h-3.5 text-muted-foreground" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search exams, emails, partners..." className="bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none flex-1" />
             {search && (
@@ -307,7 +307,7 @@ export default function CertificationsPage() {
 
         <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
           <table className="w-full text-[11px]">
-            <thead className="sticky top-0" style={{ background: "oklch(0.99 0.003 85)" }}>
+            <thead className="sticky top-0" style={{ background: "var(--color-cloud-white)" }}>
               <tr className="border-b border-border/50">
                 <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Partner</th>
                 <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Email</th>
@@ -319,7 +319,7 @@ export default function CertificationsPage() {
                 <tr key={`${exam.email}-${exam.certification}-${i}`} className="border-b border-border/20 hover:bg-black/[0.02] transition-colors">
                   <td className="py-1.5 px-3 text-foreground font-medium">{exam.partnerName}</td>
                   <td className="py-1.5 px-3">
-                    <a href={`mailto:${exam.email}`} className="hover:underline" style={{ color: "oklch(0.48 0.16 290)" }}>{exam.email}</a>
+                    <a href={`mailto:${exam.email}`} className="hover:underline" style={{ color: "var(--color-basil-green)" }}>{exam.email}</a>
                   </td>
                   <td className="py-1.5 px-3 text-foreground">{exam.certification}</td>
                 </tr>

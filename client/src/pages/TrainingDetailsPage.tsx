@@ -91,7 +91,7 @@ export default function TrainingDetailsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b" style={{ borderColor: 'oklch(0.58 0.16 290 / 0.12)' }}>
+              <tr className="border-b" style={{ borderColor: 'color-mix(in srgb, var(--color-basil-green) 12%, transparent)' }}>
                 <th className="py-3 px-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Partner</th>
                 <th className="py-3 px-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Contact Details</th>
                 <th className="py-3 px-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Count</th>

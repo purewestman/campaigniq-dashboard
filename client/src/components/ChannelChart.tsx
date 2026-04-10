@@ -17,10 +17,10 @@ import {
 } from "recharts";
 
 const gapColors: Record<string, string> = {
-  "Sales Pro Gap": "oklch(0.58 0.16 290)",
-  "Tech Pro Gap": "oklch(0.60 0.12 175)",
-  "Bootcamp Gap": "oklch(0.75 0.14 75)",
-  "Impl Spec Gap": "oklch(0.62 0.19 15)",
+  "Sales Pro Gap": "var(--color-basil-green)",
+  "Tech Pro Gap": "var(--color-pure-orange)",
+  "Bootcamp Gap": "var(--color-moss-green)",
+  "Impl Spec Gap": "var(--color-cinnamon-brown)",
 };
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -32,8 +32,8 @@ function CustomTooltip({ active, payload, label }: any) {
     <div
       className="rounded-xl px-4 py-3 border shadow-lg"
       style={{
-        background: "oklch(0.99 0.003 85)",
-        borderColor: "oklch(0.92 0.01 85)",
+        background: "var(--color-cloud-white)",
+        borderColor: "var(--color-stone-gray)",
       }}
     >
       <p className="text-[12px] font-semibold text-foreground mb-1">{fullName}</p>
@@ -103,8 +103,8 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
         <div
           className="px-3 py-1.5 rounded-lg text-[11px] font-semibold"
           style={{
-            background: data.length > 0 ? "oklch(0.62 0.19 15 / 0.08)" : "oklch(0.60 0.12 175 / 0.08)",
-            color: data.length > 0 ? "oklch(0.50 0.19 15)" : "oklch(0.45 0.12 175)",
+            background: data.length > 0 ? "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)" : "color-mix(in srgb, var(--color-pure-orange) 8%, transparent)",
+            color: data.length > 0 ? "var(--color-cinnamon-brown)" : "var(--color-pure-orange)",
           }}
         >
           {data.length > 0 ? `${data.length} partners with gaps` : "No gaps in selection"}
@@ -122,24 +122,24 @@ export default function GapAnalysisChart({ data }: GapAnalysisChartProps) {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="oklch(0.92 0.01 85)"
+                stroke="var(--color-stone-gray)"
                 horizontal={false}
               />
               <XAxis
                 type="number"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "oklch(0.55 0.02 55)" }}
+                tick={{ fontSize: 11, fill: "var(--color-walnut-brown)" }}
               />
               <YAxis
                 type="category"
                 dataKey="partner"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "oklch(0.55 0.02 55)" }}
+                tick={{ fontSize: 11, fill: "var(--color-walnut-brown)" }}
                 width={145}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "oklch(0.95 0.008 85 / 0.5)" }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "color-mix(in srgb, var(--color-cloud-white) 50%, transparent)" }} />
               <Legend content={<CustomLegend />} />
               <Bar dataKey="Sales Pro Gap" stackId="gaps" fill={gapColors["Sales Pro Gap"]} radius={[0, 0, 0, 0]} animationDuration={1000} />
               <Bar dataKey="Tech Pro Gap" stackId="gaps" fill={gapColors["Tech Pro Gap"]} animationDuration={1000} animationBegin={200} />

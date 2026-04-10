@@ -31,10 +31,10 @@ import {
 } from "recharts";
 
 const GAP_COLORS = {
-  salesPro: "oklch(0.60 0.12 175)",
-  techPro: "oklch(0.58 0.16 290)",
-  bootcamp: "oklch(0.75 0.14 75)",
-  implSpec: "oklch(0.62 0.19 15)",
+  salesPro: "var(--color-pure-orange)",
+  techPro: "var(--color-basil-green)",
+  bootcamp: "var(--color-moss-green)",
+  implSpec: "var(--color-cinnamon-brown)",
 };
 
 export default function GapAnalysisPage() {
@@ -103,7 +103,7 @@ export default function GapAnalysisPage() {
   }, [modifiedPartners]);
 
   const getHeatColor = (gap: number, max: number) => {
-    if (gap === 0) return "oklch(0.60 0.12 175 / 0.12)";
+    if (gap === 0) return "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)";
     const intensity = Math.min(gap / Math.max(max, 1), 1);
     return `oklch(0.62 0.19 15 / ${0.1 + intensity * 0.5})`;
   };
@@ -113,7 +113,7 @@ export default function GapAnalysisPage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" style={{ color: "oklch(0.58 0.14 75)" }} />
+          <AlertTriangle className="w-5 h-5" style={{ color: "var(--color-moss-green)" }} />
           Gap Analysis
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -144,7 +144,7 @@ export default function GapAnalysisPage() {
                 gaps across {cat.partnersWithGap} partners
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <div className="flex-1 h-1.5 rounded-full" style={{ background: "oklch(0.93 0.008 85)" }}>
+                <div className="flex-1 h-1.5 rounded-full" style={{ background: "var(--color-stone-gray)" }}>
                   <div className="h-full rounded-full" style={{ width: `${Math.round((cat.partnersMet / modifiedPartners.length) * 100)}%`, background: cat.color }} />
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground">{cat.partnersMet}/{modifiedPartners.length} met</span>
@@ -158,7 +158,7 @@ export default function GapAnalysisPage() {
                       const req = p.requirements[cat.key as keyof typeof p.requirements];
                       const gap = req.required - req.obtained;
                       return (
-                        <div key={p.id} className="flex items-center justify-between px-2 py-1 rounded-md text-[10px]" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+                        <div key={p.id} className="flex items-center justify-between px-2 py-1 rounded-md text-[10px]" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}>
                           <span className="text-foreground font-medium truncate flex-1">{p.name}</span>
                           <span className="font-bold ml-2" style={{ color: cat.color }}>-{gap}</span>
                         </div>
@@ -181,8 +181,8 @@ export default function GapAnalysisPage() {
           <div style={{ height: Math.max(350, heatmapData.filter((d) => d.total > 0).length * 28) }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={heatmapData.filter((d) => d.total > 0)} layout="vertical" margin={{ left: 130, right: 20, top: 5, bottom: 5 }}>
-                <XAxis type="number" tick={{ fontSize: 10, fill: "oklch(0.55 0.02 55)" }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "oklch(0.45 0.02 55)" }} width={125} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} width={125} />
                 <Tooltip
                   content={({ payload }) => {
                     if (!payload?.[0]) return null;
@@ -201,7 +201,7 @@ export default function GapAnalysisPage() {
                     );
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: 10 }} formatter={(value) => <span style={{ color: "oklch(0.45 0.02 55)", fontSize: 10 }}>{value}</span>} />
+                <Legend wrapperStyle={{ fontSize: 10 }} formatter={(value) => <span style={{ color: "var(--color-walnut-brown)", fontSize: 10 }}>{value}</span>} />
                 <Bar dataKey="salesPro" name="Sales Pro" stackId="a" fill={GAP_COLORS.salesPro} radius={[0, 0, 0, 0]} />
                 <Bar dataKey="techPro" name="Tech Pro" stackId="a" fill={GAP_COLORS.techPro} />
                 <Bar dataKey="bootcamp" name="Bootcamp" stackId="a" fill={GAP_COLORS.bootcamp} />
@@ -255,7 +255,7 @@ export default function GapAnalysisPage() {
       {/* Gap Heatmap Table */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="terrain-card p-5">
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <TrendingDown className="w-4 h-4" style={{ color: "oklch(0.62 0.19 15)" }} />
+          <TrendingDown className="w-4 h-4" style={{ color: "var(--color-cinnamon-brown)" }} />
           Gap Heatmap
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">Darker shading indicates larger gaps — zero gaps shown in green</p>
@@ -291,7 +291,7 @@ export default function GapAnalysisPage() {
                       const max = cat === "salesPro" ? 5 : cat === "techPro" ? 3 : cat === "bootcamp" ? 2 : 1;
                       return (
                         <td key={cat} className="py-2 px-3 text-center">
-                          <span className="inline-flex items-center justify-center w-8 h-6 rounded-md font-bold text-[11px]" style={{ background: getHeatColor(gap, max), color: gap === 0 ? "oklch(0.45 0.12 175)" : "oklch(0.40 0.15 15)" }}>
+                          <span className="inline-flex items-center justify-center w-8 h-6 rounded-md font-bold text-[11px]" style={{ background: getHeatColor(gap, max), color: gap === 0 ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)" }}>
                             {gap === 0 ? <CheckCircle2 className="w-3.5 h-3.5" /> : gap}
                           </span>
                         </td>
@@ -300,7 +300,7 @@ export default function GapAnalysisPage() {
                     <td className="py-2 px-3 text-center font-bold text-foreground">{row.total}</td>
                     <td className="py-2 px-3 text-center">
                       {overrides > 0 ? (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.60 0.12 175 / 0.10)", color: "oklch(0.45 0.12 175)" }}>
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)", color: "var(--color-pure-orange)" }}>
                           <CheckCircle2 className="w-2.5 h-2.5" /> {overrides}
                         </span>
                       ) : (

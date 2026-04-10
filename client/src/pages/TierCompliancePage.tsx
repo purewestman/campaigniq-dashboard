@@ -123,7 +123,7 @@ export default function TierCompliancePage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Shield className="w-5 h-5" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <Shield className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
           Tier Compliance
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -175,7 +175,7 @@ export default function TierCompliancePage() {
               </div>
 
               {/* Enablement requirements summary */}
-              <div className="text-[10px] text-muted-foreground mb-2 px-2 py-1.5 rounded-lg" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+              <div className="text-[10px] text-muted-foreground mb-2 px-2 py-1.5 rounded-lg" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}>
                 Req: SP:{td.def.enablement.salesPro} TP:{td.def.enablement.techPro} BC:{td.def.enablement.bootcamp} IS:{td.def.enablement.implSpec}
               </div>
 
@@ -185,7 +185,7 @@ export default function TierCompliancePage() {
                   <div
                     key={p.id}
                     className="flex items-center justify-between px-2 py-1.5 rounded-lg text-[11px]"
-                    style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}
+                    style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}
                   >
                     <span className="font-medium text-foreground truncate flex-1">{p.name}</span>
                     <div className="flex items-center gap-1.5 ml-2">
@@ -193,9 +193,9 @@ export default function TierCompliancePage() {
                         {p.enablementScore}%
                       </span>
                       {p.overallCompliant ? (
-                        <CheckCircle2 className="w-3 h-3" style={{ color: "oklch(0.50 0.12 175)" }} />
+                        <CheckCircle2 className="w-3 h-3" style={{ color: "var(--color-pure-orange)" }} />
                       ) : (
-                        <XCircle className="w-3 h-3" style={{ color: "oklch(0.55 0.15 50)" }} />
+                        <XCircle className="w-3 h-3" style={{ color: "var(--color-ash-gray)" }} />
                       )}
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export default function TierCompliancePage() {
         className="terrain-card p-5"
       >
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <Target className="w-4 h-4" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <Target className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Enablement Compliance Matrix
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">
@@ -253,18 +253,18 @@ export default function TierCompliancePage() {
                       <td key={ci} className="py-3 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           {allMet ? (
-                            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "oklch(0.50 0.12 175)" }} />
+                            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--color-pure-orange)" }} />
                           ) : noneMet && cell.total > 0 ? (
-                            <XCircle className="w-3.5 h-3.5" style={{ color: "oklch(0.50 0.19 15)" }} />
+                            <XCircle className="w-3.5 h-3.5" style={{ color: "var(--color-cinnamon-brown)" }} />
                           ) : cell.total === 0 ? (
                             <Minus className="w-3.5 h-3.5 text-muted-foreground/40" />
                           ) : (
-                            <Minus className="w-3.5 h-3.5" style={{ color: "oklch(0.58 0.14 75)" }} />
+                            <Minus className="w-3.5 h-3.5" style={{ color: "var(--color-moss-green)" }} />
                           )}
                           <span
                             className="font-bold"
                             style={{
-                              color: allMet ? "oklch(0.45 0.12 175)" : noneMet && cell.total > 0 ? "oklch(0.50 0.19 15)" : "oklch(0.58 0.14 75)",
+                              color: allMet ? "var(--color-pure-orange)" : noneMet && cell.total > 0 ? "var(--color-cinnamon-brown)" : "var(--color-moss-green)",
                             }}
                           >
                             {cell.total > 0 ? `${cell.met}/${cell.total}` : "—"}
@@ -288,7 +288,7 @@ export default function TierCompliancePage() {
         className="terrain-card p-5"
       >
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <DollarSign className="w-4 h-4" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <DollarSign className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Business Metric Thresholds by Tier
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">
@@ -340,7 +340,7 @@ export default function TierCompliancePage() {
                       : <span className="text-muted-foreground">N/A</span>}
                   </td>
                   <td className="py-3 px-3 text-center">
-                    <span className="font-bold" style={{ color: td.bizCount > 0 ? "oklch(0.45 0.12 175)" : "oklch(0.55 0.15 50)" }}>
+                    <span className="font-bold" style={{ color: td.bizCount > 0 ? "var(--color-pure-orange)" : "var(--color-ash-gray)" }}>
                       {td.bizCount}/{td.count}
                     </span>
                   </td>
@@ -367,8 +367,8 @@ export default function TierCompliancePage() {
         <div style={{ height: Math.max(400, barData.length * 28) }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData} layout="vertical" margin={{ left: 120, right: 20, top: 5, bottom: 5 }}>
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "oklch(0.55 0.02 55)" }} tickFormatter={(v) => `${v}%`} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "oklch(0.45 0.02 55)" }} width={115} />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} tickFormatter={(v) => `${v}%`} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "var(--color-walnut-brown)" }} width={115} />
               <Tooltip
                 content={({ payload }) => {
                   if (!payload?.[0]) return null;

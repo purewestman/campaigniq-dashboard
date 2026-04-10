@@ -22,8 +22,8 @@ function CustomTooltip({ active, payload }: any) {
     <div
       className="rounded-xl px-4 py-3 border shadow-lg"
       style={{
-        background: "oklch(0.99 0.003 85)",
-        borderColor: "oklch(0.92 0.01 85)",
+        background: "var(--color-cloud-white)",
+        borderColor: "var(--color-stone-gray)",
       }}
     >
       <p className="text-[12px] font-semibold text-foreground">{data.category}</p>
@@ -112,8 +112,8 @@ export default function EnablementDonut({ data }: EnablementDonutProps) {
                   <span
                     className="text-[10px] font-medium px-1.5 py-0.5 rounded-md"
                     style={{
-                      background: item.percentage >= 50 ? "oklch(0.60 0.12 175 / 0.10)" : "oklch(0.62 0.19 15 / 0.10)",
-                      color: item.percentage >= 50 ? "oklch(0.45 0.12 175)" : "oklch(0.50 0.19 15)",
+                      background: item.percentage >= 50 ? "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 10%, transparent)",
+                      color: item.percentage >= 50 ? "var(--color-pure-orange)" : "var(--color-cinnamon-brown)",
                     }}
                   >
                     {item.percentage}%

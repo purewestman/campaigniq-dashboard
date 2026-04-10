@@ -20,8 +20,10 @@ import {
   TrendingUp,
   Activity,
   ShieldAlert,
+  LogOut,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
@@ -45,6 +47,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse }: SidebarProps) {
+  const { logout } = useAuth();
+  
   return (
     <motion.aside
       initial={false}
@@ -52,18 +56,15 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed left-0 top-0 h-screen z-40 flex flex-col"
       style={{
-        background: "oklch(0.22 0.02 200)",
+        background: "var(--color-ash-gray)",
       }}
     >
       {/* Logo area */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.06]">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{
-            background: "linear-gradient(135deg, oklch(0.60 0.12 175), oklch(0.50 0.14 190))",
-          }}
-        >
-          <Zap className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-center shrink-0">
+           <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
+             <path fillRule="evenodd" clipRule="evenodd" d="M50 0L6.7 25V75L50 100L93.3 75V50H70V65L50 76.5L30 65V35L50 23.5L70 35H93.3V25Z" fill="var(--color-pure-orange)"/>
+           </svg>
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -74,8 +75,8 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
               transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
-              <h1 className="text-[15px] font-bold text-white tracking-tight whitespace-nowrap">
-                PEI
+              <h1 className="text-[16px] font-bold text-white tracking-tight whitespace-nowrap">
+                Everpure
               </h1>
               <p className="text-[10px] text-white/40 -mt-0.5 whitespace-nowrap">
                 FY27 Tier Compliance
@@ -109,8 +110,8 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                   layoutId="sidebar-active"
                   className="absolute inset-0 rounded-xl"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.55 0.12 175 / 0.25), oklch(0.50 0.10 190 / 0.15))",
-                    border: "1px solid oklch(0.60 0.12 175 / 0.20)",
+                    background: "linear-gradient(135deg, color-mix(in srgb, var(--color-pure-orange) 25%, transparent), color-mix(in srgb, var(--color-pure-orange) 15%, transparent))",
+                    border: "1px solid color-mix(in srgb, var(--color-pure-orange) 20%, transparent)",
                   }}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
@@ -134,8 +135,8 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                   animate={{ scale: 1 }}
                   className="ml-auto relative z-10 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                   style={{
-                    background: "oklch(0.60 0.12 175 / 0.25)",
-                    color: "oklch(0.80 0.08 175)",
+                    background: "color-mix(in srgb, var(--color-pure-orange) 25%, transparent)",
+                    color: "var(--color-pure-orange)",
                   }}
                 >
                   {item.badge}
@@ -145,6 +146,28 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
           );
         })}
       </nav>
+
+      {/* Logout button */}
+      <div className="px-3 pb-2 pt-2 border-t border-white/[0.06]">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-white/50 hover:text-white hover:bg-white/[0.04] transition-all duration-200"
+        >
+          <LogOut className="w-[18px] h-[18px] shrink-0" />
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="whitespace-nowrap"
+              >
+                Log Out
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
 
       {/* Collapse toggle */}
       <div className="px-3 pb-4">

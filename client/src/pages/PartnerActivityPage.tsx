@@ -470,7 +470,7 @@ export default function PartnerActivityPage({
       {isSearching && (
         <div
           className="px-4 py-2.5 rounded-xl text-[13px] font-medium flex items-center gap-2"
-          style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.42 0.16 290)" }}
+          style={{ background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)", color: "var(--color-basil-green)" }}
         >
           <Search className="w-3.5 h-3.5 shrink-0" />
           {globalResults.length === 0
@@ -506,7 +506,7 @@ export default function PartnerActivityPage({
                 <div
                   key={idx}
                   className="p-3 rounded-xl border"
-                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                  style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -522,13 +522,13 @@ export default function PartnerActivityPage({
                   <div className="mt-1.5 flex flex-wrap gap-1">
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex items-center gap-1"
-                      style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.42 0.16 290)" }}
+                      style={{ background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)", color: "var(--color-basil-green)" }}
                     >
                       <Building2 className="w-2.5 h-2.5" />{r.partner.split(" ").slice(0, 3).join(" ")}
                     </span>
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex items-center gap-1 min-w-0"
-                      style={{ background: "oklch(0.75 0.14 75 / 0.10)", color: "oklch(0.50 0.14 75)" }}
+                      style={{ background: "color-mix(in srgb, var(--color-moss-green) 10%, transparent)", color: "var(--color-moss-green)" }}
                     >
                       <BookOpen className="w-2.5 h-2.5 shrink-0" />
                       <span className="truncate">{r.activity}</span>
@@ -544,7 +544,7 @@ export default function PartnerActivityPage({
                 <div
                   key={emp.email}
                   className="flex flex-col p-4 rounded-xl border"
-                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                  style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -585,11 +585,11 @@ export default function PartnerActivityPage({
                 <div
                   key={`${emp.email}-${idx}`}
                   className="flex items-center justify-between p-3 rounded-lg border"
-                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                  style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
                 >
                   <div className="min-w-0">
                     <p className="text-[13px] font-semibold text-foreground truncate">{emp.name}</p>
-                    <p className="text-[11px] font-medium mt-0.5 truncate" style={{ color: "oklch(0.42 0.16 290)" }}>{emp.partner}</p>
+                    <p className="text-[11px] font-medium mt-0.5 truncate" style={{ color: "var(--color-basil-green)" }}>{emp.partner}</p>
                   </div>
                   {emp.date && (
                     <span className="text-[10px] text-muted-foreground ml-2 shrink-0">

@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Familjen Grotesk", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -42,53 +42,54 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   /* Custom terrain palette */
-  --color-terrain-cream: oklch(0.97 0.01 85);
-  --color-terrain-sage: oklch(0.94 0.02 145);
-  --color-terrain-teal: oklch(0.60 0.12 175);
-  --color-terrain-teal-light: oklch(0.90 0.05 175);
-  --color-terrain-violet: oklch(0.58 0.16 290);
-  --color-terrain-violet-light: oklch(0.90 0.06 290);
-  --color-terrain-rose: oklch(0.62 0.19 15);
-  --color-terrain-rose-light: oklch(0.92 0.04 15);
-  --color-terrain-amber: oklch(0.75 0.14 75);
-  --color-terrain-amber-light: oklch(0.93 0.05 75);
-  --color-terrain-stone: oklch(0.70 0.02 60);
+  --color-pure-orange: #FF7023;
+  --color-cloud-white: #FFF5E3;
+  --color-stone-gray: #D0C8BA;
+  --color-ash-gray: #2D2A27;
+  --color-mint-green: #C5E4CC;
+  --color-moss-green: #8FA596;
+  --color-basil-green: #5A6359;
+  --color-rose-pink: #F2CDC4;
+  --color-quartz-pink: #DEA193;
+  --color-clay-pink: #95685D;
+  --color-cinnamon-brown: #BD673D;
+  --color-walnut-brown: #71584C;
 }
 
 :root {
-  --radius: 0.875rem;
-  --background: oklch(0.975 0.008 85);
-  --foreground: oklch(0.25 0.02 55);
-  --card: oklch(0.99 0.003 85);
-  --card-foreground: oklch(0.25 0.02 55);
-  --popover: oklch(0.99 0.003 85);
-  --popover-foreground: oklch(0.25 0.02 55);
-  --primary: oklch(0.55 0.12 175);
-  --primary-foreground: oklch(0.98 0.005 175);
-  --secondary: oklch(0.95 0.01 145);
-  --secondary-foreground: oklch(0.35 0.03 55);
-  --muted: oklch(0.95 0.008 85);
-  --muted-foreground: oklch(0.55 0.02 55);
-  --accent: oklch(0.94 0.015 145);
-  --accent-foreground: oklch(0.25 0.02 55);
-  --destructive: oklch(0.60 0.20 20);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.91 0.01 85);
-  --input: oklch(0.91 0.01 85);
-  --ring: oklch(0.55 0.12 175);
-  --chart-1: oklch(0.60 0.12 175);
-  --chart-2: oklch(0.58 0.16 290);
-  --chart-3: oklch(0.62 0.19 15);
-  --chart-4: oklch(0.75 0.14 75);
-  --chart-5: oklch(0.65 0.10 145);
-  --sidebar: oklch(0.22 0.02 200);
-  --sidebar-foreground: oklch(0.90 0.01 85);
-  --sidebar-primary: oklch(0.60 0.12 175);
-  --sidebar-primary-foreground: oklch(0.98 0.005 175);
-  --sidebar-accent: oklch(0.28 0.025 200);
-  --sidebar-accent-foreground: oklch(0.95 0.005 85);
-  --sidebar-border: oklch(0.30 0.02 200);
-  --sidebar-ring: oklch(0.55 0.12 175);
+  --radius: 0.375rem;
+  --background: var(--color-cloud-white);
+  --foreground: var(--color-ash-gray);
+  --card: #ffffff;
+  --card-foreground: var(--color-ash-gray);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-ash-gray);
+  --primary: var(--color-pure-orange);
+  --primary-foreground: var(--color-cloud-white);
+  --secondary: var(--color-basil-green);
+  --secondary-foreground: var(--color-ash-gray);
+  --muted: #F3ECE1;
+  --muted-foreground: var(--color-walnut-brown);
+  --accent: var(--color-stone-gray);
+  --accent-foreground: var(--color-ash-gray);
+  --destructive: var(--color-cinnamon-brown);
+  --destructive-foreground: var(--color-cloud-white);
+  --border: var(--color-stone-gray);
+  --input: var(--color-stone-gray);
+  --ring: var(--color-pure-orange);
+  --chart-1: var(--color-pure-orange);
+  --chart-2: var(--color-basil-green);
+  --chart-3: var(--color-cinnamon-brown);
+  --chart-4: var(--color-moss-green);
+  --chart-5: var(--color-basil-green);
+  --sidebar: var(--color-ash-gray);
+  --sidebar-foreground: var(--color-cloud-white);
+  --sidebar-primary: var(--color-pure-orange);
+  --sidebar-primary-foreground: var(--color-cloud-white);
+  --sidebar-accent: var(--color-walnut-brown);
+  --sidebar-accent-foreground: var(--color-cloud-white);
+  --sidebar-border: #4A4641;
+  --sidebar-ring: var(--color-pure-orange);
 }
 
 @layer base {

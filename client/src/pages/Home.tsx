@@ -112,7 +112,7 @@ export default function Home() {
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Settings className="w-5 h-5" style={{ color: "oklch(0.55 0.02 55)" }} />
+                <Settings className="w-5 h-5" style={{ color: "var(--color-walnut-brown)" }} />
                 Settings
               </h2>
               <p className="text-[13px] text-muted-foreground mt-1">
@@ -145,8 +145,8 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl"
                 style={{
-                  background: "oklch(0.58 0.16 290 / 0.06)",
-                  border: "1px solid oklch(0.58 0.16 290 / 0.12)",
+                  background: "color-mix(in srgb, var(--color-basil-green) 6%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-basil-green) 12%, transparent)",
                 }}
               >
                 <span className="text-[12px] text-foreground">
@@ -210,7 +210,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: "oklch(0.975 0.008 85)" }}>
+    <div className="min-h-screen flex" style={{ background: "var(--color-cloud-white)" }}>
       {/* Sidebar */}
       <Sidebar
         activeNav={activeNav}

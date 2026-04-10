@@ -179,9 +179,9 @@ function ProgressRing({ percent, size = 56 }: { percent: number; size?: number }
   const offset = circumference - (percent / 100) * circumference;
 
   const color =
-    percent >= 80 ? "oklch(0.55 0.14 160)" :
-    percent >= 50 ? "oklch(0.65 0.14 75)" :
-    "oklch(0.58 0.19 15)";
+    percent >= 80 ? "var(--color-basil-green)" :
+    percent >= 50 ? "var(--color-moss-green)" :
+    "var(--color-cinnamon-brown)";
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -191,7 +191,7 @@ function ProgressRing({ percent, size = 56 }: { percent: number; size?: number }
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="oklch(0.92 0.01 85)"
+          stroke="var(--color-stone-gray)"
           strokeWidth={strokeWidth}
         />
         <motion.circle
@@ -236,12 +236,12 @@ function EnablementDeltaBar({
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
         style={{
-          background: isMet ? "oklch(0.55 0.14 160 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
+          background: isMet ? "color-mix(in srgb, var(--color-basil-green) 10%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
         }}
       >
         <Icon
           className="w-4 h-4"
-          style={{ color: isMet ? "oklch(0.50 0.14 160)" : "oklch(0.55 0.19 15)" }}
+          style={{ color: isMet ? "var(--color-basil-green)" : "var(--color-cinnamon-brown)" }}
         />
       </div>
       <div className="flex-1">
@@ -250,18 +250,18 @@ function EnablementDeltaBar({
           <span className="text-[11px] text-muted-foreground">
             {obtained}/{nextRequired}
             {delta > 0 && (
-              <span className="ml-1 font-semibold" style={{ color: "oklch(0.55 0.19 15)" }}>
+              <span className="ml-1 font-semibold" style={{ color: "var(--color-cinnamon-brown)" }}>
                 (need {delta} more)
               </span>
             )}
             {isMet && (
-              <span className="ml-1" style={{ color: "oklch(0.50 0.14 160)" }}>
+              <span className="ml-1" style={{ color: "var(--color-basil-green)" }}>
                 ✓
               </span>
             )}
           </span>
         </div>
-        <div className="h-2 rounded-full overflow-hidden" style={{ background: "oklch(0.94 0.008 85)" }}>
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--color-stone-gray)" }}>
           <motion.div
             className="h-full rounded-full"
             initial={{ width: 0 }}
@@ -269,8 +269,8 @@ function EnablementDeltaBar({
             transition={{ duration: 0.8, ease: "easeOut" }}
             style={{
               background: isMet
-                ? "oklch(0.55 0.14 160)"
-                : `linear-gradient(90deg, oklch(0.65 0.14 75), oklch(0.58 0.19 15))`,
+                ? "var(--color-basil-green)"
+                : `linear-gradient(90deg, var(--color-moss-green), var(--color-cinnamon-brown))`,
             }}
           />
         </div>
@@ -299,7 +299,7 @@ function BusinessMetricRow({
       <div className="flex items-center gap-3 py-2">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: "oklch(0.92 0.01 85)" }}
+          style={{ background: "var(--color-stone-gray)" }}
         >
           <Icon className="w-4 h-4 text-muted-foreground/50" />
         </div>
@@ -317,12 +317,12 @@ function BusinessMetricRow({
       <div
         className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
         style={{
-          background: isMet ? "oklch(0.55 0.14 160 / 0.10)" : "oklch(0.62 0.19 15 / 0.08)",
+          background: isMet ? "color-mix(in srgb, var(--color-basil-green) 10%, transparent)" : "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
         }}
       >
         <Icon
           className="w-4 h-4"
-          style={{ color: isMet ? "oklch(0.50 0.14 160)" : "oklch(0.55 0.19 15)" }}
+          style={{ color: isMet ? "var(--color-basil-green)" : "var(--color-cinnamon-brown)" }}
         />
       </div>
       <div className="flex-1">
@@ -334,13 +334,13 @@ function BusinessMetricRow({
                 Not entered — need {format(needed)}
               </span>
             ) : isMet ? (
-              <span className="text-[11px]" style={{ color: "oklch(0.50 0.14 160)" }}>
+              <span className="text-[11px]" style={{ color: "var(--color-basil-green)" }}>
                 {format(current!)} / {format(needed)} ✓
               </span>
             ) : (
               <span className="text-[11px]">
                 <span className="text-muted-foreground">{format(current!)} / {format(needed)}</span>
-                <span className="ml-1 font-semibold" style={{ color: "oklch(0.55 0.19 15)" }}>
+                <span className="ml-1 font-semibold" style={{ color: "var(--color-cinnamon-brown)" }}>
                   (gap: {format(gap!)})
                 </span>
               </span>
@@ -378,7 +378,7 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-[14px] font-bold text-foreground">{partner.name}</h3>
             {prog.fullyReady && (
-              <CheckCircle2 className="w-4 h-4" style={{ color: "oklch(0.50 0.14 160)" }} />
+              <CheckCircle2 className="w-4 h-4" style={{ color: "var(--color-basil-green)" }} />
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -406,7 +406,7 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                 <p
                   className="text-[14px] font-bold"
                   style={{
-                    color: prog.enablementReady ? "oklch(0.50 0.14 160)" : "oklch(0.55 0.19 15)",
+                    color: prog.enablementReady ? "var(--color-basil-green)" : "var(--color-cinnamon-brown)",
                   }}
                 >
                   {prog.enablementReady ? "Ready" : `${prog.enablementDeltas.total} gaps`}
@@ -417,7 +417,7 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                 <p
                   className="text-[14px] font-bold"
                   style={{
-                    color: prog.businessReady ? "oklch(0.50 0.14 160)" : "oklch(0.55 0.19 15)",
+                    color: prog.businessReady ? "var(--color-basil-green)" : "var(--color-cinnamon-brown)",
                   }}
                 >
                   {prog.businessReady ? "Ready" : "Gaps"}
@@ -445,7 +445,7 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 pt-2 border-t" style={{ borderColor: "oklch(0.94 0.008 85)" }}>
+            <div className="px-5 pb-5 pt-2 border-t" style={{ borderColor: "var(--color-stone-gray)" }}>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Enablement Requirements */}
                 <div>
@@ -487,8 +487,8 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                     <div
                       className="mt-3 px-3 py-2 rounded-lg text-[12px] font-medium flex items-center gap-2"
                       style={{
-                        background: "oklch(0.55 0.14 160 / 0.08)",
-                        color: "oklch(0.45 0.14 160)",
+                        background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
+                        color: "var(--color-basil-green)",
                       }}
                     >
                       <CheckCircle2 className="w-4 h-4" />
@@ -533,8 +533,8 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                     <div
                       className="mt-3 px-3 py-2 rounded-lg text-[12px] font-medium flex items-center gap-2"
                       style={{
-                        background: "oklch(0.55 0.14 160 / 0.08)",
-                        color: "oklch(0.45 0.14 160)",
+                        background: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
+                        color: "var(--color-basil-green)",
                       }}
                     >
                       <CheckCircle2 className="w-4 h-4" />
@@ -545,8 +545,8 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                     <div
                       className="mt-3 px-3 py-2 rounded-lg text-[12px] font-medium flex items-center gap-2"
                       style={{
-                        background: "oklch(0.75 0.14 75 / 0.08)",
-                        color: "oklch(0.55 0.14 75)",
+                        background: "color-mix(in srgb, var(--color-moss-green) 8%, transparent)",
+                        color: "var(--color-moss-green)",
                       }}
                     >
                       <DollarSign className="w-4 h-4" />
@@ -563,11 +563,11 @@ function PartnerProgressionCard({ prog, index }: { prog: ProgressionDelta; index
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-5 px-4 py-3 rounded-xl text-center"
                   style={{
-                    background: "linear-gradient(135deg, oklch(0.55 0.14 160 / 0.08), oklch(0.60 0.12 175 / 0.06))",
-                    border: "1px solid oklch(0.55 0.14 160 / 0.15)",
+                    background: "linear-gradient(135deg, color-mix(in srgb, var(--color-basil-green) 8%, transparent), color-mix(in srgb, var(--color-pure-orange) 6%, transparent))",
+                    border: "1px solid color-mix(in srgb, var(--color-basil-green) 15%, transparent)",
                   }}
                 >
-                  <p className="text-[13px] font-bold" style={{ color: "oklch(0.40 0.14 160)" }}>
+                  <p className="text-[13px] font-bold" style={{ color: "var(--color-pure-orange)" }}>
                     🎯 {partner.name} is fully ready to advance to {nextDef.label}!
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -641,7 +641,7 @@ export default function TierProgressionPage() {
       {/* Page header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <TrendingUp className="w-5 h-5" style={{ color: "oklch(0.55 0.14 160)" }} />
+          <TrendingUp className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
           Tier Progression
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -656,29 +656,29 @@ export default function TierProgressionPage() {
             label: "Fully Ready",
             value: readyCount,
             sub: `of ${progressions.length} partners`,
-            color: "oklch(0.55 0.14 160)",
-            bg: "oklch(0.55 0.14 160 / 0.08)",
+            color: "var(--color-basil-green)",
+            bg: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
           },
           {
             label: "Enablement Ready",
             value: enablementReadyCount,
             sub: "met next-tier enablement",
-            color: "oklch(0.50 0.12 175)",
-            bg: "oklch(0.50 0.12 175 / 0.08)",
+            color: "var(--color-pure-orange)",
+            bg: "color-mix(in srgb, var(--color-pure-orange) 8%, transparent)",
           },
           {
             label: "Avg Readiness",
             value: `${avgReadiness}%`,
             sub: "across all partners",
-            color: "oklch(0.58 0.14 75)",
-            bg: "oklch(0.58 0.14 75 / 0.08)",
+            color: "var(--color-moss-green)",
+            bg: "color-mix(in srgb, var(--color-moss-green) 8%, transparent)",
           },
           {
             label: "At Top Tier",
             value: atTopTier,
             sub: "Ambassador level",
-            color: "oklch(0.48 0.16 290)",
-            bg: "oklch(0.48 0.16 290 / 0.08)",
+            color: "var(--color-basil-green)",
+            bg: "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
           },
         ].map((kpi) => (
           <motion.div
@@ -705,7 +705,7 @@ export default function TierProgressionPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl text-[13px] bg-white border transition-all focus:ring-2 focus:ring-ring/20 outline-none"
-            style={{ borderColor: "oklch(0.92 0.01 85)" }}
+            style={{ borderColor: "var(--color-stone-gray)" }}
           />
         </div>
 
@@ -719,7 +719,7 @@ export default function TierProgressionPage() {
                 ? "bg-foreground text-background"
                 : "bg-white border hover:bg-muted/50"
             }`}
-            style={tierFilter !== "all" ? { borderColor: "oklch(0.92 0.01 85)" } : {}}
+            style={tierFilter !== "all" ? { borderColor: "var(--color-stone-gray)" } : {}}
           >
             All ({progressions.length})
           </button>
@@ -733,8 +733,8 @@ export default function TierProgressionPage() {
                 className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
                 style={{
                   background: isActive ? def.bg : "white",
-                  color: isActive ? def.color : "oklch(0.55 0.02 55)",
-                  border: `1px solid ${isActive ? def.color + "30" : "oklch(0.92 0.01 85)"}`,
+                  color: isActive ? def.color : "var(--color-walnut-brown)",
+                  border: `1px solid ${isActive ? def.color + "30" : "var(--color-stone-gray)"}`,
                 }}
               >
                 {def.shortLabel} ({tierCounts[tier]})
@@ -748,7 +748,7 @@ export default function TierProgressionPage() {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
           className="px-3 py-2 rounded-xl text-[12px] bg-white border outline-none"
-          style={{ borderColor: "oklch(0.92 0.01 85)" }}
+          style={{ borderColor: "var(--color-stone-gray)" }}
         >
           <option value="readiness">Sort: Readiness ↓</option>
           <option value="name">Sort: Name A-Z</option>

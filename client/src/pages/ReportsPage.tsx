@@ -174,7 +174,7 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <FileBarChart className="w-5 h-5" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <FileBarChart className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
           Reports
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
@@ -187,19 +187,19 @@ export default function ReportsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="terrain-card p-6"
-        style={{ borderLeft: "3px solid oklch(0.60 0.12 175)" }}
+        style={{ borderLeft: "3px solid var(--color-pure-orange)" }}
       >
         <h3 className="text-[15px] font-bold text-foreground mb-4 flex items-center gap-2">
-          <ClipboardList className="w-4 h-4" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <ClipboardList className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Executive Summary — FY27 Global Reseller Program Compliance
         </h3>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total Partners", value: summary.total, icon: Users, color: "oklch(0.50 0.12 175)" },
-            { label: "Avg Enablement", value: `${summary.avgScore}%`, icon: TrendingUp, color: "oklch(0.58 0.16 290)" },
-            { label: "Enablement OK", value: summary.enabledCount, icon: CheckCircle2, color: "oklch(0.50 0.12 175)" },
-            { label: "Overall Compliant", value: summary.overallCount, icon: Shield, color: "oklch(0.45 0.12 175)" },
+            { label: "Total Partners", value: summary.total, icon: Users, color: "var(--color-pure-orange)" },
+            { label: "Avg Enablement", value: `${summary.avgScore}%`, icon: TrendingUp, color: "var(--color-basil-green)" },
+            { label: "Enablement OK", value: summary.enabledCount, icon: CheckCircle2, color: "var(--color-pure-orange)" },
+            { label: "Overall Compliant", value: summary.overallCount, icon: Shield, color: "var(--color-pure-orange)" },
           ].map((item) => (
             <div key={item.label} className="text-center p-3 rounded-xl" style={{ background: `${item.color}08` }}>
               <item.icon className="w-5 h-5 mx-auto mb-1" style={{ color: item.color }} />
@@ -254,17 +254,17 @@ export default function ReportsPage() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: "Enablement Compliant", value: summary.enabledCount, total: summary.total, color: "oklch(0.50 0.12 175)", icon: Award },
-              { label: "Business Compliant", value: summary.bizCount, total: summary.total, color: "oklch(0.58 0.16 290)", icon: DollarSign },
-              { label: "Overall Compliant", value: summary.overallCount, total: summary.total, color: "oklch(0.45 0.12 175)", icon: Shield },
+              { label: "Enablement Compliant", value: summary.enabledCount, total: summary.total, color: "var(--color-pure-orange)", icon: Award },
+              { label: "Business Compliant", value: summary.bizCount, total: summary.total, color: "var(--color-basil-green)", icon: DollarSign },
+              { label: "Overall Compliant", value: summary.overallCount, total: summary.total, color: "var(--color-pure-orange)", icon: Shield },
             ].map((dim) => (
-              <div key={dim.label} className="p-3 rounded-xl" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
+              <div key={dim.label} className="p-3 rounded-xl" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}>
                 <div className="flex items-center gap-2 mb-2">
                   <dim.icon className="w-4 h-4" style={{ color: dim.color }} />
                   <span className="text-[11px] font-semibold text-foreground">{dim.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "oklch(0.92 0.01 85)" }}>
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--color-stone-gray)" }}>
                     <div
                       className="h-full rounded-full transition-all"
                       style={{ width: `${(dim.value / dim.total) * 100}%`, background: dim.color }}
@@ -289,7 +289,7 @@ export default function ReportsPage() {
               <div
                 key={cat.label}
                 className="flex items-center justify-between p-3 rounded-xl"
-                style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}
+                style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)" }}
               >
                 <div>
                   <p className="text-[12px] font-semibold text-foreground">{cat.label}</p>
@@ -302,10 +302,10 @@ export default function ReportsPage() {
                     className="text-[14px] font-bold"
                     style={{
                       color: cat.met === summary.total
-                        ? "oklch(0.45 0.12 175)"
+                        ? "var(--color-pure-orange)"
                         : cat.met > summary.total / 2
-                        ? "oklch(0.58 0.14 75)"
-                        : "oklch(0.50 0.19 15)",
+                        ? "var(--color-moss-green)"
+                        : "var(--color-cinnamon-brown)",
                     }}
                   >
                     {summary.total > 0 ? Math.round((cat.met / summary.total) * 100) : 0}%
@@ -325,7 +325,7 @@ export default function ReportsPage() {
         className="terrain-card p-5"
       >
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <Download className="w-4 h-4" style={{ color: "oklch(0.50 0.12 175)" }} />
+          <Download className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
           Data Exports
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">
@@ -334,18 +334,18 @@ export default function ReportsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
-            { id: "partners", label: "Partner Compliance", description: "Full partner data with tier, enablement scores, business metrics, and contact info", icon: Users, color: "oklch(0.50 0.12 175)" },
-            { id: "gaps", label: "Gap Analysis", description: "Detailed gap breakdown by category for all partners", icon: AlertTriangle, color: "oklch(0.62 0.19 15)" },
-            { id: "certs", label: "Certification Records", description: "All exam records with partner, email, and certification name", icon: Award, color: "oklch(0.58 0.16 290)" },
-            { id: "overrides", label: "Override Audit Log", description: `${overrides.length} manual overrides with comments and timestamps`, icon: CheckCircle2, color: "oklch(0.75 0.14 75)" },
-            { id: "modifications", label: "Modification Log", description: `${modificationLog.length} admin gap modifications with justifications`, icon: Pencil, color: "oklch(0.55 0.14 250)" },
+            { id: "partners", label: "Partner Compliance", description: "Full partner data with tier, enablement scores, business metrics, and contact info", icon: Users, color: "var(--color-pure-orange)" },
+            { id: "gaps", label: "Gap Analysis", description: "Detailed gap breakdown by category for all partners", icon: AlertTriangle, color: "var(--color-cinnamon-brown)" },
+            { id: "certs", label: "Certification Records", description: "All exam records with partner, email, and certification name", icon: Award, color: "var(--color-basil-green)" },
+            { id: "overrides", label: "Override Audit Log", description: `${overrides.length} manual overrides with comments and timestamps`, icon: CheckCircle2, color: "var(--color-moss-green)" },
+            { id: "modifications", label: "Modification Log", description: `${modificationLog.length} admin gap modifications with justifications`, icon: Pencil, color: "var(--color-ash-gray)" },
           ].map((exp) => (
             <button
               key={exp.id}
               onClick={() => exportCSV(exp.id)}
               disabled={exporting !== null}
               className="text-left p-4 rounded-xl border transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-50"
-              style={{ background: "oklch(0.99 0.003 85 / 0.95)", borderColor: "oklch(0.92 0.01 85)" }}
+              style={{ background: "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)", borderColor: "var(--color-stone-gray)" }}
             >
               <div className="flex items-center gap-2 mb-2">
                 <exp.icon className="w-4 h-4" style={{ color: exp.color }} />
@@ -369,7 +369,7 @@ export default function ReportsPage() {
         className="terrain-card p-5"
       >
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <Pencil className="w-4 h-4" style={{ color: "oklch(0.55 0.14 250)" }} />
+          <Pencil className="w-4 h-4" style={{ color: "var(--color-ash-gray)" }} />
           Modification Audit Log
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">
@@ -391,10 +391,10 @@ export default function ReportsPage() {
                 <tr className="border-b border-border/50">
                   <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Date</th>
                   <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Partner</th>
-                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "oklch(0.60 0.12 175)" }}>Sales Pro</th>
-                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "oklch(0.58 0.16 290)" }}>Tech Pro</th>
-                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "oklch(0.75 0.14 75)" }}>Bootcamp</th>
-                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "oklch(0.62 0.19 15)" }}>Impl Spec</th>
+                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "var(--color-pure-orange)" }}>Sales Pro</th>
+                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "var(--color-basil-green)" }}>Tech Pro</th>
+                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "var(--color-moss-green)" }}>Bootcamp</th>
+                  <th className="text-center py-2 px-3 font-semibold" style={{ color: "var(--color-cinnamon-brown)" }}>Impl Spec</th>
                   <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Justification</th>
                   <th className="text-left py-2 px-3 font-semibold text-muted-foreground">By</th>
                 </tr>
@@ -431,7 +431,7 @@ export default function ReportsPage() {
         className="terrain-card p-5"
       >
         <h3 className="text-[14px] font-bold text-foreground mb-1 flex items-center gap-2">
-          <Shield className="w-4 h-4" style={{ color: "oklch(0.58 0.16 290)" }} />
+          <Shield className="w-4 h-4" style={{ color: "var(--color-basil-green)" }} />
           Override Audit Log
         </h3>
         <p className="text-[11px] text-muted-foreground mb-4">
@@ -469,7 +469,7 @@ export default function ReportsPage() {
                     </td>
                     <td className="py-2 px-3 font-medium text-foreground">{entry.partnerName}</td>
                     <td className="py-2 px-3">
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "oklch(0.60 0.12 175 / 0.10)", color: "oklch(0.45 0.12 175)" }}>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)", color: "var(--color-pure-orange)" }}>
                         {entry.category}
                       </span>
                     </td>
@@ -491,7 +491,7 @@ export default function ReportsPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.45 }}
         className="flex items-center gap-2 px-4 py-3 rounded-xl text-[11px] text-muted-foreground"
-        style={{ background: "oklch(0.97 0.005 85 / 0.6)", border: "1px solid oklch(0.92 0.01 85)" }}
+        style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)", border: "1px solid var(--color-stone-gray)" }}
       >
         <Printer className="w-3.5 h-3.5 shrink-0" />
         <span>

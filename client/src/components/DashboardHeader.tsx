@@ -8,8 +8,7 @@ import { motion } from "framer-motion";
 import { CalendarDays, Search, Bell, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRef } from "react";
-
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663495817764/8buha8yVxFDm5taq5VEv6A/hero-gradient-bg-BWMxims4BWChqKmniByfwP.webp";
+import PureDividerBackground from "./PureDividerBackground";
 
 interface DashboardHeaderProps {
   searchQuery: string;
@@ -27,34 +26,24 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
       className="relative rounded-2xl overflow-hidden mb-6"
       style={{ minHeight: 130 }}
     >
-      {/* Background image */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${HERO_BG})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center 40%",
-          opacity: 0.45,
-        }}
-      />
-      {/* Gradient overlay for readability */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.975 0.008 85 / 0.85), oklch(0.94 0.02 145 / 0.70))",
-        }}
-      />
+      <PureDividerBackground />
 
       <div className="relative z-10 px-6 py-6 flex items-center justify-between gap-4 flex-wrap">
-        {/* Left: Greeting */}
-        <div>
-          <h2 className="text-xl font-bold text-foreground tracking-tight">
-            FY27 Partner Certification Compliance
-          </h2>
-          <p className="text-[13px] text-muted-foreground mt-1">
-            Track SE Journey compliance across 19 partners: Roadmap score, enablement gaps, and certification status.
-          </p>
+        {/* Left: Greeting & Logo */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center justify-center shrink-0">
+             <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
+               <path fillRule="evenodd" clipRule="evenodd" d="M50 0L6.7 25V75L50 100L93.3 75V50H70V65L50 76.5L30 65V35L50 23.5L70 35H93.3V25Z" fill="var(--color-pure-orange)"/>
+             </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground tracking-tight">
+              Everpure Certification Compliance
+            </h2>
+            <p className="text-[13px] text-muted-foreground mt-1">
+              Track SE Journey compliance across 19 partners: Roadmap score, enablement gaps, and certification status.
+            </p>
+          </div>
         </div>
 
         {/* Right: Controls */}
@@ -64,21 +53,21 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
             className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200"
             style={{
               background: searchQuery
-                ? "oklch(0.99 0.003 85 / 0.95)"
-                : "oklch(0.99 0.003 85 / 0.80)",
+                ? "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)"
+                : "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
               borderColor: searchQuery
-                ? "oklch(0.60 0.12 175 / 0.4)"
-                : "oklch(0.92 0.01 85)",
+                ? "color-mix(in srgb, var(--color-pure-orange) 40%, transparent)"
+                : "var(--color-stone-gray)",
               backdropFilter: "blur(8px)",
               boxShadow: searchQuery
-                ? "0 0 0 3px oklch(0.60 0.12 175 / 0.08)"
+                ? "0 0 0 3px color-mix(in srgb, var(--color-pure-orange) 8%, transparent)"
                 : "none",
             }}
           >
             <Search
               className="w-4 h-4 shrink-0 transition-colors"
               style={{
-                color: searchQuery ? "oklch(0.50 0.12 175)" : "oklch(0.55 0.02 55)",
+                color: searchQuery ? "var(--color-pure-orange)" : "var(--color-walnut-brown)",
               }}
             />
             <input
@@ -106,8 +95,8 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
           <button
             className="flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-medium text-foreground hover:bg-white/60 transition-colors"
             style={{
-              background: "oklch(0.99 0.003 85 / 0.80)",
-              borderColor: "oklch(0.92 0.01 85)",
+              background: "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
+              borderColor: "var(--color-stone-gray)",
               backdropFilter: "blur(8px)",
             }}
             onClick={() => toast("Feature coming soon", { description: "Date range picker is under development." })}
@@ -120,8 +109,8 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
           <button
             className="relative p-2.5 rounded-xl border hover:bg-white/60 transition-colors"
             style={{
-              background: "oklch(0.99 0.003 85 / 0.80)",
-              borderColor: "oklch(0.92 0.01 85)",
+              background: "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
+              borderColor: "var(--color-stone-gray)",
               backdropFilter: "blur(8px)",
             }}
             onClick={() => toast("No new notifications")}
@@ -129,7 +118,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
             <Bell className="w-4 h-4 text-muted-foreground" />
             <span
               className="absolute top-2 right-2 w-2 h-2 rounded-full"
-              style={{ background: "oklch(0.62 0.19 15)" }}
+              style={{ background: "var(--color-cinnamon-brown)" }}
             />
           </button>
         </div>

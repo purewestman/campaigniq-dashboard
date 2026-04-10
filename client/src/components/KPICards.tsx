@@ -28,38 +28,38 @@ const iconMap: Record<string, React.ElementType> = {
 
 const gradientMap: Record<string, { from: string; to: string; iconBg: string }> = {
   partners: {
-    from: "oklch(0.60 0.12 175 / 0.12)",
-    to: "oklch(0.60 0.12 175 / 0.02)",
-    iconBg: "oklch(0.60 0.12 175 / 0.12)",
+    from: "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)",
+    to: "color-mix(in srgb, var(--color-pure-orange) 2%, transparent)",
+    iconBg: "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)",
   },
   enablement: {
-    from: "oklch(0.58 0.16 290 / 0.12)",
-    to: "oklch(0.58 0.16 290 / 0.02)",
-    iconBg: "oklch(0.58 0.16 290 / 0.12)",
+    from: "color-mix(in srgb, var(--color-basil-green) 12%, transparent)",
+    to: "color-mix(in srgb, var(--color-basil-green) 2%, transparent)",
+    iconBg: "color-mix(in srgb, var(--color-basil-green) 12%, transparent)",
   },
   gaps: {
-    from: "oklch(0.62 0.19 15 / 0.12)",
-    to: "oklch(0.62 0.19 15 / 0.02)",
-    iconBg: "oklch(0.62 0.19 15 / 0.12)",
+    from: "color-mix(in srgb, var(--color-cinnamon-brown) 12%, transparent)",
+    to: "color-mix(in srgb, var(--color-cinnamon-brown) 2%, transparent)",
+    iconBg: "color-mix(in srgb, var(--color-cinnamon-brown) 12%, transparent)",
   },
   exams: {
-    from: "oklch(0.75 0.14 75 / 0.12)",
-    to: "oklch(0.75 0.14 75 / 0.02)",
-    iconBg: "oklch(0.75 0.14 75 / 0.12)",
+    from: "color-mix(in srgb, var(--color-moss-green) 12%, transparent)",
+    to: "color-mix(in srgb, var(--color-moss-green) 2%, transparent)",
+    iconBg: "color-mix(in srgb, var(--color-moss-green) 12%, transparent)",
   },
   revenue: {
-    from: "oklch(0.55 0.18 145 / 0.12)",
-    to: "oklch(0.55 0.18 145 / 0.02)",
-    iconBg: "oklch(0.55 0.18 145 / 0.12)",
+    from: "color-mix(in srgb, var(--color-ash-gray) 12%, transparent)",
+    to: "color-mix(in srgb, var(--color-ash-gray) 2%, transparent)",
+    iconBg: "color-mix(in srgb, var(--color-ash-gray) 12%, transparent)",
   },
 };
 
 const sparklineColorMap: Record<string, string> = {
-  partners: "oklch(0.55 0.12 175)",
-  revenue: "oklch(0.50 0.18 145)",
-  enablement: "oklch(0.53 0.16 290)",
-  gaps: "oklch(0.58 0.19 15)",
-  exams: "oklch(0.70 0.14 75)",
+  partners: "var(--color-pure-orange)",
+  revenue: "var(--color-ash-gray)",
+  enablement: "var(--color-basil-green)",
+  gaps: "var(--color-cinnamon-brown)",
+  exams: "var(--color-moss-green)",
 };
 
 function MiniSparkline({ data, color, id }: { data: number[]; color: string; id: string }) {
@@ -94,7 +94,7 @@ function MiniSparkline({ data, color, id }: { data: number[]; color: string; id:
 function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
   const Icon = iconMap[metric.id] || Award;
   const colors = gradientMap[metric.id] || gradientMap.exams;
-  const sparkColor = sparklineColorMap[metric.id] || "oklch(0.55 0.12 175)";
+  const sparkColor = sparklineColorMap[metric.id] || "var(--color-pure-orange)";
 
   // For "gaps" metric, trend down is positive (closing gaps)
   const isPositiveTrend =
@@ -139,11 +139,11 @@ function KPICard({ metric, index }: { metric: KPIMetric; index: number }) {
             className="inline-flex items-center gap-0.5 text-[12px] font-semibold px-2 py-0.5 rounded-full"
             style={{
               background: isPositiveTrend
-                ? "oklch(0.60 0.12 175 / 0.10)"
-                : "oklch(0.62 0.19 15 / 0.10)",
+                ? "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)"
+                : "color-mix(in srgb, var(--color-cinnamon-brown) 10%, transparent)",
               color: isPositiveTrend
-                ? "oklch(0.50 0.12 175)"
-                : "oklch(0.55 0.19 15)",
+                ? "var(--color-pure-orange)"
+                : "var(--color-cinnamon-brown)",
             }}
           >
             {metric.trend === "up" ? (
