@@ -102,6 +102,12 @@ export interface Partner {
   totalExams: number;
   revenueData: PartnerFinancials | null;
   meta: PartnerMeta | null;
+  trainingContacts?: {
+    salesPro: number;
+    techPro: number;
+    bootcamp: number;
+    implSpec: number;
+  }
 }
 
 export interface StatusCategory {

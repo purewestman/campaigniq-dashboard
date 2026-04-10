@@ -19,6 +19,7 @@ import {
 } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
+import { trainingData } from "@/lib/trainingData";
 import ModifyGapModal from "@/components/ModifyGapModal";
 import ExportButton from "@/components/ExportButton";
 import {
@@ -370,9 +371,9 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                         </p>
                         <div className="grid grid-cols-3 gap-2">
                           {[
-                            { label: "Sales Pro", val: partner.trainingContacts.salesProContacts },
-                            { label: "Tech Sales Pro", val: partner.trainingContacts.techSalesProContacts },
-                            { label: "SE Bootcamp", val: partner.trainingContacts.seBootcampContacts },
+                            { label: "Sales Pro", val: partner.trainingContacts?.salesProContacts ?? trainingData[partner.id]?.salesPro?.length ?? 0 },
+                            { label: "Tech Sales Pro", val: partner.trainingContacts?.techSalesProContacts ?? trainingData[partner.id]?.techPro?.length ?? 0 },
+                            { label: "SE Bootcamp", val: partner.trainingContacts?.seBootcampContacts ?? trainingData[partner.id]?.bootcamp?.length ?? 0 },
                           ].map((item) => (
                             <div key={item.label} className="px-3 py-2 rounded-lg text-center" style={{ background: "oklch(0.97 0.005 85 / 0.6)" }}>
                               <p className="text-[10px] text-muted-foreground">{item.label}</p>

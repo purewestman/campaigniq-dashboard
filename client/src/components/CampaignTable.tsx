@@ -18,6 +18,10 @@ import {
   formatPercent,
   getRevenueAttainment,
 } from "@/lib/data";
+import { trainingData, type TrainingPerson } from "@/lib/trainingData";
+import { aspData, type AspPerson } from "@/lib/aspData";
+import { openEnablementPlan } from "@/lib/enablementPlanPdf";
+import { generateRecommendedAction } from "@/lib/data";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
 import {
   ArrowUpDown,
@@ -440,9 +444,9 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
               {[
                 { label: "Unique Customers", value: partner.businessMetrics.uniqueCustomers, icon: Users },
                 { label: "Partner Installations", value: partner.businessMetrics.partnerDeliveredServices, icon: Shield },
-                { label: "Sales Pro Contacts", value: partner.trainingContacts.salesProContacts, icon: Award },
-                { label: "Tech Sales Pro Contacts", value: partner.trainingContacts.techSalesProContacts, icon: Award },
-                { label: "SE Bootcamp Contacts", value: partner.trainingContacts.seBootcampContacts, icon: GraduationCap },
+                { label: "Sales Pro Contacts", value: partner.trainingContacts?.salesProContacts ?? trainingData[partner.id]?.salesPro?.length ?? 0, icon: Award },
+                { label: "Tech Sales Pro Contacts", value: partner.trainingContacts?.techSalesProContacts ?? trainingData[partner.id]?.techPro?.length ?? 0, icon: Award },
+                { label: "SE Bootcamp Contacts", value: partner.trainingContacts?.seBootcampContacts ?? trainingData[partner.id]?.bootcamp?.length ?? 0, icon: GraduationCap },
               ].map((item) => {
                 const ItemIcon = item.icon;
                 return (
