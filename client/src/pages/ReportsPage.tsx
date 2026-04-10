@@ -12,6 +12,7 @@ import {
   TIER_DEFINITIONS,
   PROGRAM_TIERS,
   type ProgramTier,
+  generateRecommendedAction,
 } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
@@ -116,7 +117,7 @@ export default function ReportsPage() {
         const bk = p.businessMetrics.bookingsUSD !== null ? `$${p.businessMetrics.bookingsUSD}` : "N/A";
         const uc = p.businessMetrics.uniqueCustomers !== null ? p.businessMetrics.uniqueCustomers : "N/A";
         const pds = p.businessMetrics.partnerDeliveredServices !== null ? p.businessMetrics.partnerDeliveredServices : "N/A";
-        csv += `"${p.name}","${def.label}",${p.enablementScore}%,${p.totalGaps},${p.enablementCompliant ? "Yes" : "No"},${p.businessCompliant ? "Yes" : "No"},${p.overallCompliant ? "Yes" : "No"},${p.requirements.salesPro.obtained}/${p.requirements.salesPro.required},${p.requirements.techPro.obtained}/${p.requirements.techPro.required},${p.requirements.bootcamp.obtained}/${p.requirements.bootcamp.required},${p.requirements.implSpec.obtained}/${p.requirements.implSpec.required},${bk},${uc},${pds},${p.totalExams},"${p.action}","${p.targetEmails.join("; ")}","${isModified}"\n`;
+        csv += `"${p.name}","${def.label}",${p.enablementScore}%,${p.totalGaps},${p.enablementCompliant ? "Yes" : "No"},${p.businessCompliant ? "Yes" : "No"},${p.overallCompliant ? "Yes" : "No"},${p.requirements.salesPro.obtained}/${p.requirements.salesPro.required},${p.requirements.techPro.obtained}/${p.requirements.techPro.required},${p.requirements.bootcamp.obtained}/${p.requirements.bootcamp.required},${p.requirements.implSpec.obtained}/${p.requirements.implSpec.required},${bk},${uc},${pds},${p.totalExams},"${generateRecommendedAction(p)}","${p.targetEmails.join("; ")}","${isModified}"\n`;
       });
       filename = "fy27-partner-compliance-report.csv";
     } else if (type === "gaps") {

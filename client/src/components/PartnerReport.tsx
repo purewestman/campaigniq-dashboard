@@ -1,4 +1,4 @@
-import { TIER_DEFINITIONS, type Partner, PROGRAM_TIERS } from "@/lib/data";
+import { TIER_DEFINITIONS, type Partner, PROGRAM_TIERS, generateRecommendedAction } from "@/lib/data";
 import { CheckCircle2, XCircle, Shield, Award, Star, Crown, Target, Mail, Activity } from "lucide-react";
 import { activityData } from "@/lib/activityData";
 
@@ -187,7 +187,7 @@ export default function PartnerReport({ partner }: PartnerReportProps) {
           <h2 className="text-xl font-bold">Recommended Action Plan</h2>
         </div>
         <p className="text-blue-100 leading-relaxed text-lg">
-          {partner.action}
+          {generateRecommendedAction(partner)}
         </p>
       </section>
 

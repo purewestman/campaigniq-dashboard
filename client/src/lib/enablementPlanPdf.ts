@@ -98,9 +98,9 @@ function sectionAction(partner: Partner) {
   const action = generateRecommendedAction(partner);
   const allMet = partner.enablementCompliant && partner.businessCompliant;
   return `
-    <div class="section-wrap" style="margin-top:20px;">
+    <div style="margin-top:20px;">
       <div class="section-title">📋 Recommended Action</div>
-      <div class="card" style="background:${allMet ? "#f0fdf4" : "#fff7ed"};border-left:4px solid ${allMet ? "#16a34a" : "#e8571a"};padding:14px 18px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.7;color:#1f2937;">
+      <div style="background:${allMet ? "#f0fdf4" : "#fff7ed"};border-left:4px solid ${allMet ? "#16a34a" : "#e8571a"};padding:14px 18px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.7;color:#1f2937;">
         ${escHtml(action)}
       </div>
     </div>`;
@@ -150,9 +150,9 @@ function sectionEnablementProgress(partner: Partner) {
   }
 
   return `
-    <div class="section-wrap">
+    <div style="margin-top:20px;">
       <div class="section-title">📊 Enablement Progress</div>
-      <div class="grid-2">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         ${categoryBlock("Sales Professional", "salesPro", "salesPro", "💼")}
         ${categoryBlock("Technical Sales Pro", "techPro", "techPro", "🔧")}
         ${categoryBlock("SE Bootcamp", "bootcamp", "bootcamp", "🏕️")}
@@ -205,7 +205,7 @@ function sectionCandidates(partner: Partner) {
 
   if (gaps.length === 0) {
     return `
-      <div class="section-wrap">
+      <div style="margin-top:20px;">
         <div class="section-title">🎯 Recommended Training Candidates</div>
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;color:#15803d;font-size:13px;font-weight:600;">
           ✅ All enablement requirements met. No additional training candidates required.
@@ -252,9 +252,9 @@ function sectionCandidates(partner: Partner) {
   });
 
   return `
-    <div class="section-wrap">
+    <div style="margin-top:20px;">
       <div class="section-title">🎯 Recommended Training Candidates</div>
-      <div class="grid-2">${rows.join("")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">${rows.join("")}</div>
       <div style="margin-top:8px;font-size:10px;color:#6b7280;">★ = Priority contact (listed in partner target contacts)</div>
     </div>`;
 }
@@ -265,7 +265,7 @@ function sectionCourseSummary(partner: Partner) {
   const td = trainingData[partner.id];
   if (!td) {
     return `
-      <div class="section-wrap">
+      <div style="margin-top:20px;">
         <div class="section-title">📚 Online Course Summary</div>
         <div style="color:#6b7280;font-size:13px;font-style:italic;">No online training data available for this partner.</div>
       </div>`;
@@ -310,9 +310,9 @@ function sectionCourseSummary(partner: Partner) {
     </div>`);
 
   return `
-    <div class="section-wrap">
+    <div style="margin-top:20px;">
       <div class="section-title">📚 Online Course Summary</div>
-      <div class="grid-2">${rows.join("")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">${rows.join("")}</div>
     </div>`;
 }
 
@@ -365,7 +365,7 @@ function sectionAsp(partner: Partner, aspOverride: AspOverride | undefined) {
   ].filter(Boolean) : ["No ASP training data recorded"];
 
   return `
-    <div class="section-wrap">
+    <div style="margin-top:20px;">
       <div class="section-title">🛠️ ASP Eligibility — Authorized Support Partner</div>
       <div style="border:2px solid ${isEligible ? "#e8571a" : "#e5e7eb"};border-radius:12px;padding:20px;background:${isEligible ? "#fff7f3" : "#fafafa"};">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -383,7 +383,7 @@ function sectionAsp(partner: Partner, aspOverride: AspOverride | undefined) {
                 </span>`}
           </div>
         </div>
-        <div class="asp-steps">
+        <div style="display:flex;gap:12px;">
           ${aspStepBlock(1, "ASP Foundations", "FlashArray/FlashBlade Foundations Training & Assessment", asp?.foundations ?? [], "aspFoundations")}
           ${aspStepBlock(2, "Storage Pro Cert", "Storage Professional Certification", asp?.storageProCert ?? [], "aspStoragePro")}
           ${aspStepBlock(3, "Support Spec Cert", "Support Specialist Certification", asp?.supportSpecCert ?? [], "aspSupportSpec")}
@@ -426,9 +426,9 @@ function sectionBusiness(partner: Partner) {
   }
 
   return `
-    <div class="section-wrap">
+    <div style="margin-top:20px;">
       <div class="section-title">💰 Business Metrics</div>
-      <div class="grid-3">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
         ${metricCard("Bookings (USD)", bm.bookingsUSD, thresholds.bookingsUSD, (v) => formatCurrency(v, true))}
         ${metricCard("Unique Customers", bm.uniqueCustomers, thresholds.uniqueCustomers, (v) => String(v))}
         ${metricCard("Partner-Delivered Services", bm.partnerDeliveredServices, thresholds.partnerDeliveredServices, (v) => String(v))}
@@ -485,57 +485,11 @@ export function generateEnablementPlanHtml(
     display: flex;
     justify-content: space-between;
   }
-  /* ── Layout helpers ────────────────────────────────── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-  .asp-steps { display: flex; gap: 12px; }
-  .asp-steps > div { flex: 1; }
-  .section-wrap { margin-top: 20px; }
-
-  /* ── Page-break control ─────────────────────────────── */
-  /* Section titles always stay glued to their content */
-  .section-title { break-after: avoid; page-break-after: avoid; margin-bottom: 12px; }
-
-  /* Every direct child card of a grid must not split */
-  .grid-2 > div,
-  .grid-3 > div,
-  .asp-steps > div { break-inside: avoid; page-break-inside: avoid; }
-
-  /* Entire section wrappers must stay together — push to next page if needed */
-  .section-wrap {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    orphans: 3;
-    widows: 3;
-  }
-
   @media print {
     body { background: #fff; }
     .page-wrap { box-shadow: none; max-width: 100%; }
     .no-print { display: none; }
-    @page { margin: 1.2cm 1.5cm; size: A4; }
-
-    /* Force section titles to stay with content */
-    .section-title {
-      break-after: avoid !important;
-      page-break-after: avoid !important;
-    }
-
-    /* All grid items unbreakable */
-    .grid-2 > div,
-    .grid-3 > div,
-    .asp-steps > div {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-
-    /* Entire sections must not be split — push to next page if not enough room */
-    .section-wrap {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-      orphans: 10 !important;
-      widows: 10 !important;
-    }
+    @page { margin: 1cm 1.5cm; size: A4; }
   }
 </style>
 </head>

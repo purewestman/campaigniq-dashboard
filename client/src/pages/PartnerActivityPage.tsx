@@ -1,5 +1,23 @@
-import { useState, useMemo } from "react";
-import { Activity, Trophy, Search, Users } from "lucide-react";
+/*
+ * Activity Tracer — unified view of partner training completions
+ * Data sources: activityData (Excel) + csvActivityData (Training Report CSV)
+ * Three modes:
+ *   • Global search  — search any name / course across ALL partners
+ *   • By Partner     — leaderboard + monthly timeline for one partner
+ *   • By Course      — roster + monthly timeline for one course
+ */
+
+import { useState, useMemo, useEffect, useRef } from "react";
+import {
+  Activity,
+  Trophy,
+  Search,
+  Users,
+  X,
+  BookOpen,
+  Building2,
+  FileDown,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -11,432 +29,762 @@ import {
   Legend,
 } from "recharts";
 import { activityData } from "@/lib/activityData";
+import { csvActivityData } from "@/lib/csvActivityData";
 
-// Colors for the top 10 lines
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface UnifiedRecord {
+  partner: string;
+  email: string;
+  name: string;
+  activity: string;
+  date: string | null;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Make an email safe as a recharts dataKey (dots / @ break nested-path lookup) */
+const safeKey = (email: string) => email.replace(/[@.]/g, "_");
+
 const LINE_COLORS = [
-  "#2563eb", // blue-600
-  "#16a34a", // green-600
-  "#d97706", // amber-600
-  "#dc2626", // red-600
-  "#9333ea", // purple-600
-  "#0891b2", // cyan-600
-  "#c026d3", // fuchsia-600
-  "#ea580c", // orange-600
-  "#4f46e5", // indigo-600
-  "#059669", // emerald-600
+  "#2563eb", "#16a34a", "#d97706", "#dc2626", "#9333ea",
+  "#0891b2", "#c026d3", "#ea580c", "#4f46e5", "#059669",
 ];
 
-interface PartnerActivityPageProps {
+// ─── Merge activityData + csvActivityData into one flat list ─────────────────
+function buildAllRecords(): UnifiedRecord[] {
+  const out: UnifiedRecord[] = [];
+
+  // From Excel-based activityData
+  for (const [partner, recs] of Object.entries(activityData)) {
+    if (partner === "Total") continue; // junk Excel row
+    for (const r of recs) {
+      out.push({ partner, email: r.email, name: r.name, activity: r.activity, date: r.date });
+    }
+  }
+
+  // From CSV — add only records not already covered by activityData partners
+  const excelPartners = new Set(Object.keys(activityData).filter(k => k !== "Total"));
+  for (const [partner, recs] of Object.entries(csvActivityData)) {
+    if (excelPartners.has(partner)) continue;
+    for (const r of recs) {
+      out.push({ partner, email: r.email, name: r.name, activity: r.activity, date: r.date });
+    }
+  }
+
+  return out;
+}
+
+// Build once at module load (stable reference)
+const ALL_RECORDS: UnifiedRecord[] = buildAllRecords();
+
+const ALL_PARTNERS = Array.from(new Set(ALL_RECORDS.map(r => r.partner))).sort();
+const ALL_COURSES  = Array.from(new Set(ALL_RECORDS.map(r => r.activity))).sort();
+
+// ─── PDF Export helper ────────────────────────────────────────────────────────
+function triggerPrint(printRef: React.RefObject<HTMLDivElement | null>) {
+  const el = printRef.current;
+  if (!el) return;
+
+  const html = el.innerHTML;
+  const win = window.open("", "_blank");
+  if (!win) return;
+
+  win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Activity Tracer Export — PEI Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #111; background: #fff; padding: 24px; }
+    h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: #374151; }
+    .subtitle { font-size: 11px; color: #6b7280; margin-bottom: 20px; }
+    .stats { display: flex; gap: 24px; margin-bottom: 20px; padding: 12px 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; }
+    .stat-value { font-size: 20px; font-weight: 700; color: #111; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    thead th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; border-bottom: 1px solid #d1d5db; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    tbody td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+    .badge-partner { background: #ede9fe; color: #5b21b6; }
+    .badge-course { background: #fef3c7; color: #92400e; }
+    .footer { margin-top: 24px; font-size: 10px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  ${html}
+  <div class="footer">PEI · FY27 Global Reseller Program · Data as of April 2026 · Generated ${new Date().toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })}</div>
+</body>
+</html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 400);
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+interface Props {
   initialPartner?: string;
   initialCourse?: string;
   initialSearch?: string;
   onClearFilters?: () => void;
 }
 
-export default function PartnerActivityPage({ 
-  initialPartner, 
+export default function PartnerActivityPage({
+  initialPartner,
   initialCourse,
   initialSearch,
-  onClearFilters
-}: PartnerActivityPageProps) {
-  const [viewMode, setViewMode] = useState<"partner" | "course">("partner");
+  onClearFilters,
+}: Props) {
+  const [viewMode, setViewMode] = useState<"partner" | "course">(
+    initialCourse ? "course" : "partner"
+  );
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
+  const [selectedPartner, setSelectedPartner] = useState(initialPartner || ALL_PARTNERS[0] || "");
+  const [selectedCourse, setSelectedCourse]   = useState(initialCourse  || ALL_COURSES[0]  || "");
 
-  // Update selection and search if props change
-  useMemo(() => {
-    if (initialPartner) setViewMode("partner");
-    if (initialCourse) setViewMode("course");
+  const printRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialPartner) { setViewMode("partner"); setSelectedPartner(initialPartner); }
+    else if (initialCourse) { setViewMode("course"); setSelectedCourse(initialCourse); }
     if (initialSearch) setSearchQuery(initialSearch);
   }, [initialPartner, initialCourse, initialSearch]);
 
-  // Handle initial filters
-  useMemo(() => {
-    if (initialPartner) {
-      setViewMode("partner");
-    } else if (initialCourse) {
-      setViewMode("course");
-    }
-  }, [initialPartner, initialCourse]);
+  // ── Global search across ALL records ─────────────────────────────
+  const isSearching = searchQuery.trim().length > 0;
+  const q = searchQuery.trim().toLowerCase();
 
-  // --- Partner View Logic ---
-  const partners = useMemo(() => Object.keys(activityData).sort(), []);
-  const [selectedPartner, setSelectedPartner] = useState<string>(initialPartner || partners[0] || "");
+  const globalResults = useMemo<UnifiedRecord[]>(() => {
+    if (!isSearching) return [];
+    return ALL_RECORDS.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      r.email.toLowerCase().includes(q) ||
+      r.activity.toLowerCase().includes(q) ||
+      r.partner.toLowerCase().includes(q)
+    );
+  }, [q, isSearching]);
 
-  const filteredPartnerRecords = useMemo(() => {
-    if (!selectedPartner || !activityData[selectedPartner]) return [];
-    let recs = activityData[selectedPartner];
-    
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      const searchMap: Record<string, string[]> = {
-        "sales pro": [
-          "sales professional", 
-          "ae fy27", 
-          "partner sellers", 
-          "simply pure for partners",
-          "sales portfolio",
-          "enterprise data cloud",
-          "sales pro"
-        ],
-        "tech pro": [
-          "technical professional", 
-          "technical sellers", 
-          "storage professional", 
-          "partner se bootcamp", 
-          "implementation specialist", 
-          "support specialist",
-          "ahead of the cloud",
-          "activecluster",
-          "technical sales professional",
-          "tech pro"
-        ],
-        "foundations": ["foundations", "intro", "basics"],
-        "elite": ["elite"]
-      };
-      
-      const mappedQueries = searchMap[q] || [q];
-      
-      recs = recs.filter(r => {
-        const act = r.activity.toLowerCase();
-        const contact = r.name.toLowerCase() + " " + r.email.toLowerCase();
-        return mappedQueries.some(query => act.includes(query)) || contact.includes(q);
-      });
-    }
-    return recs;
-  }, [selectedPartner, searchQuery]);
+  // Global timeline (one data point per month for matching records)
+  const globalChartData = useMemo(() => {
+    if (!isSearching || globalResults.length === 0) return [];
+    const map: Record<string, number> = {};
+    globalResults.forEach(r => {
+      if (!r.date) return;
+      const d = new Date(r.date);
+      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map[m] = (map[m] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, Completions]) => ({ name, Completions }));
+  }, [globalResults, isSearching]);
 
-  // Update selection if prop changes
-  useMemo(() => {
-    if (initialPartner) setSelectedPartner(initialPartner);
-  }, [initialPartner]);
+  // ── By Partner ───────────────────────────────────────────────────
+  const partnerRecords = useMemo(() =>
+    ALL_RECORDS.filter(r => r.partner === selectedPartner),
+    [selectedPartner]
+  );
 
   const topEmployees = useMemo(() => {
-    const records = filteredPartnerRecords;
-    if (records.length === 0) return [];
-    
-    const counts: Record<string, { name: string, email: string, count: number, activities: Set<string> }> = {};
-    
-    records.forEach(r => {
-      const key = r.email;
-      if (!counts[key]) {
-        counts[key] = { name: r.name, email: r.email, count: 0, activities: new Set() };
+    if (partnerRecords.length === 0) return [];
+    const counts: Record<string, { name: string; email: string; count: number; activities: string[] }> = {};
+    partnerRecords.forEach(r => {
+      if (!counts[r.email]) counts[r.email] = { name: r.name, email: r.email, count: 0, activities: [] };
+      counts[r.email].count += 1;
+      if (r.activity && !counts[r.email].activities.includes(r.activity)) {
+        counts[r.email].activities.push(r.activity);
       }
-      counts[key].count += 1;
-      if (r.activity) counts[key].activities.add(r.activity);
     });
-
     return Object.values(counts)
-      .map(emp => ({ ...emp, activities: Array.from(emp.activities) }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
-  }, [selectedPartner]);
+  }, [partnerRecords]);
 
   const partnerChartData = useMemo(() => {
-    const records = filteredPartnerRecords;
-    if (records.length === 0) return [];
-    
-    const timelineMap: Record<string, any> = {};
-    const topEmails = topEmployees.map(e => e.email);
+    if (partnerRecords.length === 0) return [];
 
-    records.forEach(r => {
+    // Map email → safe recharts key for top employees
+    const topKeyByEmail: Record<string, string> = {};
+    topEmployees.forEach(e => { topKeyByEmail[e.email] = safeKey(e.email); });
+
+    const map: Record<string, { name: string; Total: number; [k: string]: number | string }> = {};
+
+    partnerRecords.forEach(r => {
       if (!r.date) return;
-      const dateObj = new Date(r.date);
-      const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (!timelineMap[monthStr]) {
-        timelineMap[monthStr] = { name: monthStr, Total: 0 };
-        topEmails.forEach(e => timelineMap[monthStr][e] = 0);
+      const d = new Date(r.date);
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      if (!map[month]) {
+        const entry: { name: string; Total: number; [k: string]: number | string } = { name: month, Total: 0 };
+        topEmployees.forEach(e => { entry[safeKey(e.email)] = 0; });
+        map[month] = entry;
       }
-      
-      timelineMap[monthStr].Total += 1;
-      if (topEmails.includes(r.email)) {
-        timelineMap[monthStr][r.email] += 1;
-      }
+      map[month].Total += 1;
+      const sk = topKeyByEmail[r.email];
+      if (sk) (map[month][sk] as number) += 1;
     });
 
-    return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
-  }, [selectedPartner, topEmployees]);
+    return Object.values(map).sort((a, b) => (a.name as string).localeCompare(b.name as string));
+  }, [partnerRecords, topEmployees]);
 
-
-  // --- Course View Logic ---
-  const uniqueCourses = useMemo(() => {
-    const courses = new Set<string>();
-    Object.values(activityData).forEach(partnerRecs => {
-      partnerRecs.forEach(r => {
-        if (r.activity) courses.add(r.activity);
-      });
-    });
-    return Array.from(courses).sort();
-  }, []);
-
-  const [selectedCourse, setSelectedCourse] = useState<string>(initialCourse || uniqueCourses[0] || "");
-
-  // Update selection if prop changes
-  useMemo(() => {
-    if (initialCourse) setSelectedCourse(initialCourse);
-  }, [initialCourse]);
-
-  const courseEmployees = useMemo(() => {
+  // ── By Course ────────────────────────────────────────────────────
+  const courseRoster = useMemo(() => {
     if (!selectedCourse) return [];
-    const employees: Array<{ partner: string, name: string, email: string, date: string | null }> = [];
-    
-    for (const [partner, records] of Object.entries(activityData)) {
-      records.forEach(r => {
-        if (r.activity === selectedCourse) {
-          employees.push({
-            partner,
-            name: r.name,
-            email: r.email,
-            date: r.date
-          });
-        }
+    return ALL_RECORDS
+      .filter(r => r.activity === selectedCourse)
+      .sort((a, b) => {
+        if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
+        return 0;
       });
-    }
-    
-    // Sort by recent completion date
-    return employees.sort((a, b) => {
-      if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
-      return 0;
-    });
   }, [selectedCourse]);
 
   const courseChartData = useMemo(() => {
     if (!selectedCourse) return [];
-    const timelineMap: Record<string, any> = {};
-    
-    for (const records of Object.values(activityData)) {
-      records.forEach(r => {
-        if (r.activity === selectedCourse && r.date) {
-            const dateObj = new Date(r.date);
-            const monthStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
-            if (!timelineMap[monthStr]) {
-              timelineMap[monthStr] = { name: monthStr, Completions: 0 };
-            }
-            timelineMap[monthStr].Completions += 1;
-        }
-      });
-    }
-    return Object.values(timelineMap).sort((a: any, b: any) => a.name.localeCompare(b.name));
+    const map: Record<string, number> = {};
+    ALL_RECORDS.filter(r => r.activity === selectedCourse && r.date).forEach(r => {
+      const d = new Date(r.date!);
+      const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      map[m] = (map[m] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, Completions]) => ({ name, Completions }));
   }, [selectedCourse]);
 
+  // ── Derived for render ────────────────────────────────────────────
+  const listItems = isSearching
+    ? globalResults
+    : viewMode === "partner"
+    ? partnerRecords
+    : courseRoster;
 
+  const chartData = isSearching ? globalChartData : viewMode === "partner" ? partnerChartData : courseChartData;
+
+  // ── PDF print content ─────────────────────────────────────────────
+  const printTitle = isSearching
+    ? `Search: "${searchQuery}"`
+    : viewMode === "partner"
+    ? selectedPartner
+    : selectedCourse;
+
+  const printRows: { col1: string; col2: string; col3: string; col4: string }[] = useMemo(() => {
+    if (isSearching) {
+      return globalResults.map(r => ({
+        col1: r.name || r.email,
+        col2: r.email,
+        col3: r.partner,
+        col4: r.date ? new Date(r.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : "—",
+      }));
+    }
+    if (viewMode === "partner") {
+      return topEmployees.map(e => ({
+        col1: e.name || e.email,
+        col2: e.email,
+        col3: `${e.count} module${e.count !== 1 ? "s" : ""}`,
+        col4: e.activities.slice(0, 3).join("; ") + (e.activities.length > 3 ? " …" : ""),
+      }));
+    }
+    // By Course
+    return courseRoster.map(r => ({
+      col1: r.name || r.email,
+      col2: r.email,
+      col3: r.partner,
+      col4: r.date ? new Date(r.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : "—",
+    }));
+  }, [isSearching, viewMode, globalResults, topEmployees, courseRoster]);
+
+  const printHeaders = isSearching
+    ? ["Name", "Email", "Partner", "Date"]
+    : viewMode === "partner"
+    ? ["Name", "Email", "Modules", "Courses (sample)"]
+    : ["Name", "Email", "Partner", "Completed"];
+
+  const printStats: { label: string; value: string | number }[] = useMemo(() => {
+    if (isSearching) {
+      return [
+        { label: "Matched Records", value: globalResults.length },
+        { label: "Unique People", value: Array.from(new Set(globalResults.map(r => r.email))).length },
+        { label: "Partners", value: Array.from(new Set(globalResults.map(r => r.partner))).length },
+        { label: "Courses", value: Array.from(new Set(globalResults.map(r => r.activity))).length },
+      ];
+    }
+    if (viewMode === "partner") {
+      return [
+        { label: "Total Records", value: partnerRecords.length },
+        { label: "Unique People", value: new Set(partnerRecords.map(r => r.email)).size },
+        { label: "Unique Courses", value: new Set(partnerRecords.map(r => r.activity)).size },
+        { label: "Months Active", value: partnerChartData.length },
+      ];
+    }
+    return [
+      { label: "Total Completions", value: courseRoster.length },
+      { label: "Unique Learners", value: new Set(courseRoster.map(r => r.email)).size },
+      { label: "Partners", value: new Set(courseRoster.map(r => r.partner)).size },
+    ];
+  }, [isSearching, viewMode, globalResults, partnerRecords, partnerChartData, courseRoster]);
+
+  const canExport = listItems.length > 0;
+
+  // ─── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      {/* Header and Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+      {/* ── Hidden print content ── */}
+      <div ref={printRef} style={{ display: "none" }}>
+        <h1>{printTitle}</h1>
+        <p className="subtitle">PEI · FY27 Global Reseller Program · Activity Tracer · {isSearching ? "Search Results" : viewMode === "partner" ? "Partner Report" : "Course Report"}</p>
+        <div className="stats">
+          {printStats.map(s => (
+            <div key={s.label} className="stat-item">
+              <span className="stat-label">{s.label}</span>
+              <span className="stat-value">{s.value}</span>
+            </div>
+          ))}
+        </div>
+        <h2>{isSearching ? "Matched Records" : viewMode === "partner" ? "Top 10 Employees by Activity" : "Completion Roster"}</h2>
+        <table>
+          <thead>
+            <tr>{printHeaders.map(h => <th key={h}>{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {printRows.map((row, i) => (
+              <tr key={i}>
+                <td>{row.col1}</td>
+                <td>{row.col2}</td>
+                <td>{row.col3}</td>
+                <td>{row.col4}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ── Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Activity className="w-5 h-5 text-rose-500" />
-            Activity Tracking
+            Activity Tracer
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            Analyze online module activity by Partner or by Course.
+            {ALL_RECORDS.length.toLocaleString()} training records across {ALL_PARTNERS.length} partners — search any name, course, or partner.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          {/* View Toggles */}
-          <div className="flex bg-black/[0.04] p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode("partner")}
-              className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
-                viewMode === "partner" 
-                  ? "bg-white shadow-sm text-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              By Partner
-            </button>
-            <button
-              onClick={() => setViewMode("course")}
-              className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
-                viewMode === "course" 
-                  ? "bg-white shadow-sm text-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              By Course
-            </button>
-          </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
 
-          {/* Contextual Selectors */}
-          {viewMode === "partner" ? (
-            <select
-              value={selectedPartner}
-              onChange={(e) => setSelectedPartner(e.target.value)}
-              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[200px] sm:max-w-xs"
-            >
-              {partners.map(p => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-          ) : (
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500 max-w-[200px] sm:max-w-xs"
-            >
-              {uniqueCourses.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          )}
-
-          {/* New Search Input */}
-          <div className="relative flex items-center min-w-[200px]">
-            <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
+          {/* Global search */}
+          <div className="relative flex items-center w-full sm:w-72">
+            <Search className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search people or courses..."
-              className="pl-9 pr-3 py-2 border border-black/10 bg-white/80 rounded-lg text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              placeholder="Search any name, course, or partner…"
+              className="pl-9 pr-9 py-2 border border-black/10 bg-white/80 rounded-xl text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
-        </div>
 
-        {/* Clear Filters Button */}
-        {(initialPartner || initialCourse || initialSearch) && (
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              onClearFilters?.();
-            }}
-            className="text-[12px] font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
-          >
-            Clear deep-link filters
-          </button>
-        )}
+          {/* View toggles — hidden while searching */}
+          {!isSearching && (
+            <div className="flex bg-black/[0.04] p-1 rounded-lg shrink-0">
+              <button
+                onClick={() => setViewMode("partner")}
+                className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
+                  viewMode === "partner" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                By Partner
+              </button>
+              <button
+                onClick={() => setViewMode("course")}
+                className={`px-4 py-1.5 text-[13px] font-medium rounded-md transition-all ${
+                  viewMode === "course" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                By Course
+              </button>
+            </div>
+          )}
+
+          {/* Contextual selectors */}
+          {!isSearching && viewMode === "partner" && (
+            <select
+              value={selectedPartner}
+              onChange={(e) => setSelectedPartner(e.target.value)}
+              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-xs"
+            >
+              {ALL_PARTNERS.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          )}
+
+          {!isSearching && viewMode === "course" && (
+            <select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500 max-w-xs"
+            >
+              {ALL_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
+
+          {/* Export PDF button */}
+          {canExport && (
+            <button
+              onClick={() => triggerPrint(printRef)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all shrink-0"
+              title="Export as PDF"
+            >
+              <FileDown className="w-4 h-4 text-rose-500" />
+              Export PDF
+            </button>
+          )}
+
+          {(initialPartner || initialCourse || initialSearch) && (
+            <button
+              onClick={() => { setSearchQuery(""); onClearFilters?.(); }}
+              className="text-[12px] font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Main Grid View */}
+      {/* ── Global search results banner ── */}
+      {isSearching && (
+        <div
+          className="px-4 py-2.5 rounded-xl text-[13px] font-medium flex items-center gap-2"
+          style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.42 0.16 290)" }}
+        >
+          <Search className="w-3.5 h-3.5 shrink-0" />
+          {globalResults.length === 0
+            ? `No matches for "${searchQuery}"`
+            : (() => {
+                const partnerCount = Array.from(new Set(globalResults.map(r => r.partner))).length;
+                return `${globalResults.length} record${globalResults.length !== 1 ? "s" : ""} matching "${searchQuery}" across ${partnerCount} partner${partnerCount !== 1 ? "s" : ""}`;
+              })()
+          }
+        </div>
+      )}
+
+      {/* ── Main grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Left List Container (Leaderboard or Roster) */}
-        <div className="terrain-card p-6 flex flex-col h-[600px] lg:h-[500px]">
-          <h3 className="text-[14px] font-bold text-foreground mb-4 flex items-center gap-2">
-            {viewMode === "partner" ? (
-              <><Trophy className="w-4 h-4 text-amber-500" /> Top 10 Employees</>
+
+        {/* Left panel — records list */}
+        <div className="terrain-card p-6 flex flex-col" style={{ height: 520 }}>
+          <h3 className="text-[14px] font-bold text-foreground mb-4 flex items-center gap-2 shrink-0">
+            {isSearching ? (
+              <><Search className="w-4 h-4 text-blue-500" /> Search Results</>
+            ) : viewMode === "partner" ? (
+              <><Trophy className="w-4 h-4 text-amber-500" /> Top Employees — {selectedPartner.split(" ").slice(0, 2).join(" ")}</>
             ) : (
-              <><Users className="w-4 h-4 text-rose-500" /> Completion Roster ({courseEmployees.length})</>
+              <><Users className="w-4 h-4 text-rose-500" /> Completion Roster ({courseRoster.length})</>
             )}
           </h3>
 
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            
-            {/* PARTNER VIEW: Top Employees */}
-            {viewMode === "partner" && topEmployees.length > 0 && (
-              <div className="space-y-4">
-                {topEmployees.map((emp, idx) => (
-                  <div key={emp.email} className="flex flex-col p-4 rounded-xl bg-black/[0.02] border border-black/[0.04]">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-[11px] flex items-center justify-center shrink-0">
-                          {idx + 1}
-                        </div>
-                        <div>
-                          <p className="text-[14px] font-semibold text-foreground leading-tight">{emp.name}</p>
-                          <p className="text-[11px] text-muted-foreground mt-0.5">{emp.email}</p>
-                        </div>
-                      </div>
-                      <div className="text-[13px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-                        {emp.count} <span className="text-[10px] font-medium text-blue-500">modules</span>
-                      </div>
+          <div className="flex-1 overflow-y-auto pr-1 space-y-2 min-h-0">
+
+            {/* ── GLOBAL SEARCH LIST ── */}
+            {isSearching && globalResults.length > 0 && (
+              globalResults.slice(0, 200).map((r, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-xl border"
+                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-foreground truncate">{r.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{r.email}</p>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 mt-2 ml-10">
-                      {emp.activities.map((act, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded border border-black/10 bg-white shadow-sm text-muted-foreground break-words max-w-full">
-                          {act}
-                        </span>
-                      ))}
-                    </div>
+                    {r.date && (
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {new Date(r.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "2-digit" })}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex items-center gap-1"
+                      style={{ background: "oklch(0.58 0.16 290 / 0.08)", color: "oklch(0.42 0.16 290)" }}
+                    >
+                      <Building2 className="w-2.5 h-2.5" />{r.partner.split(" ").slice(0, 3).join(" ")}
+                    </span>
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-md font-medium flex items-center gap-1 min-w-0"
+                      style={{ background: "oklch(0.75 0.14 75 / 0.10)", color: "oklch(0.50 0.14 75)" }}
+                    >
+                      <BookOpen className="w-2.5 h-2.5 shrink-0" />
+                      <span className="truncate">{r.activity}</span>
+                    </span>
+                  </div>
+                </div>
+              ))
             )}
 
-            {/* COURSE VIEW: Roster */}
-            {viewMode === "course" && courseEmployees.length > 0 && (
-              <div className="space-y-3">
-                {courseEmployees.map((emp, idx) => (
-                  <div key={`${emp.email}-${idx}`} className="flex flex-col p-3 rounded-lg bg-black/[0.02] border border-black/[0.04]">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[13px] font-semibold text-foreground">{emp.name}</p>
-                        <p className="text-[11px] font-medium text-blue-600 mt-0.5">{emp.partner}</p>
+            {/* ── PARTNER LEADERBOARD ── */}
+            {!isSearching && viewMode === "partner" && topEmployees.length > 0 && (
+              topEmployees.map((emp, idx) => (
+                <div
+                  key={emp.email}
+                  className="flex flex-col p-4 rounded-xl border"
+                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-7 h-7 rounded-full font-bold text-[11px] flex items-center justify-center shrink-0"
+                        style={{ background: LINE_COLORS[idx % LINE_COLORS.length] + "22", color: LINE_COLORS[idx % LINE_COLORS.length] }}
+                      >
+                        {idx + 1}
                       </div>
-                      {emp.date && (
-                        <div className="text-[10px] text-muted-foreground ml-2">
-                          {new Date(emp.date).toLocaleDateString()}
-                        </div>
-                      )}
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-semibold text-foreground leading-tight truncate">{emp.name}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{emp.email}</p>
+                      </div>
+                    </div>
+                    <div className="text-[13px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md shrink-0 ml-2">
+                      {emp.count} <span className="text-[10px] font-medium text-blue-500">mod</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="flex flex-wrap gap-1 ml-10">
+                    {emp.activities.slice(0, 4).map((act, i) => (
+                      <span key={i} className="text-[10px] px-1.5 py-0.5 rounded border border-black/10 bg-white text-muted-foreground">
+                        {act.length > 32 ? act.slice(0, 30) + "…" : act}
+                      </span>
+                    ))}
+                    {emp.activities.length > 4 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded border border-black/10 bg-white text-muted-foreground">
+                        +{emp.activities.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
             )}
 
-            {((viewMode === "partner" && topEmployees.length === 0) || (viewMode === "course" && courseEmployees.length === 0)) && (
+            {/* ── COURSE ROSTER ── */}
+            {!isSearching && viewMode === "course" && courseRoster.length > 0 && (
+              courseRoster.map((emp, idx) => (
+                <div
+                  key={`${emp.email}-${idx}`}
+                  className="flex items-center justify-between p-3 rounded-lg border"
+                  style={{ background: "oklch(0.99 0.003 85)", borderColor: "oklch(0.93 0.01 85)" }}
+                >
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-foreground truncate">{emp.name}</p>
+                    <p className="text-[11px] font-medium mt-0.5 truncate" style={{ color: "oklch(0.42 0.16 290)" }}>{emp.partner}</p>
+                  </div>
+                  {emp.date && (
+                    <span className="text-[10px] text-muted-foreground ml-2 shrink-0">
+                      {new Date(emp.date).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "2-digit" })}
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+
+            {/* Empty state */}
+            {listItems.length === 0 && (
               <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                No tracking data found for this selection.
+                {isSearching ? `No matches for "${searchQuery}".` : "No data for this selection."}
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Chart Container */}
-        <div className="terrain-card p-6 lg:col-span-2 h-[400px] flex flex-col">
-          <h3 className="text-[14px] font-bold text-foreground mb-4">
-            Activity Timeline (Modules Completed per Month)
+        {/* Right panel — Timeline chart */}
+        <div className="terrain-card p-6 lg:col-span-2 flex flex-col gap-3">
+          <h3 className="text-[14px] font-bold text-foreground">
+            {isSearching
+              ? "Matched Activity — Timeline"
+              : viewMode === "partner"
+              ? `${selectedPartner.split(" ").slice(0, 3).join(" ")} — Monthly Activity`
+              : "Course Completions — Timeline"}
           </h3>
-          <div className="flex-1 w-full min-h-0">
-            {((viewMode === "partner" && partnerChartData.length > 0) || (viewMode === "course" && courseChartData.length > 0)) ? (
+
+          {chartData.length > 0 ? (
+            <div style={{ width: "100%", height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={viewMode === "partner" ? partnerChartData : courseChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={chartData} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: "#6B7280" }} 
-                    dy={10}
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#6B7280" }}
+                    dy={8}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 11, fill: "#6B7280" }} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#6B7280" }}
+                    allowDecimals={false}
+                    width={28}
                   />
                   <Tooltip
-                    contentStyle={{ borderRadius: "8px", border: "1px solid var(--border)", fontSize: "12px", background: "rgba(255,255,255,0.9)" }}
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "1px solid var(--border)",
+                      fontSize: "12px",
+                      background: "rgba(255,255,255,0.97)",
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (!isSearching && viewMode === "partner") {
+                        const emp = topEmployees.find(e => safeKey(e.email) === name);
+                        return [value, emp ? (emp.name || emp.email.split("@")[0]) : name];
+                      }
+                      return [value, name];
+                    }}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                  
-                  {/* Partner View Chart Lines */}
-                  {viewMode === "partner" && (
-                    <>
-                      <Line type="monotone" dataKey="Total" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: "white" }} activeDot={{ r: 6 }} />
-                      {topEmployees.map((emp, i) => (
-                        <Line key={emp.email} type="monotone" dataKey={emp.email} name={emp.name || emp.email.split('@')[0]} stroke={LINE_COLORS[i % LINE_COLORS.length]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
-                      ))}
-                    </>
+                  <Legend
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
+                    formatter={(value: string) => {
+                      if (!isSearching && viewMode === "partner") {
+                        const emp = topEmployees.find(e => safeKey(e.email) === value);
+                        return emp ? (emp.name || emp.email.split("@")[0]) : value;
+                      }
+                      return value;
+                    }}
+                  />
+
+                  {/* Global search or course: single Completions line.
+                      NOTE: Do NOT wrap Line elements in React Fragments inside recharts —
+                      recharts traverses direct children only and won't see Lines inside <>. */}
+                  {(isSearching || viewMode === "course") && (
+                    <Line type="monotone" dataKey="Completions" stroke="#e11d48" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: "white" }} activeDot={{ r: 6 }} />
                   )}
 
-                  {/* Course View Chart Line */}
-                  {viewMode === "course" && (
-                    <Line type="monotone" dataKey="Completions" stroke="#e11d48" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  {/* Partner: Total line */}
+                  {(!isSearching && viewMode === "partner") && (
+                    <Line
+                      type="monotone"
+                      dataKey="Total"
+                      stroke="#2563eb"
+                      strokeWidth={3}
+                      dot={{ r: 4, strokeWidth: 2, fill: "white" }}
+                      activeDot={{ r: 6 }}
+                    />
                   )}
 
+                  {/* Partner: individual employee lines — each rendered as a direct child (no Fragment) */}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 0 && (
+                    <Line key={topEmployees[0].email} type="monotone" dataKey={safeKey(topEmployees[0].email)} name={safeKey(topEmployees[0].email)} stroke={LINE_COLORS[0]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 1 && (
+                    <Line key={topEmployees[1].email} type="monotone" dataKey={safeKey(topEmployees[1].email)} name={safeKey(topEmployees[1].email)} stroke={LINE_COLORS[1]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 2 && (
+                    <Line key={topEmployees[2].email} type="monotone" dataKey={safeKey(topEmployees[2].email)} name={safeKey(topEmployees[2].email)} stroke={LINE_COLORS[2]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 3 && (
+                    <Line key={topEmployees[3].email} type="monotone" dataKey={safeKey(topEmployees[3].email)} name={safeKey(topEmployees[3].email)} stroke={LINE_COLORS[3]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 4 && (
+                    <Line key={topEmployees[4].email} type="monotone" dataKey={safeKey(topEmployees[4].email)} name={safeKey(topEmployees[4].email)} stroke={LINE_COLORS[4]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 5 && (
+                    <Line key={topEmployees[5].email} type="monotone" dataKey={safeKey(topEmployees[5].email)} name={safeKey(topEmployees[5].email)} stroke={LINE_COLORS[5]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 6 && (
+                    <Line key={topEmployees[6].email} type="monotone" dataKey={safeKey(topEmployees[6].email)} name={safeKey(topEmployees[6].email)} stroke={LINE_COLORS[6]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 7 && (
+                    <Line key={topEmployees[7].email} type="monotone" dataKey={safeKey(topEmployees[7].email)} name={safeKey(topEmployees[7].email)} stroke={LINE_COLORS[7]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 8 && (
+                    <Line key={topEmployees[8].email} type="monotone" dataKey={safeKey(topEmployees[8].email)} name={safeKey(topEmployees[8].email)} stroke={LINE_COLORS[8]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
+                  {(!isSearching && viewMode === "partner") && topEmployees.length > 9 && (
+                    <Line key={topEmployees[9].email} type="monotone" dataKey={safeKey(topEmployees[9].email)} name={safeKey(topEmployees[9].email)} stroke={LINE_COLORS[9]} strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-[13px] text-muted-foreground">
-                Not enough trending date data available.
+            </div>
+          ) : (
+            <div className="flex items-center justify-center text-[13px] text-muted-foreground" style={{ height: 300 }}>
+              {isSearching
+                ? `No dated records matched "${searchQuery}".`
+                : "No date-based timeline data for this selection."}
+            </div>
+          )}
+
+          {/* Summary stats */}
+          {!isSearching && viewMode === "partner" && partnerRecords.length > 0 && (
+            <div className="flex flex-wrap gap-4 pt-2 border-t border-border/40">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Records</p>
+                <p className="text-[18px] font-bold text-foreground">{partnerRecords.length}</p>
               </div>
-            )}
-          </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Unique People</p>
+                <p className="text-[18px] font-bold text-foreground">{new Set(partnerRecords.map(r => r.email)).size}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Unique Courses</p>
+                <p className="text-[18px] font-bold text-foreground">{new Set(partnerRecords.map(r => r.activity)).size}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Months Active</p>
+                <p className="text-[18px] font-bold text-foreground">{partnerChartData.length}</p>
+              </div>
+            </div>
+          )}
+
+          {!isSearching && viewMode === "course" && courseRoster.length > 0 && (
+            <div className="flex flex-wrap gap-4 pt-2 border-t border-border/40">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Completions</p>
+                <p className="text-[18px] font-bold text-foreground">{courseRoster.length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Unique Learners</p>
+                <p className="text-[18px] font-bold text-foreground">{new Set(courseRoster.map(r => r.email)).size}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Partners Represented</p>
+                <p className="text-[18px] font-bold text-foreground">{new Set(courseRoster.map(r => r.partner)).size}</p>
+              </div>
+            </div>
+          )}
+
+          {isSearching && globalResults.length > 0 && (
+            <div className="flex flex-wrap gap-4 pt-2 border-t border-border/40">
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Matched Records</p>
+                <p className="text-[18px] font-bold text-foreground">{globalResults.length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Unique People</p>
+                <p className="text-[18px] font-bold text-foreground">{Array.from(new Set(globalResults.map(r => r.email))).length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Partners</p>
+                <p className="text-[18px] font-bold text-foreground">{Array.from(new Set(globalResults.map(r => r.partner))).length}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Courses</p>
+                <p className="text-[18px] font-bold text-foreground">{Array.from(new Set(globalResults.map(r => r.activity))).length}</p>
+              </div>
+            </div>
+          )}
         </div>
-        
       </div>
     </div>
   );
