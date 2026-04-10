@@ -212,3 +212,27 @@
   --sidebar-ring: #008374;
 }
 
+@media print {
+  /* Prevent horizontal slicing of cards, tables, and logical blocks during PDF export */
+  .border,
+  .rounded-md,
+  .rounded-lg,
+  .rounded-xl,
+  .rounded-2xl,
+  .border-b,
+  tr,
+  td,
+  th,
+  svg {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Keep headings tightly bound to the content below them */
+  h1, h2, h3, h4, h5, h6,
+  p.uppercase,
+  .font-semibold {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+}

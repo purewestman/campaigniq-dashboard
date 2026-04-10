@@ -227,7 +227,7 @@ function RequirementBarWithOverride({
           >
             <div
               className="rounded-lg px-3 py-2.5 border"
-              style={{ background: "var(--color-ash-gray)", borderColor: "var(--color-ash-gray)" }}
+              style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
             >
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-basil-green)" }}>
                 {label} — Completed ({trainingPeople.length})
