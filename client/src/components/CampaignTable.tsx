@@ -22,6 +22,7 @@ import {
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { aspData, type AspPerson } from "@/lib/aspData";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
+import { openEnablementPlan } from "@/lib/enablementPlanPdf";
 import {
   ArrowUpDown,
   MoreHorizontal,
@@ -45,6 +46,9 @@ import {
   Wrench,
   BadgeCheck,
   CircleAlert,
+  FileDown,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -402,20 +406,43 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
 
 function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
   const asp = aspData[partnerId];
+  const { getAspOverride, setAspOverride, removeAspOverride } = useOverrides();
+  const aspOverride = getAspOverride(partnerId);
+  const isManuallyApproved = !!aspOverride;
+  const isEligible = asp?.eligible || isManuallyApproved;
+
+  const [noteInput, setNoteInput] = useState("");
+  const [showNoteField, setShowNoteField] = useState(false);
 
   // No ASP data at all for this partner
   const hasAnyData = asp && (
     asp.foundations.length > 0 || asp.storageProCert.length > 0 || asp.supportSpecCert.length > 0
   );
 
+  const handleToggleOverride = () => {
+    if (isManuallyApproved) {
+      removeAspOverride(partnerId);
+      toast.success("ASP manual approval removed");
+      setShowNoteField(false);
+      setNoteInput("");
+    } else {
+      if (!showNoteField) {
+        setShowNoteField(true);
+      } else {
+        setAspOverride(partnerId, noteInput.trim());
+        toast.success("Partner marked as ASP — approval saved");
+        setShowNoteField(false);
+        setNoteInput("");
+      }
+    }
+  };
+
   return (
     <div
       className="rounded-xl border-2 p-4"
       style={{
-        borderColor: asp?.eligible ? ASP_ORANGE : "#e5e7eb",
-        background: asp?.eligible
-          ? `${ASP_ORANGE}08`
-          : "oklch(0.99 0.003 85)",
+        borderColor: isEligible ? ASP_ORANGE : "#e5e7eb",
+        background: isEligible ? `${ASP_ORANGE}08` : "oklch(0.99 0.003 85)",
       }}
     >
       {/* Header */}
@@ -432,14 +459,14 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
             <p className="text-[10px] text-muted-foreground">Authorized Support Partner — requires ≥2 individuals per step</p>
           </div>
         </div>
-        <div className="shrink-0">
-          {asp?.eligible ? (
+        <div className="flex items-center gap-2 shrink-0">
+          {isEligible ? (
             <span
               className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full"
               style={{ background: `${ASP_ORANGE}18`, color: ASP_ORANGE }}
             >
               <BadgeCheck className="w-3.5 h-3.5" />
-              ELIGIBLE
+              {isManuallyApproved ? "APPROVED (Manual)" : "ELIGIBLE"}
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full bg-black/[0.05] text-muted-foreground">
@@ -447,8 +474,67 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
               NOT YET
             </span>
           )}
+          {/* Manual override toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); handleToggleOverride(); }}
+            title={isManuallyApproved ? "Remove manual ASP approval" : "Manually approve as ASP"}
+            className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all"
+            style={{
+              background: isManuallyApproved ? "#fef2f2" : "oklch(0.99 0.003 85)",
+              borderColor: isManuallyApproved ? "#fca5a5" : "#e5e7eb",
+              color: isManuallyApproved ? "#dc2626" : "oklch(0.45 0.02 55)",
+            }}
+          >
+            {isManuallyApproved
+              ? <><ToggleRight className="w-3.5 h-3.5" /> Remove Override</>
+              : <><ToggleLeft className="w-3.5 h-3.5" /> Mark as ASP</>}
+          </button>
         </div>
       </div>
+
+      {/* Note input when approving */}
+      {showNoteField && !isManuallyApproved && (
+        <div
+          className="mb-4 p-3 rounded-lg border flex gap-2"
+          style={{ background: "#fff7ed", borderColor: "#fed7aa" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            autoFocus
+            placeholder="Optional note (reason for approval)…"
+            value={noteInput}
+            onChange={(e) => setNoteInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleToggleOverride(); if (e.key === "Escape") setShowNoteField(false); }}
+            className="flex-1 bg-transparent outline-none text-[12px] text-foreground placeholder:text-muted-foreground"
+          />
+          <button
+            onClick={handleToggleOverride}
+            className="text-[11px] font-bold px-3 py-1 rounded-lg text-white"
+            style={{ background: ASP_ORANGE }}
+          >
+            Confirm
+          </button>
+          <button
+            onClick={() => setShowNoteField(false)}
+            className="text-[11px] px-2 py-1 rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Manual approval note display */}
+      {isManuallyApproved && aspOverride.note && (
+        <div
+          className="mb-4 p-2.5 rounded-lg text-[11px]"
+          style={{ background: `${ASP_ORANGE}10`, color: "oklch(0.40 0.12 30)" }}
+        >
+          <span className="font-bold">Approval note:</span> {aspOverride.note}
+          <span className="ml-2 text-muted-foreground">
+            · {new Date(aspOverride.approvedAt).toLocaleDateString()}
+          </span>
+        </div>
+      )}
 
       {/* Process steps — horizontal timeline */}
       <div className="flex items-stretch gap-3 relative">
@@ -483,7 +569,7 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
       </div>
 
       {/* Gap summary when not eligible */}
-      {!asp?.eligible && (
+      {!isEligible && (
         <div className="mt-3 pt-3 border-t border-black/[0.06]">
           {!hasAnyData ? (
             <p className="text-[11px] text-muted-foreground italic">
@@ -507,8 +593,9 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
 
 /** Expanded detail row for a partner */
 function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNavigateToActivity?: (partner: string, course?: string, search?: string) => void }) {
-  const { getPartnerOverrides } = useOverrides();
+  const { getPartnerOverrides, getAspOverride } = useOverrides();
   const partnerOverrides = getPartnerOverrides(partner.id);
+  const aspOverride = getAspOverride(partner.id);
   const reqs = partner.requirements;
 
   return (
@@ -668,6 +755,21 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             <AspEligibilityPanel partnerId={partner.id} />
           </div>
 
+          {/* ── Export Enablement Plan ──────────────────────────────── */}
+          <div className="md:col-span-2 flex justify-end pt-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openEnablementPlan(partner, aspOverride);
+              }}
+              className="flex items-center gap-2 text-[12px] font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-90"
+              style={{ background: "#e8571a", color: "#fff" }}
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              Export Enablement Plan PDF
+            </button>
+          </div>
+
           {/* Exam/Certification Records */}
           <div className="md:col-span-2">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold flex items-center gap-1.5">
@@ -729,7 +831,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const { getOverrideCount } = useOverrides();
+  const { getOverrideCount, isAspEligible } = useOverrides();
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -989,13 +1091,14 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        {aspData[partner.id]?.eligible ? (
+                        {isAspEligible(partner.id, !!aspData[partner.id]?.eligible) ? (
                           <span
                             className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                             style={{ background: "#e8571a18", color: "#e8571a" }}
+                            title={aspData[partner.id]?.eligible ? "Auto-eligible" : "Manually approved"}
                           >
                             <BadgeCheck className="w-3 h-3" />
-                            ASP
+                            ASP{!aspData[partner.id]?.eligible ? " ★" : ""}
                           </span>
                         ) : aspData[partner.id] && (aspData[partner.id].foundations.length > 0 || aspData[partner.id].storageProCert.length > 0 || aspData[partner.id].supportSpecCert.length > 0) ? (
                           <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/[0.05] text-muted-foreground">

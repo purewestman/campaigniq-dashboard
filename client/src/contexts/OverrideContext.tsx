@@ -17,6 +17,12 @@ export interface GapOverride {
   completedBy: string; // user label
 }
 
+export interface AspOverride {
+  partnerId: number;
+  approvedAt: string;  // ISO timestamp
+  note: string;
+}
+
 interface OverrideContextValue {
   overrides: GapOverride[];
   addOverride: (override: Omit<GapOverride, "completedAt">) => void;
@@ -24,9 +30,16 @@ interface OverrideContextValue {
   getOverride: (partnerId: number, category: GapCategory) => GapOverride | undefined;
   getPartnerOverrides: (partnerId: number) => GapOverride[];
   getOverrideCount: (partnerId: number) => number;
+  // ASP manual overrides
+  aspOverrides: AspOverride[];
+  setAspOverride: (partnerId: number, note?: string) => void;
+  removeAspOverride: (partnerId: number) => void;
+  getAspOverride: (partnerId: number) => AspOverride | undefined;
+  isAspEligible: (partnerId: number, autoEligible: boolean) => boolean;
 }
 
 const STORAGE_KEY = "campaigniq-gap-overrides";
+const ASP_STORAGE_KEY = "campaigniq-asp-overrides";
 
 function loadOverrides(): GapOverride[] {
   try {
@@ -45,10 +58,28 @@ function saveOverrides(overrides: GapOverride[]) {
   }
 }
 
+function loadAspOverrides(): AspOverride[] {
+  try {
+    const raw = localStorage.getItem(ASP_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAspOverrides(overrides: AspOverride[]) {
+  try {
+    localStorage.setItem(ASP_STORAGE_KEY, JSON.stringify(overrides));
+  } catch {
+    // silently fail
+  }
+}
+
 const OverrideContext = createContext<OverrideContextValue | null>(null);
 
 export function OverrideProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<GapOverride[]>(loadOverrides);
+  const [aspOverrides, setAspOverrides] = useState<AspOverride[]>(loadAspOverrides);
 
   const addOverride = useCallback((override: Omit<GapOverride, "completedAt">) => {
     setOverrides((prev) => {
@@ -91,9 +122,40 @@ export function OverrideProvider({ children }: { children: ReactNode }) {
     [overrides]
   );
 
+  const setAspOverride = useCallback((partnerId: number, note = "") => {
+    setAspOverrides((prev) => {
+      const filtered = prev.filter((o) => o.partnerId !== partnerId);
+      const next = [...filtered, { partnerId, approvedAt: new Date().toISOString(), note }];
+      saveAspOverrides(next);
+      return next;
+    });
+  }, []);
+
+  const removeAspOverride = useCallback((partnerId: number) => {
+    setAspOverrides((prev) => {
+      const next = prev.filter((o) => o.partnerId !== partnerId);
+      saveAspOverrides(next);
+      return next;
+    });
+  }, []);
+
+  const getAspOverride = useCallback(
+    (partnerId: number) => aspOverrides.find((o) => o.partnerId === partnerId),
+    [aspOverrides]
+  );
+
+  const isAspEligible = useCallback(
+    (partnerId: number, autoEligible: boolean) =>
+      autoEligible || aspOverrides.some((o) => o.partnerId === partnerId),
+    [aspOverrides]
+  );
+
   return (
     <OverrideContext.Provider
-      value={{ overrides, addOverride, removeOverride, getOverride, getPartnerOverrides, getOverrideCount }}
+      value={{
+        overrides, addOverride, removeOverride, getOverride, getPartnerOverrides, getOverrideCount,
+        aspOverrides, setAspOverride, removeAspOverride, getAspOverride, isAspEligible,
+      }}
     >
       {children}
     </OverrideContext.Provider>
