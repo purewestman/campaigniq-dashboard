@@ -82,7 +82,7 @@ export default function LoginPage() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Username"
+                  placeholder="Enter Your Domain"
                   value={username}
                   onChange={(e) => {
                     setUsername(e.target.value);
@@ -106,7 +106,7 @@ export default function LoginPage() {
                 </div>
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (default: everpure)"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -120,7 +120,6 @@ export default function LoginPage() {
                   }}
                   onFocus={(e) => e.target.style.borderColor = "var(--color-pure-orange)"}
                   onBlur={(e) => e.target.style.borderColor = "var(--color-stone-gray)"}
-                  required
                 />
               </div>
             </div>
@@ -135,7 +134,7 @@ export default function LoginPage() {
                   style={{ color: "var(--color-rose-pink)" }}
                 >
                   <span className="bg-white/50 px-3 py-1 rounded shadow-sm inline-block mt-2 text-[#D63301]">
-                    Incorrect username or password.
+                    Incorrect domain or password.
                   </span>
                 </motion.p>
               )}
@@ -143,7 +142,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !username || !password}
+              disabled={loading || !username}
               className="w-full flex items-center justify-center gap-2 text-[15px] font-bold px-4 py-4 rounded-xl disabled:opacity-70 disabled:cursor-not-allowed transition-all hover:brightness-110 active:scale-[0.98] mt-2 shadow-lg"
               style={{
                 background: "var(--color-pure-orange)",

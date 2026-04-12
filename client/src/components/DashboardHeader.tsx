@@ -5,10 +5,11 @@
  */
 
 import { motion } from "framer-motion";
-import { CalendarDays, Search, Bell, X } from "lucide-react";
+import { CalendarDays, Search, Bell, X, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useRef } from "react";
 import PureDividerBackground from "./PureDividerBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardHeaderProps {
   searchQuery: string;
@@ -17,6 +18,18 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ searchQuery, onSearchChange }: DashboardHeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user, changePassword } = useAuth();
+
+  const handlePasswordChange = () => {
+    const newPass = prompt("Enter a new password for all users in your domain:");
+    if (newPass) {
+      if (changePassword(newPass)) {
+        toast.success("Domain password updated successfully!");
+      } else {
+        toast.error("Failed to update password.");
+      }
+    }
+  };
 
   return (
     <motion.div
@@ -37,10 +50,10 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
              </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground tracking-tight">
+            <h2 className="text-xl font-bold text-[var(--color-cloud-white)] tracking-tight">
               Everpure Certification Compliance
             </h2>
-            <p className="text-[13px] text-muted-foreground mt-1">
+            <p className="text-[13px] text-[var(--color-cloud-white)] opacity-90 mt-1">
               Track SE Journey compliance across 19 partners: Roadmap score, enablement gaps, and certification status.
             </p>
           </div>
@@ -48,6 +61,20 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
+          {user?.role === 'partner' && (
+            <button
+              onClick={handlePasswordChange}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-medium text-foreground hover:bg-white/60 transition-colors"
+              style={{
+                background: "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
+                borderColor: "var(--color-stone-gray)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              <span>Change Password</span>
+            </button>
+          )}
           {/* Search — controlled */}
           <div
             className="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200"

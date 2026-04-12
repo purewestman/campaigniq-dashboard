@@ -8,7 +8,7 @@
  * Uses modifiedPartners from ModificationContext so admin edits propagate everywhere
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -26,9 +26,11 @@ import TierProgressionPage from "@/pages/TierProgressionPage";
 import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
+import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
-import { Settings } from "lucide-react";
+import { Settings, CalendarCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("overview");
@@ -38,6 +40,32 @@ export default function Home() {
   const [activityPartnerFilter, setActivityPartnerFilter] = useState<string | null>(null);
   const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
   const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
+  const [commitments, setCommitments] = useState<PartnerCommitment[]>(loadCommitments);
+
+  // Listen for commitment submissions from PDF windows
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type !== 'PEI_COMMITMENT_SUBMIT') return;
+      const c: PartnerCommitment = {
+        partnerId: event.data.partnerId,
+        partnerName: event.data.partnerName,
+        submittedAt: event.data.submittedAt,
+        commitments: event.data.commitments,
+      };
+      saveCommitment(c);
+      setCommitments(loadCommitments());
+      toast.success(`Commitment received from ${c.partnerName}`, {
+        description: `${c.commitments.length} milestone(s) submitted.`,
+      });
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const handleDeleteCommitment = useCallback((partnerId: number) => {
+    removeCommitment(partnerId);
+    setCommitments(loadCommitments());
+  }, []);
 
   const {
     modifiedPartners,
@@ -105,6 +133,25 @@ export default function Home() {
               setActivitySearchFilter(null);
             }}
           />
+        );
+
+      case "asp":
+        return <AspTrackingPage />;
+
+      case "commitments":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <CalendarCheck className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
+                Partner Commitment Tracker
+              </h2>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Partner-submitted enablement timeline commitments from exported PDF plans.
+              </p>
+            </div>
+            <CommitmentTracker commitments={commitments} onDelete={handleDeleteCommitment} />
+          </div>
         );
 
       case "settings":
@@ -198,11 +245,6 @@ export default function Home() {
               <div className="lg:col-span-2">
                 <EnablementDonut data={filteredEnablement} />
               </div>
-            </section>
-
-            {/* ASP Qualification Tracking — embedded from standalone page */}
-            <section className="mb-8">
-              <AspTrackingPage />
             </section>
           </>
         );

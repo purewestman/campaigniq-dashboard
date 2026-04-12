@@ -122,6 +122,7 @@ export interface Partner {
   revenueData: RevenueData;
   trainingContacts: TrainingContacts;
   meta: PartnerMeta | null;
+  domain: string;
 }
 
 export interface StatusCategory {
@@ -410,6 +411,24 @@ function makePartner(
       }
     : { revenueFY27: 0, targetFY27: 0, pipelineFY27: 0, contributionFY27: 0, drFY27: 0, revenueFY26: 0, revenueFY25: 0 };
 
+  const manualDomains: Record<number, string> = {
+    1: "datasciences.co.za", 2: "axiz.com", 3: "nttdata.com", 4: "nec.xon.co.za",
+    5: "ftechkzn.co.za", 6: "ioco.tech", 7: "sithabile.co.za", 8: "tcm.co.za",
+    9: "altron.com", 10: "itgility.co.za", 11: "bcx.co.za", 12: "triplehgroup.co.za",
+    13: "lekonakonetsi.co.za", 17: "cesmozambique.com", 18: "cesnamibia.com",
+    19: "ceszambia.com", 20: "datasciences.co.uk", 24: "firstnet.co.za", 25: "ioco.tech",
+    26: "kenac.co.zw", 28: "matlala.co.za", 29: "mbulase.co.za", 30: "ukuvela.co.za",
+    31: "vmxperts.co.za"
+  };
+
+  let domain = manualDomains[id];
+  if (!domain && emails.length > 0) {
+    domain = emails[0].split('@')[1].toLowerCase();
+  }
+  if (!domain) {
+    domain = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+  }
+
   return {
     id,
     name,
@@ -433,6 +452,7 @@ function makePartner(
       seBootcampContacts: resolvedBoot,
     },
     meta,
+    domain,
   };
 }
 
@@ -745,5 +765,7 @@ export const navItems: NavItem[] = [
   { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassedCount },
   { id: "activity", label: "Activity Tracer", icon: "Activity" },
+  { id: "asp", label: "ASP Tracking", icon: "ShieldAlert" },
+  { id: "commitments", label: "Commitments", icon: "CalendarCheck" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];

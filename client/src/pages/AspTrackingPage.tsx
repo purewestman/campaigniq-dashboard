@@ -3,6 +3,7 @@ import { CheckCircle2, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 import { activityData } from "@/lib/activityData";
 import { partners } from "@/lib/data";
 import ExportButton from "@/components/ExportButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Candidate {
   name: string;
@@ -22,6 +23,8 @@ interface PartnerAspResult {
 }
 
 export default function AspTrackingPage() {
+  const { user } = useAuth();
+
   const resultData = useMemo(() => {
     const results: PartnerAspResult[] = [];
 
@@ -83,11 +86,21 @@ export default function AspTrackingPage() {
     }
 
     // Sort compliant partners first, then by name
-    return results.sort((a, b) => {
+    let sorted = results.sort((a, b) => {
       if (a.isCompliant !== b.isCompliant) return a.isCompliant ? -1 : 1;
       return a.partner.localeCompare(b.partner);
     });
-  }, []);
+
+    // ROW-LEVEL SECURITY: if partner login, only show their own row
+    if (user?.role === 'partner' && user.domain) {
+      const domainPartner = partners.find(p => p.domain === user.domain);
+      if (domainPartner) {
+        sorted = sorted.filter(r => r.partner === domainPartner.name);
+      }
+    }
+
+    return sorted;
+  }, [user]);
 
   const totalPartners = resultData.length;
   const compliantPartners = resultData.filter(r => r.isCompliant).length;

@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Activity,
   ShieldAlert,
+  CalendarCheck,
   LogOut,
 } from "lucide-react";
 import { navItems } from "@/lib/data";
@@ -37,6 +38,7 @@ const iconMap: Record<string, React.ElementType> = {
   TrendingUp,
   Activity,
   ShieldAlert,
+  CalendarCheck,
 };
 
 interface SidebarProps {

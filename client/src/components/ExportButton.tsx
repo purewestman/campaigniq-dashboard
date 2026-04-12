@@ -37,8 +37,8 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
 
       // Use html-to-image with security filters and a timeout
       const capturePromise = toPng(element, {
-        quality: 0.95,
-        pixelRatio: 1.5, // Slightly lower resolution for speed and reliability
+        quality: 1.0,
+        pixelRatio: 2.0, // Higher resolution for professional look
         backgroundColor: "#ffffff",
         cacheBust: true,
         // Filter out link tags that might cause SecurityErrors
@@ -82,7 +82,7 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
       const pdfHeight = (img.naturalHeight * pdfWidth) / img.naturalWidth;
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
       
-      const fileName = `${partner.name.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_')}_FY27_Report.pdf`;
+      const fileName = `${partner.name.replace(/[^\w\s-]/gi, '').replace(/\s+/g, '_')}_FY27_Profile.pdf`;
       pdf.save(fileName);
       console.log(`PDF saved successfully`);
 
@@ -102,7 +102,7 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
         disabled={isExporting}
         className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all shadow-sm ${
           variant === "primary" 
-            ? "bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-400" 
+            ? "bg-[#FF7023] text-white hover:bg-[#E65F1B] disabled:bg-[#FF7023]/50" 
             : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
         }`}
       >

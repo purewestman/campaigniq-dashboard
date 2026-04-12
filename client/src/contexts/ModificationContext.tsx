@@ -131,17 +131,27 @@ function applyModification(partner: Partner, mod: GapModification): Partner {
 
 const ModificationContext = createContext<ModificationContextValue | null>(null);
 
+import { useAuth } from './AuthContext';
+
 export function ModificationProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [modifications, setModifications] = useState<GapModification[]>(loadModifications);
   const [history, setHistory] = useState<GapModification[]>(loadHistory);
 
   const modifiedPartners = useMemo(() => {
-    return basePartners.map((partner) => {
+    let sourcePartners = basePartners;
+    
+    // ROW-LEVEL SECURITY: If logged in as partner, filter their visible dataset instantly
+    if (user?.role === 'partner' && user.domain) {
+      sourcePartners = basePartners.filter(p => p.domain === user.domain);
+    }
+
+    return sourcePartners.map((partner) => {
       const mod = modifications.find((m) => m.partnerId === partner.id);
       if (mod) return applyModification(partner, mod);
       return partner;
     });
-  }, [modifications]);
+  }, [modifications, user]);
 
   const addModification = useCallback(
     (mod: Omit<GapModification, "modifiedAt">) => {

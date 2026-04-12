@@ -609,7 +609,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
         <div
           className="px-8 py-5 grid grid-cols-1 md:grid-cols-2 gap-6"
           style={{
-            background: "linear-gradient(135deg, var(--color-stone-gray), color-mix(in srgb, var(--color-ash-gray) 30%, transparent))",
+            background: "color-mix(in srgb, var(--color-cloud-white) 90%, var(--color-stone-gray))",
             borderTop: "1px solid var(--color-stone-gray)",
           }}
         >

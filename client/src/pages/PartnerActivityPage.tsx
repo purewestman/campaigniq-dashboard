@@ -30,6 +30,8 @@ import {
 } from "recharts";
 import { activityData } from "@/lib/activityData";
 import { csvActivityData } from "@/lib/csvActivityData";
+import { partners } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface UnifiedRecord {
@@ -142,12 +144,31 @@ export default function PartnerActivityPage({
   initialSearch,
   onClearFilters,
 }: Props) {
+  const { user } = useAuth();
+
+  // ── Domain RLS: restrict records to logged-in partner ─────────────
+  const VISIBLE_RECORDS = useMemo(() => {
+    if (user?.role !== 'partner' || !user.domain) return ALL_RECORDS;
+    const domainPartner = partners.find(p => p.domain === user.domain);
+    if (!domainPartner) return ALL_RECORDS;
+    return ALL_RECORDS.filter(r => r.partner === domainPartner.name);
+  }, [user]);
+
+  const VISIBLE_PARTNERS = useMemo(
+    () => Array.from(new Set(VISIBLE_RECORDS.map(r => r.partner))).sort(),
+    [VISIBLE_RECORDS]
+  );
+  const VISIBLE_COURSES = useMemo(
+    () => Array.from(new Set(VISIBLE_RECORDS.map(r => r.activity))).sort(),
+    [VISIBLE_RECORDS]
+  );
+
   const [viewMode, setViewMode] = useState<"partner" | "course">(
     initialCourse ? "course" : "partner"
   );
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
-  const [selectedPartner, setSelectedPartner] = useState(initialPartner || ALL_PARTNERS[0] || "");
-  const [selectedCourse, setSelectedCourse]   = useState(initialCourse  || ALL_COURSES[0]  || "");
+  const [selectedPartner, setSelectedPartner] = useState(initialPartner || VISIBLE_PARTNERS[0] || "");
+  const [selectedCourse, setSelectedCourse]   = useState(initialCourse  || VISIBLE_COURSES[0]  || "");
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -163,13 +184,13 @@ export default function PartnerActivityPage({
 
   const globalResults = useMemo<UnifiedRecord[]>(() => {
     if (!isSearching) return [];
-    return ALL_RECORDS.filter(r =>
+    return VISIBLE_RECORDS.filter(r =>
       r.name.toLowerCase().includes(q) ||
       r.email.toLowerCase().includes(q) ||
       r.activity.toLowerCase().includes(q) ||
       r.partner.toLowerCase().includes(q)
     );
-  }, [q, isSearching]);
+  }, [q, isSearching, VISIBLE_RECORDS]);
 
   // Global timeline (one data point per month for matching records)
   const globalChartData = useMemo(() => {
@@ -188,8 +209,8 @@ export default function PartnerActivityPage({
 
   // ── By Partner ───────────────────────────────────────────────────
   const partnerRecords = useMemo(() =>
-    ALL_RECORDS.filter(r => r.partner === selectedPartner),
-    [selectedPartner]
+    VISIBLE_RECORDS.filter(r => r.partner === selectedPartner),
+    [selectedPartner, VISIBLE_RECORDS]
   );
 
   const topEmployees = useMemo(() => {
@@ -236,18 +257,18 @@ export default function PartnerActivityPage({
   // ── By Course ────────────────────────────────────────────────────
   const courseRoster = useMemo(() => {
     if (!selectedCourse) return [];
-    return ALL_RECORDS
+    return VISIBLE_RECORDS
       .filter(r => r.activity === selectedCourse)
       .sort((a, b) => {
         if (a.date && b.date) return new Date(b.date).getTime() - new Date(a.date).getTime();
         return 0;
       });
-  }, [selectedCourse]);
+  }, [selectedCourse, VISIBLE_RECORDS]);
 
   const courseChartData = useMemo(() => {
     if (!selectedCourse) return [];
     const map: Record<string, number> = {};
-    ALL_RECORDS.filter(r => r.activity === selectedCourse && r.date).forEach(r => {
+    VISIBLE_RECORDS.filter(r => r.activity === selectedCourse && r.date).forEach(r => {
       const d = new Date(r.date!);
       const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       map[m] = (map[m] || 0) + 1;
@@ -255,7 +276,7 @@ export default function PartnerActivityPage({
     return Object.entries(map)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name, Completions]) => ({ name, Completions }));
-  }, [selectedCourse]);
+  }, [selectedCourse, VISIBLE_RECORDS]);
 
   // ── Derived for render ────────────────────────────────────────────
   const listItems = isSearching
@@ -373,7 +394,7 @@ export default function PartnerActivityPage({
             Activity Tracer
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            {ALL_RECORDS.length.toLocaleString()} training records across {ALL_PARTNERS.length} partners — search any name, course, or partner.
+            {VISIBLE_RECORDS.length.toLocaleString()} training records across {VISIBLE_PARTNERS.length} partner{VISIBLE_PARTNERS.length !== 1 ? 's' : ''} — search any name, course, or partner.
           </p>
         </div>
 
@@ -429,7 +450,7 @@ export default function PartnerActivityPage({
               onChange={(e) => setSelectedPartner(e.target.value)}
               className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-xs"
             >
-              {ALL_PARTNERS.map(p => <option key={p} value={p}>{p}</option>)}
+              {VISIBLE_PARTNERS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           )}
 
@@ -439,7 +460,7 @@ export default function PartnerActivityPage({
               onChange={(e) => setSelectedCourse(e.target.value)}
               className="border border-black/10 bg-white/80 rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-rose-500 max-w-xs"
             >
-              {ALL_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+              {VISIBLE_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           )}
 
