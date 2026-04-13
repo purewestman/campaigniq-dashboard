@@ -169,6 +169,33 @@ export function generatePartnerProfileHtml(partner: Partner): string {
       </div>
     </div>`;
 
+  // ─── Action Plan Assignments ───────────────────────────────
+  const hasGaps = partner.totalGaps > 0;
+  const emailsBlockHtml = hasGaps ? `
+    <div class="section-block" style="page-break-before:auto; break-inside:avoid;">
+      <div class="section-title">📧 Action Plan Assignments</div>
+      <p style="font-size:12px;color:#374151;margin-bottom:16px;">Please assign employees to fulfill the outstanding enablement gaps. Select from recommended contacts or enter new email addresses below.</p>
+      <div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e5e7eb;">
+        ${partner.targetEmails.length > 0 ? `
+          <div style="margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;">Recommended Contacts</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              ${partner.targetEmails.map(email => `
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;background:#f8fafc;padding:6px 12px;border-radius:100px;border:1px solid #e2e8f0;cursor:pointer;">
+                  <input type="checkbox" class="email-checkbox" value="${escHtml(email)}" />
+                  ${escHtml(email)}
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;">Additional Contacts (comma-separated)</div>
+          <input id="manual-emails" type="text" placeholder="e.g. jdoe@example.com, asmita@example.com" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;outline:none;" />
+        </div>
+      </div>
+    </div>` : '';
+
   // ─── Signature Block ───────────────────────────────────────
   const signatureBlockHtml = `
     <div class="section-block" style="page-break-before:auto; break-inside:avoid;">
@@ -309,6 +336,7 @@ export function generatePartnerProfileHtml(partner: Partner): string {
     ${businessMetricsHtml}
     ${revenueHtml}
     ${enablementHtml}
+    ${emailsBlockHtml}
     ${signatureBlockHtml}
     <div class="footer">
       <span>PEI &middot; FY27 Global Reseller Program &middot; Partner Intelligence Dashboard</span>
@@ -332,6 +360,17 @@ export function generatePartnerProfileHtml(partner: Partner): string {
       return;
     }
 
+    let assignedEmployees = [];
+    const checkboxes = document.querySelectorAll('.email-checkbox');
+    for (let i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) assignedEmployees.push(checkboxes[i].value);
+    }
+    const manualEmailsInput = document.getElementById('manual-emails');
+    if (manualEmailsInput) {
+      const manualVals = manualEmailsInput.value.split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
+      assignedEmployees = assignedEmployees.concat(manualVals);
+    }
+
     const payload = {
       type: 'PEI_COMMITMENT_SUBMIT',
       partnerId: ${partner.id},
@@ -343,7 +382,8 @@ export function generatePartnerProfileHtml(partner: Partner): string {
           label: 'Partner Status Report Signed by ' + name + ' (' + role + ')',
           suggestedDate: date,
           partnerDate: date,
-          agreed: true
+          agreed: true,
+          assignedEmployees: assignedEmployees
         }
       ]
     };
