@@ -560,39 +560,46 @@ function signatureBlock() {
   return `
     <div class="section-block" style="break-before:avoid;">
       <div class="section-title">✍️ Sign-off &amp; Acceptance</div>
-      <p style="font-size:12px;color:#111827;margin-bottom:20px;">By signing below, both parties confirm acceptance of the enablement plan and the milestone dates outlined above.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#111827;margin-bottom:4px;">Partner Representative</div>
-          <div class="sig-line"></div>
-          <div style="display:flex;gap:24px;margin-top:14px;">
-            <div style="flex:1;">
-              <div style="font-size:10px;color:#111827;">Name</div>
-              <div class="sig-line" style="margin-top:2px;"></div>
+      <p style="font-size:12px;color:#111827;margin-bottom:28px;">By signing below, both parties confirm acceptance of the enablement plan and the milestone dates outlined above.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;">
+        <div style="background:#fcfcfc;padding:20px;border-radius:12px;border:1px solid #e5e7eb;">
+          <div style="font-size:12px;font-weight:800;color:#111827;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px;color:#FF7023;">Partner Representative</div>
+          
+          <div style="margin-bottom:20px;">
+            <input class="sig-input" type="text" placeholder="Type name here..." />
+            <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-top:4px;">Name</div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <input class="sig-input" type="text" value="${new Date().toLocaleDateString()}" />
+              <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-top:4px;">Date</div>
             </div>
-            <div style="flex:1;">
-              <div style="font-size:10px;color:#111827;">Date</div>
-              <div class="sig-line" style="margin-top:2px;"></div>
+            <div>
+              <input class="sig-input" type="text" placeholder="Enter Role" />
+              <div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-top:4px;">Title / Role</div>
             </div>
           </div>
-          <div style="margin-top:10px;font-size:10px;color:#111827;">Title / Role</div>
-          <div class="sig-line" style="margin-top:2px;"></div>
         </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#111827;margin-bottom:4px;">Pure Storage — Partner Account Manager</div>
-          <div class="sig-line"></div>
-          <div style="display:flex;gap:24px;margin-top:14px;">
-            <div style="flex:1;">
-              <div style="font-size:10px;color:#111827;">Name</div>
-              <div class="sig-line" style="margin-top:2px;"></div>
+
+        <div style="background:#5A6359;padding:20px;border-radius:12px;color:#fff;">
+          <div style="font-size:12px;font-weight:800;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px;color:#FF7023;">Pure Storage — Partner Account Manager</div>
+          
+          <div style="margin-bottom:20px;">
+            <input class="sig-input" style="border-bottom-color:rgba(255,255,255,0.2);color:#fff;" type="text" placeholder="Type name here..." />
+            <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px;">Name</div>
+          </div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <input class="sig-input" style="border-bottom-color:rgba(255,255,255,0.2);color:#fff;" type="text" value="${new Date().toLocaleDateString()}" />
+              <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px;">Date</div>
             </div>
-            <div style="flex:1;">
-              <div style="font-size:10px;color:#111827;">Date</div>
-              <div class="sig-line" style="margin-top:2px;"></div>
+            <div>
+              <input class="sig-input" style="border-bottom-color:rgba(255,255,255,0.2);color:#fff;" type="text" placeholder="Enter Role" />
+              <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px;">Title / Role</div>
             </div>
           </div>
-          <div style="margin-top:10px;font-size:10px;color:#111827;">Title / Role</div>
-          <div class="sig-line" style="margin-top:2px;"></div>
         </div>
       </div>
     </div>`;
@@ -640,14 +647,39 @@ export function generateEnablementPlanHtml(
   }
   .section-block {
     margin-top: 20px;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
   .sig-line {
     height: 1px;
     background: #374151;
     margin-top: 32px;
     width: 100%;
+  }
+  .sig-input {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #e5e7eb;
+    background: transparent;
+    padding: 6px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .sig-input:hover {
+    border-bottom-color: #FF7023;
+    background: #FF702305;
+  }
+  .sig-input:focus {
+    border-bottom-color: #FF7023;
+    background: #FF702308;
+  }
+  .sig-input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+    font-style: italic;
   }
   .date-field {
     font-size: 12px;
@@ -703,6 +735,7 @@ export function generateEnablementPlanHtml(
       padding: 0;
     }
     .agree-box { appearance: auto; }
+    .sig-input { border-bottom-color: #374151 !important; color: #111827 !important; }
     @page { margin: 1cm 1.5cm; size: A4; }
   }
 </style>

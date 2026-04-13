@@ -22,7 +22,7 @@ import {
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { aspData, type AspPerson } from "@/lib/aspData";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
-import { openEnablementPlan } from "@/lib/enablementPlanPdf";
+import ExportButton from "./ExportButton";
 import {
   ArrowUpDown,
   MoreHorizontal,
@@ -226,8 +226,8 @@ function RequirementBarWithOverride({
             className="mt-2 overflow-hidden"
           >
             <div
-              className="rounded-lg px-3 py-2.5 border"
-              style={{ background: "var(--color-cloud-white)", borderColor: "var(--color-stone-gray)" }}
+              className="rounded-lg px-3 py-2.5 border shadow-sm"
+              style={{ background: "#ffffff", borderColor: "var(--color-stone-gray)" }}
             >
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-basil-green)" }}>
                 {label} — Completed ({trainingPeople.length})
@@ -239,7 +239,7 @@ function RequirementBarWithOverride({
                   {trainingPeople.map((person) => (
                     <div key={person.email} className="flex items-center gap-2">
                       <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "var(--color-moss-green)" }} />
-                      <span className="text-[11px] font-medium text-foreground">
+                      <span className="text-[11px] font-bold text-slate-900">
                         {person.firstName} {person.lastName}
                       </span>
                       <span className="text-[10px] text-muted-foreground">{person.email}</span>
@@ -378,8 +378,8 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
           </button>
           {open && (
             <div
-              className="absolute z-30 left-0 top-6 w-64 rounded-xl shadow-lg border p-3 space-y-1.5"
-              style={{ background: "#fff", borderColor: "#e5e7eb" }}
+              className="absolute z-30 left-0 top-6 w-64 rounded-xl shadow-xl border p-3 space-y-1.5"
+              style={{ background: "#ffffff", borderColor: "#e5e7eb" }}
             >
               <p className="text-[10px] uppercase tracking-wider font-bold mb-2" style={{ color: ASP_ORANGE }}>
                 {label.toUpperCase()} — {people.length} INDIVIDUAL{people.length !== 1 ? "S" : ""}
@@ -387,8 +387,8 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
               {people.map(p => (
                 <div key={p.email} className="flex items-center gap-1.5 text-[11px]">
                   <GraduationCap className="w-3 h-3 shrink-0" style={{ color: ASP_ORANGE }} />
-                  <span className="font-medium text-foreground">{p.firstName} {p.lastName}</span>
-                  <span className="text-muted-foreground truncate text-[10px]">{p.email}</span>
+                  <span className="font-bold text-slate-900">{p.firstName} {p.lastName}</span>
+                  <span className="text-slate-500 truncate text-[10px]">{p.email}</span>
                 </div>
               ))}
               {people.length < required && (
@@ -757,17 +757,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
 
           {/* ── Export Enablement Plan ──────────────────────────────── */}
           <div className="md:col-span-2 flex justify-end pt-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                openEnablementPlan(partner, aspOverride);
-              }}
-              className="flex items-center gap-2 text-[12px] font-semibold px-4 py-2 rounded-lg transition-all hover:opacity-90"
-              style={{ background: "#e8571a", color: "#fff" }}
-            >
-              <FileDown className="w-3.5 h-3.5" />
-              Export Enablement Plan PDF
-            </button>
+            <ExportButton partner={partner} />
           </div>
 
           {/* Exam/Certification Records */}
@@ -893,10 +883,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
       <div className="px-6 py-5 border-b border-border">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-[15px] font-bold text-foreground">Partner Certification Compliance</h3>
+            <h3 className="text-[15px] font-bold text-foreground">Partner Certification Compliance & Enablement Plans</h3>
             <p className="text-[12px] text-muted-foreground mt-0.5">
               {partners.length} partner{partners.length !== 1 ? "s" : ""}
-              {searchQuery ? ` matching "${searchQuery}"` : ""} — click a row to see breakdown &amp; override gaps
+              {searchQuery ? ` matching "${searchQuery}"` : ""} — expand rows to export & sign enablement documentation
             </p>
           </div>
 

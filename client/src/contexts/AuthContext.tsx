@@ -5,14 +5,16 @@ interface UserIdentity {
   role: 'admin' | 'partner';
   domain?: string;
   name?: string;
+  requiresSetup?: boolean;
 }
 
 interface AuthContextType {
   isLoggedIn: boolean;
   user: UserIdentity | null;
-  login: (password: string, username?: string) => boolean;
+  login: (password: string, username?: string) => 'success' | 'setup_required' | 'fail';
   logout: () => void;
   changePassword: (newPassword: string) => boolean;
+  resetPassword: (domain: string, newPassword: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (password: string, username?: string) => {
-    if (!username) return false;
+    if (!username) return 'fail';
     
     // Global admin logic
     if (username === 'pureuser' && password === 'prevents.comm1ts') {
@@ -41,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(adminUser);
       sessionStorage.setItem('campaigniq_auth', 'true');
       sessionStorage.setItem('campaigniq_user', JSON.stringify(adminUser));
-      return true;
+      return 'success';
     }
     
     // Partner logic
@@ -54,18 +56,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Default password is "everpure" if none has been set for this domain
       const effectivePassword = storedPassword ?? 'everpure';
       if (password !== effectivePassword) {
-        return false;
+        return 'fail';
       }
       
-      const partnerUser: UserIdentity = { role: 'partner', domain: partnerUrlStr, name: partnerMatch.name };
-      setIsLoggedIn(true);
+      const requiresSetup = password === 'everpure';
+      const partnerUser: UserIdentity = { 
+        role: 'partner', 
+        domain: partnerUrlStr, 
+        name: partnerMatch.name,
+        requiresSetup
+      };
+
       setUser(partnerUser);
-      sessionStorage.setItem('campaigniq_auth', 'true');
       sessionStorage.setItem('campaigniq_user', JSON.stringify(partnerUser));
-      return true;
+      
+      if (!requiresSetup) {
+        setIsLoggedIn(true);
+        sessionStorage.setItem('campaigniq_auth', 'true');
+      }
+      
+      return requiresSetup ? 'setup_required' : 'success';
     }
 
-    return false;
+    return 'fail';
   };
 
   const logout = () => {
@@ -78,13 +91,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const changePassword = (newPassword: string) => {
     if (user && user.role === 'partner' && user.domain) {
       localStorage.setItem(`pwd_${user.domain}`, newPassword);
+      // Update session user to clear setup flag and login
+      const updatedUser = { ...user, requiresSetup: false };
+      setUser(updatedUser);
+      setIsLoggedIn(true);
+      sessionStorage.setItem('campaigniq_auth', 'true');
+      sessionStorage.setItem('campaigniq_user', JSON.stringify(updatedUser));
+      return true;
+    }
+    return false;
+  };
+
+  const resetPassword = (domain: string, newPassword: string) => {
+    const partnerMatch = partners.find(p => p.domain === domain.toLowerCase().trim());
+    if (partnerMatch) {
+      localStorage.setItem(`pwd_${partnerMatch.domain}`, newPassword);
       return true;
     }
     return false;
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, changePassword }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, changePassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

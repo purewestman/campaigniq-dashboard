@@ -1,23 +1,17 @@
-/*
- * Reports Page — PEI Dashboard
- * "Soft Terrain" design
- * 4-tier architecture: Authorized → Preferred → Elite → Ambassador
- * Executive summary, data exports, modification + override audit logs
- * Uses modifiedPartners so admin edits propagate here
- */
-
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   TIER_DEFINITIONS,
   PROGRAM_TIERS,
   type ProgramTier,
+  type ComplianceFilter,
   generateRecommendedAction,
 } from "@/lib/data";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
+import PartnerTable from "@/components/CampaignTable";
 import {
-  FileBarChart,
+  FileCheck,
   Download,
   ClipboardList,
   CheckCircle2,
@@ -31,6 +25,8 @@ import {
   Printer,
   Pencil,
   DollarSign,
+  Search,
+  Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -38,6 +34,10 @@ export default function ReportsPage() {
   const { overrides } = useOverrides();
   const { modifiedPartners, modifications, allModificationHistory } = useModifications();
   const [exporting, setExporting] = useState<string | null>(null);
+  
+  // Table state
+  const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Executive Summary Data
   const summary = useMemo(() => {
@@ -174,11 +174,11 @@ export default function ReportsPage() {
       {/* Page Header */}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <FileBarChart className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
-          Reports
+          <FileCheck className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
+          Partner Certification Compliance
         </h2>
         <p className="text-[13px] text-muted-foreground mt-1">
-          Executive summary, data exports, and audit logs
+          Executive summary, gap analysis, and enablement plan exports
         </p>
       </div>
 
@@ -485,18 +485,45 @@ export default function ReportsPage() {
         )}
       </motion.div>
 
+      {/* Partner Compliance Detail Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        className="space-y-4"
+      >
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h3 className="text-[15px] font-bold text-foreground flex items-center gap-2">
+              <Users className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
+              Partner Compliance Detail & Enablement Plans
+            </h3>
+            <p className="text-[11px] text-muted-foreground">
+              Detailed gap analysis and e-sign enablement plan exports per partner
+            </p>
+          </div>
+        </div>
+
+        <PartnerTable
+          partners={modifiedPartners}
+          activeFilter={complianceFilter}
+          onFilterChange={setComplianceFilter}
+          searchQuery={searchQuery}
+        />
+      </motion.div>
+
       {/* Print Note */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
+        transition={{ delay: 0.6 }}
         className="flex items-center gap-2 px-4 py-3 rounded-xl text-[11px] text-muted-foreground"
         style={{ background: "color-mix(in srgb, var(--color-cloud-white) 60%, transparent)", border: "1px solid var(--color-stone-gray)" }}
       >
         <Printer className="w-3.5 h-3.5 shrink-0" />
         <span>
-          For a printable report, use your browser's print function (Ctrl+P / Cmd+P) on any page.
-          CSV exports include all data fields for import into Excel, Google Sheets, or BI tools.
+          For a printable report, use your browser's print function (Ctrl+P / Cmd+P).
+          Export signed Enablement Plans individually for each partner in the table above.
         </span>
       </motion.div>
     </div>

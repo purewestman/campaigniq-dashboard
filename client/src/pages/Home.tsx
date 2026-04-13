@@ -8,7 +8,7 @@
  * Uses modifiedPartners from ModificationContext so admin edits propagate everywhere
  */
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import DashboardHeader from "@/components/DashboardHeader";
@@ -26,6 +26,7 @@ import TierProgressionPage from "@/pages/TierProgressionPage";
 import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
+import SecurityLogPage from "@/pages/SecurityLogPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
@@ -41,6 +42,19 @@ export default function Home() {
   const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
   const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
   const [commitments, setCommitments] = useState<PartnerCommitment[]>(loadCommitments);
+  const partnerTableRef = useRef<HTMLDivElement>(null);
+
+  const handleNavChange = useCallback((id: string) => {
+    if (id === "reports") {
+      setActiveNav("overview");
+      // Give the dom a moment to ensure we are on overview
+      setTimeout(() => {
+        partnerTableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+      return;
+    }
+    setActiveNav(id);
+  }, []);
 
   // Listen for commitment submissions from PDF windows
   useEffect(() => {
@@ -50,7 +64,11 @@ export default function Home() {
         partnerId: event.data.partnerId,
         partnerName: event.data.partnerName,
         submittedAt: event.data.submittedAt,
-        commitments: event.data.commitments,
+        commitments: (event.data.commitments || []).map((milestone: any) => ({
+          ...milestone,
+          status: milestone.status || 'pending',
+          assignedEmployees: milestone.assignedEmployees || [],
+        })),
       };
       saveCommitment(c);
       setCommitments(loadCommitments());
@@ -115,8 +133,6 @@ export default function Home() {
         return <GapAnalysisPage />;
       case "certs":
         return <CertificationsPage />;
-      case "reports":
-        return <ReportsPage />;
       case "progression":
         return <TierProgressionPage />;
       case "training":
@@ -138,6 +154,9 @@ export default function Home() {
       case "asp":
         return <AspTrackingPage />;
 
+      case "security":
+        return <SecurityLogPage />;
+
       case "commitments":
         return (
           <div className="space-y-6">
@@ -150,7 +169,11 @@ export default function Home() {
                 Partner-submitted enablement timeline commitments from exported PDF plans.
               </p>
             </div>
-            <CommitmentTracker commitments={commitments} onDelete={handleDeleteCommitment} />
+            <CommitmentTracker 
+              commitments={commitments} 
+              onDelete={handleDeleteCommitment} 
+              onUpdate={() => setCommitments(loadCommitments())}
+            />
           </div>
         );
 
@@ -223,11 +246,12 @@ export default function Home() {
               <ComplianceSummary
                 activeFilter={complianceFilter}
                 onFilterChange={(filter: ComplianceFilter) => setComplianceFilter(filter)}
+                onNavigate={handleNavChange}
               />
             </section>
 
             {/* Partner Tier Compliance Table — moved above charts */}
-            <section className="mb-6">
+            <section className="mb-6" ref={partnerTableRef}>
               <PartnerTable
                 partners={filteredPartners}
                 activeFilter={complianceFilter}
