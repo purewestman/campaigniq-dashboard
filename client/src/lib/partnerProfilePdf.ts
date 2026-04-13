@@ -171,7 +171,7 @@ export function generatePartnerProfileHtml(partner: Partner): string {
 
   // ─── Signature Block ───────────────────────────────────────
   const signatureBlockHtml = `
-    <div class="section-block" style="page-break-before:auto; break-before:auto;">
+    <div class="section-block" style="page-break-before:auto; break-inside:avoid;">
       <div class="section-title">✍️ Execution & Verification</div>
       <p style="font-size:12px;color:#374151;margin-bottom:24px;">By signing this profile, both parties confirm the accuracy of the FY27 enablement standing and commit to the recommended action plan for tier maintenance or advancement.</p>
       
@@ -179,16 +179,16 @@ export function generatePartnerProfileHtml(partner: Partner): string {
         <div style="background:#fcfcfc;padding:20px;border-radius:12px;border:1px solid #e5e7eb;">
           <div style="font-size:10px;font-weight:800;color:#FF7023;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;">Partner Acceptance</div>
           <div style="margin-bottom:16px;">
-            <input class="sig-input" type="text" placeholder="Print Name" />
+            <input id="sig-name" class="sig-input" type="text" placeholder="Print Name" />
             <div style="font-size:8px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-top:4px;">Signature / Name</div>
           </div>
           <div style="display:flex;gap:12px;">
             <div style="flex:1;">
-               <input class="sig-input" type="text" value="${new Date().toLocaleDateString()}" />
+               <input id="sig-date" class="sig-input" type="text" value="${new Date().toLocaleDateString()}" />
                <div style="font-size:8px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-top:4px;">Date</div>
             </div>
             <div style="flex:1;">
-               <input class="sig-input" type="text" placeholder="Title" />
+               <input id="sig-role" class="sig-input" type="text" placeholder="Title" />
                <div style="font-size:8px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-top:4px;">Title</div>
             </div>
           </div>
@@ -211,6 +211,14 @@ export function generatePartnerProfileHtml(partner: Partner): string {
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="no-print" style="margin-top:32px;text-align:center;padding:20px;background:#f8fafc;border-radius:12px;border:1px dashed #cbd5e1;">
+         <p style="font-size:11px;color:#64748b;margin-bottom:12px;font-weight:600;">💡 Review the profile above. Once satisfied, fill in the Partner Acceptance fields and click below to sync with the dashboard.</p>
+         <button id="commit-btn" style="background:#16a34a;color:#fff;font-size:13px;font-weight:800;padding:12px 32px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.2);transition:all 0.2s;">
+           🚀 Submit Signature & Commit
+         </button>
+         <div id="status-msg" style="display:none;margin-top:12px;font-weight:800;color:#16a34a;font-size:13px;">✅ Signed & Committed to Dashboard!</div>
       </div>
     </div>`;
 
@@ -309,8 +317,46 @@ export function generatePartnerProfileHtml(partner: Partner): string {
   </div>
 </div>
 <div class="no-print">
-  <button class="print-btn" onclick="window.print()">🖨️ Sign & Save as PDF</button>
+  <button class="print-btn" onclick="window.print()">🖨️ Save as PDF</button>
+  <p style="font-size:11px;color:#94a3b8;margin-top:8px;">(Remember to 'Submit Signature' above before closing)</p>
 </div>
+
+<script>
+  document.getElementById('commit-btn').addEventListener('click', function() {
+    const name = document.getElementById('sig-name').value;
+    const role = document.getElementById('sig-role').value;
+    const date = document.getElementById('sig-date').value;
+
+    if (!name || !role) {
+      alert('Please enter your Name and Role before committing.');
+      return;
+    }
+
+    const payload = {
+      type: 'PEI_COMMITMENT_SUBMIT',
+      partnerId: ${partner.id},
+      partnerName: '${escHtml(partner.name)}',
+      submittedAt: new Date().toISOString(),
+      commitments: [
+        {
+          id: 'signed_plan',
+          label: 'Partner Status Report Signed by ' + name + ' (' + role + ')',
+          suggestedDate: date,
+          partnerDate: date,
+          agreed: true
+        }
+      ]
+    };
+
+    if (window.opener) {
+      window.opener.postMessage(payload, '*');
+      document.getElementById('commit-btn').style.display = 'none';
+      document.getElementById('status-msg').style.display = 'block';
+    } else {
+      alert('Dashboard window not found. Please keep the dashboard open while signing.');
+    }
+  });
+</script>
 </body>
 </html>`;
 }
