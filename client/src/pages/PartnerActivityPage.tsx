@@ -18,6 +18,7 @@ import {
   Building2,
   FileDown,
 } from "lucide-react";
+import { generateActivityReportHtml } from "@/lib/activityReportPdf";
 import {
   LineChart,
   Line,
@@ -83,51 +84,19 @@ const ALL_PARTNERS = Array.from(new Set(ALL_RECORDS.map(r => r.partner))).sort()
 const ALL_COURSES  = Array.from(new Set(ALL_RECORDS.map(r => r.activity))).sort();
 
 // ─── PDF Export helper ────────────────────────────────────────────────────────
-function triggerPrint(printRef: React.RefObject<HTMLDivElement | null>) {
-  const el = printRef.current;
-  if (!el) return;
-
-  const html = el.innerHTML;
+function triggerPrint(
+  title: string,
+  subtitle: string,
+  stats: { label: string; value: string | number }[],
+  headers: string[],
+  rows: { col1: string; col2: string; col3: string; col4: string }[]
+) {
+  const html = generateActivityReportHtml(title, subtitle, stats, headers, rows);
   const win = window.open("", "_blank");
   if (!win) return;
-
-  win.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Activity Tracer Export — PEI Dashboard</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #111; background: #fff; padding: 24px; }
-    h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-    h2 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; color: #374151; }
-    .subtitle { font-size: 11px; color: #6b7280; margin-bottom: 20px; }
-    .stats { display: flex; gap: 24px; margin-bottom: 20px; padding: 12px 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; }
-    .stat-item { display: flex; flex-direction: column; }
-    .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; }
-    .stat-value { font-size: 20px; font-weight: 700; color: #111; }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    thead th { background: #f3f4f6; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; border-bottom: 1px solid #d1d5db; }
-    tbody tr:nth-child(even) { background: #f9fafb; }
-    tbody td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500; }
-    .badge-partner { background: #ede9fe; color: #5b21b6; }
-    .badge-course { background: #fef3c7; color: #92400e; }
-    .footer { margin-top: 24px; font-size: 10px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 12px; }
-    @media print {
-      body { padding: 0; }
-      .no-print { display: none !important; }
-    }
-  </style>
-</head>
-<body>
-  ${html}
-  <div class="footer">PEI · FY27 Global Reseller Program · Data as of April 2026 · Generated ${new Date().toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" })}</div>
-</body>
-</html>`);
+  win.document.write(html);
   win.document.close();
   win.focus();
-  setTimeout(() => { win.print(); }, 400);
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -169,8 +138,6 @@ export default function PartnerActivityPage({
   const [searchQuery, setSearchQuery] = useState(initialSearch || "");
   const [selectedPartner, setSelectedPartner] = useState(initialPartner || VISIBLE_PARTNERS[0] || "");
   const [selectedCourse, setSelectedCourse]   = useState(initialCourse  || VISIBLE_COURSES[0]  || "");
-
-  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialPartner) { setViewMode("partner"); setSelectedPartner(initialPartner); }
@@ -356,36 +323,6 @@ export default function PartnerActivityPage({
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-      {/* ── Hidden print content ── */}
-      <div ref={printRef} style={{ display: "none" }}>
-        <h1>{printTitle}</h1>
-        <p className="subtitle">PEI · FY27 Global Reseller Program · Activity Tracer · {isSearching ? "Search Results" : viewMode === "partner" ? "Partner Report" : "Course Report"}</p>
-        <div className="stats">
-          {printStats.map(s => (
-            <div key={s.label} className="stat-item">
-              <span className="stat-label">{s.label}</span>
-              <span className="stat-value">{s.value}</span>
-            </div>
-          ))}
-        </div>
-        <h2>{isSearching ? "Matched Records" : viewMode === "partner" ? "Top 10 Employees by Activity" : "Completion Roster"}</h2>
-        <table>
-          <thead>
-            <tr>{printHeaders.map(h => <th key={h}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {printRows.map((row, i) => (
-              <tr key={i}>
-                <td>{row.col1}</td>
-                <td>{row.col2}</td>
-                <td>{row.col3}</td>
-                <td>{row.col4}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {/* ── Header ── */}
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
         <div>
@@ -467,7 +404,13 @@ export default function PartnerActivityPage({
           {/* Export PDF button */}
           {canExport && (
             <button
-              onClick={() => triggerPrint(printRef)}
+              onClick={() => triggerPrint(
+                printTitle,
+                `PEI · FY27 Global Reseller Program · Activity Tracer · ${isSearching ? "Search Results" : viewMode === "partner" ? "Partner Report" : "Course Report"}`,
+                printStats,
+                printHeaders,
+                printRows
+              )}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all shrink-0"
               title="Export as PDF"
             >
