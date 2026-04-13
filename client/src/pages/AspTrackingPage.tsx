@@ -4,6 +4,8 @@ import { activityData } from "@/lib/activityData";
 import { partners } from "@/lib/data";
 import ExportButton from "@/components/ExportButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { generateAspReportHtml } from "@/lib/aspGapReportPdf";
+import { FileDown } from "lucide-react";
 
 interface Candidate {
   name: string;
@@ -102,6 +104,17 @@ export default function AspTrackingPage() {
     return sorted;
   }, [user]);
 
+  const handleGlobalExport = () => {
+    // Collect all candidates across all visible partners
+    const allCandidates = resultData.flatMap(r => r.candidates);
+    const html = generateAspReportHtml("Global ASP Compliance Audit", allCandidates);
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+  };
+
   const totalPartners = resultData.length;
   const compliantPartners = resultData.filter(r => r.isCompliant).length;
   const actionRequiredPartners = totalPartners - compliantPartners;
@@ -122,6 +135,13 @@ export default function AspTrackingPage() {
         </div>
 
         <div className="flex gap-3">
+          <button 
+            onClick={handleGlobalExport}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm shrink-0"
+          >
+            <FileDown className="w-4 h-4" />
+            Global Audit PDF
+          </button>
           <div className="terrain-card px-4 py-2 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -169,10 +189,21 @@ export default function AspTrackingPage() {
                        </div>
                        {/* Export Button for ASP View */}
                        {partners.find(p => p.name === row.partner) && (
-                         <ExportButton 
-                           partner={partners.find(p => p.name === row.partner)!} 
-                           variant="ghost" 
-                         />
+                         <button 
+                           onClick={() => {
+                             const html = generateAspReportHtml(row.partner, row.candidates);
+                             const win = window.open("", "_blank");
+                             if (win) {
+                               win.document.write(html);
+                               win.document.close();
+                               win.focus();
+                             }
+                           }}
+                           className="p-1.5 rounded-lg hover:bg-black/5 text-muted-foreground hover:text-indigo-600 transition-all"
+                           title="Export ASP Gap Report"
+                         >
+                           <FileDown className="w-4 h-4" />
+                         </button>
                        )}
                     </div>
                   </td>

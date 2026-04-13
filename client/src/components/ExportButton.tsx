@@ -1,10 +1,8 @@
-import { useState, useRef } from "react";
-import { FileDown, Loader2, X, FileSignature, Calendar, User, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { FileDown, X, FileSignature, Calendar, User, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { type Partner } from "@/lib/data";
-import PartnerReport from "./PartnerReport";
-import { toPng } from "html-to-image";
-import { jsPDF } from "jspdf";
+import { generatePartnerProfileHtml } from "@/lib/partnerProfilePdf";
 import { toast } from "sonner";
 
 interface ExportButtonProps {
@@ -13,7 +11,6 @@ interface ExportButtonProps {
 }
 
 export default function ExportButton({ partner, variant = "primary" }: ExportButtonProps) {
-  const [isExporting, setIsExporting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   
   // Signature State
@@ -22,119 +19,58 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
   const [signDate, setSignDate] = useState(new Date().toISOString().split('T')[0]);
   const [isAgreed, setIsAgreed] = useState(false);
 
-  const reportRef = useRef<HTMLDivElement>(null);
-
   const startExportProcess = () => {
     setShowModal(true);
   };
 
   const handleExport = async () => {
-    if (isExporting) return;
-    if (!signName || !signRole || !signDate) {
+    if (!signName || !signRole || !signDate || !isAgreed) {
       toast.error("Please complete all signature fields.");
       return;
     }
 
-    if (!reportRef.current) {
-      console.error("Report ref not found");
-      return;
-    }
-
     setShowModal(false);
-    console.log(`Starting signed PDF export for: ${partner.name}`);
-    setIsExporting(true);
+    console.log(`Switching to premium PDF generator for: ${partner.name}`);
     
-    try {
-      const element = reportRef.current;
-      element.classList.add("pdf-export-mode");
-      
-      // Wait for layout and signature to render
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const dataUrl = await toPng(element, {
-        quality: 1.0,
-        pixelRatio: 2.0,
-        backgroundColor: "#ffffff",
-        cacheBust: true,
-      });
-
-      element.classList.remove("pdf-export-mode");
-
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "pt",
-        format: "a4",
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise((resolve) => img.onload = resolve);
-
-      const imgWidth = img.naturalWidth;
-      const imgHeight = img.naturalHeight;
-      const ratio = pdfWidth / imgWidth;
-      const imgPageHeight = pdfHeight / ratio;
-      
-      let heightLeft = imgHeight;
-      let position = 0;
-      let page = 1;
-
-      while (heightLeft > 0) {
-        pdf.addImage(dataUrl, "PNG", 0, -position * ratio, pdfWidth, imgHeight * ratio);
-        heightLeft -= imgPageHeight;
-        position += imgPageHeight;
-        if (heightLeft > 10) {
-          pdf.addPage();
-          page++;
+    // Sync with Dashboard
+    window.postMessage({
+      type: 'PEI_COMMITMENT_SUBMIT',
+      partnerId: partner.id,
+      partnerName: partner.name,
+      submittedAt: new Date().toISOString(),
+      commitments: [
+        {
+          id: 'signed_plan',
+          label: `Partner Status Report Signed by ${signName} (${signRole})`,
+          suggestedDate: signDate,
+          partnerDate: signDate,
+          agreed: true
         }
-      }
-      
-      const fileName = `${partner.name.replace(/\s+/g, '_')}_Enablement_Plan_Signed.pdf`;
-      pdf.save(fileName);
-      
-      // Sync with Dashboard
-      window.postMessage({
-        type: 'PEI_COMMITMENT_SUBMIT',
-        partnerId: partner.id,
-        partnerName: partner.name,
-        submittedAt: new Date().toISOString(),
-        commitments: [
-          {
-            id: 'signed_plan',
-            label: `Enablement Plan Signed by ${signName} (${signRole})`,
-            suggestedDate: signDate,
-            partnerDate: signDate,
-            agreed: true
-          }
-        ]
-      }, "*");
+      ]
+    }, "*");
 
-      toast.success("Identity verified and plan exported successfully.");
-
-    } catch (error: any) {
-      console.error("PDF Export failed:", error);
-      toast.error("Export failed. Check console for details.");
-    } finally {
-      setIsExporting(false);
-    }
+    const html = generatePartnerProfileHtml(partner);
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    
+    toast.success("Profile verified and report generated.");
   };
 
   return (
     <>
       <button
         onClick={(e) => { e.stopPropagation(); startExportProcess(); }}
-        disabled={isExporting}
         className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all shadow-sm ${
           variant === "primary" 
-            ? "bg-[#FF7023] text-white hover:bg-[#E65F1B] disabled:bg-[#FF7023]/50" 
+            ? "bg-[#FF7023] text-white hover:bg-[#E65F1B]" 
             : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
         } active:scale-95`}
       >
-        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-        {isExporting ? "Signing..." : "Export & Sign"}
+        <FileDown className="w-4 h-4" />
+        Export & Sign
       </button>
 
       {/* Signature Modal */}
@@ -245,28 +181,6 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
         )}
       </AnimatePresence>
 
-      {/* Hidden Report for capture */}
-      <div 
-        style={{ 
-          position: 'fixed', 
-          top: '-10000px', 
-          left: '-10000px', 
-          width: '800px', 
-          height: '3500px',
-          pointerEvents: 'none',
-          background: 'white',
-          zIndex: -1,
-          overflow: 'hidden'
-        }}
-      >
-        <div ref={reportRef} style={{ width: '800px' }}>
-          {/* We pass the signature data here */}
-          <PartnerReport 
-            partner={partner} 
-            signature={{ name: signName, role: signRole, date: signDate }} 
-          />
-        </div>
-      </div>
     </>
   );
 }
