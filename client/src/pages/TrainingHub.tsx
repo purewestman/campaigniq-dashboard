@@ -8,6 +8,7 @@ interface TrainingHubProps {
   activityPartnerFilter?: string | null;
   activityCourseFilter?: string | null;
   activitySearchFilter?: string | null;
+  forceActivityTab?: number;
   onClearFilters: () => void;
   onNavigateToActivity: (partner: string, course?: string, search?: string) => void;
 }
@@ -17,17 +18,18 @@ export default function TrainingHub({
   activityPartnerFilter,
   activityCourseFilter,
   activitySearchFilter,
+  forceActivityTab = 0,
   onClearFilters,
   onNavigateToActivity
 }: TrainingHubProps) {
   const [activeTab, setActiveTab] = useState<"certs" | "activity">(initialTab);
 
-  // If filters are set, force the activity tab to open
+  // If filters are set or forced, open the activity tab
   useEffect(() => {
-    if (activityPartnerFilter || activityCourseFilter || activitySearchFilter) {
+    if (activityPartnerFilter || activityCourseFilter || activitySearchFilter || forceActivityTab > 0) {
       setActiveTab("activity");
     }
-  }, [activityPartnerFilter, activityCourseFilter, activitySearchFilter]);
+  }, [activityPartnerFilter, activityCourseFilter, activitySearchFilter, forceActivityTab]);
 
   return (
     <div className="space-y-6">

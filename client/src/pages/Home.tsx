@@ -46,10 +46,17 @@ export default function Home() {
   const [activityPartnerFilter, setActivityPartnerFilter] = useState<string | null>(null);
   const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
   const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
+  const [forceActivityTab, setForceActivityTab] = useState(0);
   const [commitments, setCommitments] = useState<PartnerCommitment[]>(loadCommitments);
   const partnerTableRef = useRef<HTMLDivElement>(null);
 
   const handleNavChange = useCallback((id: string) => {
+    if (id === "activity") {
+      setForceActivityTab(prev => prev + 1);
+      setActiveNav("training");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     if (id === "reports") {
       setActiveNav("overview");
       // Give the dom a moment to ensure we are on overview
@@ -170,6 +177,7 @@ export default function Home() {
             activityPartnerFilter={activityPartnerFilter}
             activityCourseFilter={activityCourseFilter}
             activitySearchFilter={activitySearchFilter}
+            forceActivityTab={forceActivityTab}
             onClearFilters={() => {
               setActivityPartnerFilter(null);
               setActivityCourseFilter(null);
