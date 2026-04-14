@@ -5,6 +5,7 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useMemo } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -24,7 +25,7 @@ import {
   CalendarDays,
   LogOut,
 } from "lucide-react";
-import { navItems } from "@/lib/data";
+import { navItems, partners } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -51,7 +52,26 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse }: SidebarProps) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  
+  const dynamicNavItems = useMemo(() => {
+    let domainPartner = null;
+    if (user?.role === 'partner' && user.domain) {
+      domainPartner = partners.find(p => p.domain === user.domain);
+    }
+
+    return navItems.map(item => {
+      const newItem = { ...item };
+      if (domainPartner) {
+        if (item.id === "partners") {
+          newItem.badge = 1;
+        } else if (item.id === "certifications") {
+          newItem.badge = domainPartner.totalExams;
+        }
+      }
+      return newItem;
+    });
+  }, [user]);
   
   return (
     <motion.aside
@@ -92,7 +112,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {dynamicNavItems.map((item) => {
           const Icon = iconMap[item.icon] || LayoutDashboard;
           const isActive = activeNav === item.id;
 

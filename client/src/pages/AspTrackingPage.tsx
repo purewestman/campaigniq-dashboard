@@ -172,7 +172,11 @@ export default function AspTrackingPage() {
   const handleGlobalExport = () => {
     // Collect all candidates across all visible partners
     const allCandidates = resultData.flatMap(r => r.candidates);
-    const html = generateAspReportHtml("Global ASP Compliance Audit", allCandidates);
+    const reportTitle = user?.role === 'partner' && user.domain 
+      ? `${partners.find(p => p.domain === user?.domain)?.name || 'Domain'} ASP Compliance Audit`
+      : "Global ASP Compliance Audit";
+      
+    const html = generateAspReportHtml(reportTitle, allCandidates);
     const win = window.open("", "_blank");
     if (!win) return;
     win.document.write(html);
@@ -195,9 +199,20 @@ export default function AspTrackingPage() {
             <ShieldAlert className="w-5 h-5 text-indigo-500" />
             ASP Qualification Tracking
           </h2>
-          <p className="text-[13px] text-muted-foreground mt-1">
-            Requirement: 2 individuals with Foundations, Storage Professional, and Support Specialist.
-          </p>
+          <div className="mt-3 bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-4 max-w-4xl">
+            <p className="text-[13px] text-slate-700 leading-relaxed font-medium">
+              <strong className="text-indigo-900">Requirement:</strong> To maintain Authorized Support Partner (ASP) status, a partner must have at least two (2) unique individuals who have completed the full qualification track: 
+              <span className="font-semibold"> ASP Foundations</span> (FlashArray or FlashBlade), 
+              <span className="font-semibold"> Pure Storage Professional Certification</span> (FlashArray or FlashBlade), and 
+              <span className="font-semibold"> Pure Support Specialist Certification</span>.
+            </p>
+            <p className="text-[13px] text-slate-700 leading-relaxed mt-2 font-medium">
+              If one user has completed FlashArray ASP Foundations and the same person completed Pure Storage Professional Certification for FlashArray, the partner will be issued with ASP Partner Badge while pursuing FlashBlade or FlashArray Support Specialist Certification. 
+              <strong className="text-rose-600 block mt-1.5">
+                ** Individual must earn the Support Specialist certification within 12 months of the Storage Professional certification.
+              </strong>
+            </p>
+          </div>
         </div>
 
         <div className="flex gap-3">
@@ -206,7 +221,7 @@ export default function AspTrackingPage() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm shrink-0"
           >
             <FileDown className="w-4 h-4" />
-            Global Audit PDF
+            {user?.role === 'partner' ? 'Export ASP Audit PDF' : 'Global Audit PDF'}
           </button>
           <div className="terrain-card px-4 py-2 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">

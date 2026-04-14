@@ -62,15 +62,17 @@ export function generateAspReportHtml(partnerName: string, candidates: Candidate
     <div class="section-block">
       <div class="section-title">🛡️ ASP Programme Requirements</div>
       <div style="background:${isCompliant ? "#f0fdf4" : "#fffbeb"};border:1px solid ${isCompliant ? "#bbf7d0" : "#fef3c7"};padding:16px;border-radius:12px;font-size:13px;line-height:1.6;color:#1f2937;">
-        <strong>Requirement:</strong> To maintain Authorized Support Partner (ASP) status, a partner must have at least <strong>two (2)</strong> individuals who have completed the full qualification track:
-        <ul style="margin-top:8px;margin-left:20px;">
-          <li>ASP Foundations (FlashArray/FlashBlade)</li>
-          <li>Pure Storage Professional Certification</li>
+        <p><strong>Requirement:</strong> To maintain Authorized Support Partner (ASP) status, a partner must have at least <strong>two (2) unique individuals</strong> who have completed the full qualification track:</p>
+        <ul style="margin-top:8px;margin-bottom:8px;margin-left:20px;">
+          <li>ASP Foundations (FlashArray or FlashBlade)</li>
+          <li>Pure Storage Professional Certification (FlashArray or FlashBlade)</li>
           <li>Pure Support Specialist Certification</li>
         </ul>
-        <p style="margin-top:12px;font-weight:700;color:${isCompliant ? "#16a34a" : "#92400e"};">
+        <p style="margin-bottom:8px;">If one user has completed FlashArray ASP Foundations and the same person completed Pure Storage Professional Certification for FlashArray, the partner will be issued with ASP Partner Badge while pursuing FlashBlade or FlashArray Support Specialist Certification.</p>
+        <p style="color:#e11d48;font-weight:700;font-size:12px;">** Individual must earn the Support Specialist certification within 12 months of the Storage Professional certification.</p>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid ${isCompliant ? "#bbf7d0" : "#fcd34d"};font-weight:700;color:${isCompliant ? "#16a34a" : "#92400e"};">
           ${isCompliant ? "✅ This partner currently meets the minimum ASP qualification requirement." : `⚠️ ACTION REQUIRED: ${2 - fullyQualifiedCount} additional individual(s) must complete the remaining certifications.`}
-        </p>
+        </div>
       </div>
     </div>`;
 

@@ -19,6 +19,15 @@ export default function SecurityLogPage() {
     setLogs(data);
   }, []);
 
+  const handleResetPassword = (domain: string) => {
+    if (confirm(`Are you sure you want to reset the password for ${domain} back to 'everpure'?`)) {
+      localStorage.setItem(`pwd_${domain}`, "everpure");
+      setLogs(prev => prev.map(l => 
+        l.domain === domain ? { ...l, passwordSet: "everpure", isDefault: true } : l
+      ));
+    }
+  };
+
   const filteredLogs = logs.filter(l => 
     l.domain.toLowerCase().includes(searchTerm.toLowerCase()) || 
     l.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,6 +83,7 @@ export default function SecurityLogPage() {
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Password Log</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Security Level</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -102,13 +112,22 @@ export default function SecurityLogPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all duration-1000 ${log.isDefault ? 'w-1/3 bg-amber-400' : 'w-full bg-emerald-500'}`}
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-400">{log.isDefault ? "Basic" : "Secure"}</span>
-                    </div>
+                       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                         <div 
+                           className={`h-full transition-all duration-1000 ${log.isDefault ? 'w-1/3 bg-amber-400' : 'w-full bg-emerald-500'}`}
+                         />
+                       </div>
+                       <span className="text-[10px] font-bold text-slate-400">{log.isDefault ? "Basic" : "Secure"}</span>
+                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={() => handleResetPassword(log.domain)}
+                      disabled={log.isDefault}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Reset Password
+                    </button>
                   </td>
                 </tr>
               ))}
