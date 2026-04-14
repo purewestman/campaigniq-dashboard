@@ -34,8 +34,8 @@ export function generateAspReportHtml(partnerName: string, candidates: Candidate
     <div style="background:#5A6359;padding:28px 36px;border-radius:12px 12px 0 0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div style="display:flex;gap:16px;align-items:flex-start;">
-          <svg width="48" height="48" viewBox="0 0 100 100" fill="none" style="flex-shrink:0;margin-top:2px;">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="#22d3ee"/>
+          <svg width="48" height="48" viewBox="0 0 88.7 79.6" fill="none" style="flex-shrink:0;margin-top:2px;">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill="#22d3ee"/>
           </svg>
           <div>
             <div style="color:#22d3ee;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">

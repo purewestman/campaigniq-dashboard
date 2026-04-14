@@ -4,12 +4,13 @@
  * Controlled search input for real-time partner filtering
  */
 
-import { motion } from "framer-motion";
-import { CalendarDays, Search, Bell, X, Lock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarDays, Search, Bell, X, Lock, FileClock } from "lucide-react";
 import { toast } from "sonner";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import PureDividerBackground from "./PureDividerBackground";
 import { useAuth } from "@/contexts/AuthContext";
+import { useModifications } from "@/contexts/ModificationContext";
 
 interface DashboardHeaderProps {
   searchQuery: string;
@@ -19,6 +20,23 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ searchQuery, onSearchChange }: DashboardHeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { user, changePassword } = useAuth();
+  const { allModificationHistory } = useModifications();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const latestHistory = allModificationHistory.slice(-5).reverse();
+
+  // Reset unread count when opening notifications
+  useEffect(() => {
+    if (showNotifications) setUnreadCount(0);
+  }, [showNotifications]);
+
+  // Increment unread count when history changes
+  useEffect(() => {
+    if (allModificationHistory.length > 0 && !showNotifications) {
+      setUnreadCount(prev => prev + 1);
+    }
+  }, [allModificationHistory]);
 
   const handlePasswordChange = () => {
     const newPass = prompt("Enter a new password for all users in your domain:");
@@ -45,8 +63,8 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
         {/* Left: Greeting & Logo */}
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center justify-center shrink-0">
-             <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-               <path fillRule="evenodd" clipRule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="var(--color-pure-orange)"/>
+             <svg width="40" height="40" viewBox="0 0 88.7 79.6" fill="none">
+               <path fillRule="evenodd" clipRule="evenodd" d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill="var(--color-pure-orange)"/>
              </svg>
           </div>
           <div>
@@ -133,21 +151,66 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
           </button>
 
           {/* Notifications */}
-          <button
-            className="relative p-2.5 rounded-xl border hover:bg-white/60 transition-colors"
-            style={{
-              background: "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
-              borderColor: "var(--color-stone-gray)",
-              backdropFilter: "blur(8px)",
-            }}
-            onClick={() => toast("No new notifications")}
-          >
-            <Bell className="w-4 h-4 text-muted-foreground" />
-            <span
-              className="absolute top-2 right-2 w-2 h-2 rounded-full"
-              style={{ background: "var(--color-cinnamon-brown)" }}
-            />
-          </button>
+          <div className="relative">
+            <button
+              className="relative p-2.5 rounded-xl border hover:bg-white/60 transition-colors"
+              style={{
+                background: "color-mix(in srgb, var(--color-cloud-white) 80%, transparent)",
+                borderColor: showNotifications ? "var(--color-pure-orange)" : "var(--color-stone-gray)",
+                backdropFilter: "blur(8px)",
+              }}
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="w-4 h-4 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <span
+                  className="absolute top-2 right-2 w-2 h-2 rounded-full"
+                  style={{ background: "var(--color-cinnamon-brown)" }}
+                />
+              )}
+            </button>
+            <AnimatePresence>
+              {showNotifications && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden"
+                  >
+                    <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
+                      <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <FileClock className="w-4 h-4 text-pure-orange" />
+                        Changelog
+                      </h3>
+                      <span className="text-xs text-slate-500 font-medium">{allModificationHistory.length} total edits</span>
+                    </div>
+                    <div className="max-h-[320px] overflow-y-auto w-full p-2 space-y-1">
+                      {latestHistory.length === 0 ? (
+                        <p className="text-[12px] text-slate-500 italic p-4 text-center">No recent changes.</p>
+                      ) : (
+                        latestHistory.map((mod, idx) => (
+                          <div key={`${mod.partnerId}-${idx}`} className="p-3 bg-slate-50/50 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg transition-colors flex flex-col gap-1.5 cursor-default">
+                            <div className="flex justify-between items-start">
+                              <span className="text-xs font-bold text-slate-700">Partner ID: {mod.partnerId}</span>
+                              <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Modified</span>
+                            </div>
+                            <span className="text-[11px] text-slate-500 leading-snug break-words">
+                              {mod.comment ? `"${mod.comment}"` : "Manual email or tier adjustment made."}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-medium">
+                              {new Date(mod.modifiedAt).toLocaleString()}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </motion.div>

@@ -16,7 +16,10 @@ import KPICards from "@/components/KPICards";
 import GapAnalysisChart from "@/components/ChannelChart";
 import EnablementDonut from "@/components/BudgetDonut";
 import ComplianceSummary from "@/components/ChannelSummary";
+import CalendarRoadmap from "@/components/CalendarRoadmap";
 import PartnerTable from "@/components/CampaignTable";
+import SEJourneyMap from "@/components/SEJourneyMap";
+import CorePlatforms from "@/components/CorePlatforms";
 import PartnersPage from "@/pages/PartnersPage";
 import TierCompliancePage from "@/pages/TierCompliancePage";
 import GapAnalysisPage from "@/pages/GapAnalysisPage";
@@ -30,7 +33,7 @@ import SecurityLogPage from "@/pages/SecurityLogPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
-import { Settings, CalendarCheck } from "lucide-react";
+import { Settings, CalendarCheck, CalendarDays, Map } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Home() {
@@ -78,6 +81,38 @@ export default function Home() {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // FORCE RESET logic for NTT DATA (Id 3)
+  // This clears any stale manual modifications in the user's browser to sync with the 4/5 verified data.
+  useEffect(() => {
+    const RESET_KEY = 'pei_force_clear_ntt_v1';
+    if (localStorage.getItem(RESET_KEY) !== 'true') {
+      const STORAGE_KEY = 'pei-gap-modifications';
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const mods = JSON.parse(raw);
+          const filtered = mods.filter((m: any) => m.partnerId !== 3);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+          
+          // Also clear commitments
+          const COMM_KEY = 'pei_timeline_commitments';
+          const rawComm = localStorage.getItem(COMM_KEY);
+          if (rawComm) {
+            const comms = JSON.parse(rawComm);
+            const filteredComm = comms.filter((c: any) => c.partnerId !== 3);
+            localStorage.setItem(COMM_KEY, JSON.stringify(filteredComm));
+          }
+
+          localStorage.setItem(RESET_KEY, 'true');
+          // Reload to apply changes immediately
+          window.location.reload();
+        }
+      } catch (e) {
+        console.error("Force clear failed", e);
+      }
+    }
   }, []);
 
   const handleDeleteCommitment = useCallback((partnerId: number) => {
@@ -174,6 +209,48 @@ export default function Home() {
               onDelete={handleDeleteCommitment} 
               onUpdate={() => setCommitments(loadCommitments())}
             />
+          </div>
+        );
+
+      case "initiatives":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <CalendarDays className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
+                FY27 RSA Initiatives
+              </h2>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Drag-and-drop quarterly planning initiatives map.
+              </p>
+            </div>
+            <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+               <CalendarRoadmap />
+            </section>
+          </div>
+        );
+
+      case "journey":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <Map className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
+                Global SE Journey
+              </h2>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                The structured core enablement path mapping direct outcomes for partners.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
+                <SEJourneyMap />
+              </div>
+              <div className="xl:col-span-1">
+                <CorePlatforms />
+              </div>
+            </div>
           </div>
         );
 

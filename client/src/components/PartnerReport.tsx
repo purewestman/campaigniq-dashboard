@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { TIER_DEFINITIONS, type Partner, generateRecommendedAction } from "@/lib/data";
-import { CheckCircle2, XCircle, Shield, Award, Star, Crown, Target, Mail, Activity, GraduationCap, Users } from "lucide-react";
+import { CheckCircle2, XCircle, Shield, Award, Star, Crown, Target, Mail, Activity, GraduationCap, Users, Calendar } from "lucide-react";
 import { activityData } from "@/lib/activityData";
 import { trainingData } from "@/lib/trainingData";
+import EnablementTimeline from "./EnablementTimeline";
 
 interface PartnerReportProps {
   partner: Partner;
@@ -116,15 +117,15 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
     <div style={{ background: BRAND_DARK }} className="p-10 pb-12 relative overflow-hidden">
       {/* Decorative Brand SVG background */}
       <div className="absolute top-0 right-0 opacity-10 translate-x-1/4 -translate-y-1/4 pointer-events-none">
-        <svg width="300" height="300" viewBox="0 0 100 100" fill="none">
-          <path d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="white"/>
+        <svg width="300" height="300" viewBox="0 0 88.7 79.6" fill="none">
+          <path d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill="white"/>
         </svg>
       </div>
       
       <div className="flex justify-between items-start relative z-10">
         <div className="flex gap-5">
-          <svg width="60" height="60" viewBox="0 0 100 100" fill="none" className="shrink-0 bg-white/10 p-2 rounded-xl border border-white/20">
-            <path fillRule="evenodd" clipRule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill={BRAND_ORANGE}/>
+          <svg width="60" height="60" viewBox="0 0 88.7 79.6" fill="none" className="shrink-0 bg-white/10 p-2 rounded-xl border border-white/20">
+            <path fillRule="evenodd" clipRule="evenodd" d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill={BRAND_ORANGE}/>
           </svg>
           <div>
             <div style={{ color: BRAND_ORANGE }} className="text-[10px] font-bold tracking-[2.5px] uppercase mb-2">
@@ -312,7 +313,7 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
                 return (
                   <div key={key} className="grid grid-cols-12 gap-6 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
                     {/* Header Col */}
-                    <div className="col-span-4 space-y-2">
+                    <div className="col-span-3 space-y-2">
                       <h3 className="text-sm font-black text-slate-800">{label}</h3>
                       <div className="flex items-center gap-2">
                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${met ? 'bg-green-50 text-green-600' : req.required === 0 ? 'bg-slate-50 text-slate-400' : 'bg-red-50 text-red-500'}`}>
@@ -323,7 +324,7 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
                     </div>
 
                     {/* Certified Col */}
-                    <div className="col-span-4 border-l border-slate-100 pl-6">
+                    <div className="col-span-3 border-l border-slate-100 pl-6">
                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                         <CheckCircle2 className="w-3 h-3 text-green-500" /> Certified
                       </h4>
@@ -342,7 +343,7 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
                     </div>
 
                     {/* Nominated Col */}
-                    <div className="col-span-4 border-l border-slate-100 pl-6">
+                    <div className="col-span-3 border-l border-slate-100 pl-6">
                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                         <Users className="w-3 h-3 text-orange-500" /> Active Nominees
                       </h4>
@@ -361,6 +362,18 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
                         </div>
                       ) : (
                         <p className="text-[10px] text-slate-400 italic">No candidates found in activity data</p>
+                      )}
+                    </div>
+
+                    {/* Commit Date Col */}
+                    <div className="col-span-3 border-l border-slate-100 pl-6">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-blue-500" /> Target Date
+                      </h4>
+                      {!met && req.required > 0 ? (
+                        <div className="mt-5 border-b-2 border-dashed border-slate-300 w-full" />
+                      ) : (
+                        <p className="text-[10px] text-slate-400 italic">No action needed</p>
                       )}
                     </div>
                   </div>
@@ -444,6 +457,27 @@ export default function PartnerReport({ partner, signature }: PartnerReportProps
           </div>
           <div className="text-right">
              <p className="text-[9px] text-slate-400 font-medium italic mb-1">"Data-driven enablement intelligence."</p>
+             <p className="text-[10px] font-bold text-slate-300">Generated on {new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── PAGE 3: STRATEGIC ROADMAP ───────────────────────────────── */}
+      <div className="bg-white" style={{ minHeight: '1130px', height: 'auto', position: 'relative', overflow: 'hidden' }}>
+        <PageHeader pageNum={3} />
+        
+        <div className="p-10 pb-20 space-y-10 -mt-6 relative z-20">
+          <EnablementTimeline partner={partner} />
+        </div>
+
+        {/* Page Footer */}
+        <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end border-t border-slate-100 pt-6">
+          <div>
+            <div className="text-[16px] font-black italic text-slate-300 tracking-tighter mb-1">Everpure</div>
+            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Strategic Roadmap Annex</p>
+          </div>
+          <div className="text-right">
+             <p className="text-[9px] text-slate-400 font-medium italic mb-1">"Customized enablement trajectory."</p>
              <p className="text-[10px] font-bold text-slate-300">Generated on {new Date().toLocaleDateString()}</p>
           </div>
         </div>

@@ -66,8 +66,8 @@ function sectionHeader(partner: Partner) {
     <div style="background:#5A6359;padding:28px 36px;border-radius:12px 12px 0 0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div style="display:flex;gap:16px;align-items:flex-start;">
-          <svg width="48" height="48" viewBox="0 0 100 100" fill="none" style="flex-shrink:0;margin-top:2px;">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="#FF7023"/>
+          <svg width="48" height="48" viewBox="0 0 88.7 79.6" fill="none" style="flex-shrink:0;margin-top:2px;">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill="#FF7023"/>
           </svg>
           <div>
             <div style="color:#FF7023;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">
@@ -464,45 +464,43 @@ function sectionTimeline(partner: Partner) {
   const milestones: Milestone[] = [];
   let offset = 1;
 
-  if (reqs.salesPro.obtained < reqs.salesPro.required) {
-    milestones.push({
-      icon: "💼", id: "ms-salespro",
-      label: "Complete Sales Professional Learning Path",
-      description: `Need ${reqs.salesPro.required - reqs.salesPro.obtained} more completion(s) — ${reqs.salesPro.obtained}/${reqs.salesPro.required} achieved.`,
-      suggestedDate: addMonths(offset++),
-    });
-  }
-  if (reqs.techPro.obtained < reqs.techPro.required) {
-    milestones.push({
-      icon: "🔧", id: "ms-techpro",
-      label: "Complete Technical Sales Pro Learning Path",
-      description: `Need ${reqs.techPro.required - reqs.techPro.obtained} more completion(s) — ${reqs.techPro.obtained}/${reqs.techPro.required} achieved.`,
-      suggestedDate: addMonths(offset++),
-    });
-  }
-  if (reqs.bootcamp.obtained < reqs.bootcamp.required) {
-    milestones.push({
-      icon: "🏕️", id: "ms-bootcamp",
-      label: "Attend SE Bootcamp FY27",
-      description: `Need ${reqs.bootcamp.required - reqs.bootcamp.obtained} more completion(s) — ${reqs.bootcamp.obtained}/${reqs.bootcamp.required} achieved.`,
-      suggestedDate: addMonths(offset++),
-    });
-  }
-  if (reqs.implSpec.obtained < reqs.implSpec.required) {
-    milestones.push({
-      icon: "⚙️", id: "ms-implspec",
-      label: "Complete Implementation Specialist Certification",
-      description: `Need ${reqs.implSpec.required - reqs.implSpec.obtained} more completion(s) — ${reqs.implSpec.obtained}/${reqs.implSpec.required} achieved.`,
-      suggestedDate: addMonths(offset++),
-    });
-  }
+  // 12-Month Roadmap Items
+  const roadmap: { month: string, label: string, desc: string, icon: string, id: string, required: boolean }[] = [
+    { month: "M1-2", id: "ms-salespro", icon: "💼", label: "Sales Professional Alignment", desc: "Complete foundational sales paths to master platform value messaging.", required: reqs.salesPro.obtained < reqs.salesPro.required },
+    { month: "M1-3", id: "ms-tour", icon: "🔍", label: "Platform Awareness (Product Tours)", desc: "Engage with 3D Product Tours to master key hardware features.", required: true },
+    { month: "M2-3", id: "ms-ppp", icon: "🏆", label: "Pure Platform Positioning (PPP)", desc: "Obtain PPP certificate to validate solution messaging expertise.", required: true },
+    
+    { month: "M4-5", id: "ms-techpro", icon: "🔧", label: "Technical Sales Pro Readiness", desc: "Upskill SE team on technical sizing and storage architecture tools.", required: reqs.techPro.obtained < reqs.techPro.required },
+    { month: "M4-6", id: "ms-ws", icon: "⚡", label: "Solution Messaging Workshops", desc: "Participate in AI or Cyber Resilience workshops to sharpen skills.", required: true },
+    { month: "M5-6", id: "ms-bootcamp", icon: "🏕️", label: "Advanced SE Bootcamp", desc: "Hands-on implementation and deployment training for technical staff.", required: reqs.bootcamp.obtained < reqs.bootcamp.required },
+    
+    { month: "M7-8", id: "ms-asp-fnd", icon: "🛡️", label: "ASP Foundations Specialization", desc: "Qualify for Authorized Support Partner status with specialized training.", required: true },
+    { month: "M7-9", id: "ms-ref", icon: "👥", label: "Customer Success / Reference Stories", desc: "Develop joint customer reference materials and case studies.", required: true },
+    { month: "M8-9", id: "ms-storage", icon: "🏆", label: "Storage Professional Certification", desc: "Advanced certification for storage architects and experts.", required: true },
+    
+    { month: "M10-11", id: "ms-support", icon: "🛡️", label: "ASP Support Specialist", desc: "Validate expert-level support capabilities for the full portfolio.", required: true },
+    { month: "M10-12", id: "ms-mkt", icon: "📈", label: "Strategic Market Expansion", desc: "Full alignment on solution practices and joint market (MDF) plans.", required: true },
+    { month: "M11-12", id: "ms-amb", icon: "✨", label: "Ambassador Tier Readiness", desc: "Finalize all requirements for transition to the top tier.", required: true },
+  ];
+
+  roadmap.forEach(item => {
+    if (item.required) {
+      milestones.push({
+        id: item.id,
+        icon: item.icon,
+        label: `${item.label} (${item.month})`,
+        description: item.desc,
+        suggestedDate: addMonths(item.id.includes('salespro') ? 1 : offset++)
+      });
+    }
+  });
 
   if (milestones.length === 0) {
     return `
     <div class="section-block">
-      <div class="section-title">📅 Enablement Timeline &amp; Commitment</div>
+      <div class="section-title">📅 Enablement & Demand Gen Roadmap</div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;color:#15803d;font-size:13px;font-weight:600;">
-        ✅ All enablement requirements met — no outstanding milestones. Partner is in good standing.
+        ✅ All enablement and strategic readiness requirements met. Focus on demand gen conversion and market expansion.
       </div>
       ${signatureBlock()}
     </div>`;
@@ -528,7 +526,7 @@ function sectionTimeline(partner: Partner) {
 
   return `
     <div class="section-block">
-      <div class="section-title">📅 Enablement Timeline &amp; Commitment</div>
+      <div class="section-title">📅 12-Month Enablement & Demand Gen Roadmap</div>
       <p style="font-size:12px;color:#111827;margin-bottom:12px;">
         The following milestone schedule has been proposed by Pure Storage to bring this partner to full ${escHtml(TIER_DEFINITIONS[partner.programTier].label)} tier compliance.
         Partners may adjust any proposed date in the <strong style="color:#FF7023;">Partner Proposed</strong> column. Both parties agree to this plan by signing below.

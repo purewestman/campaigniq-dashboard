@@ -6,6 +6,7 @@
  */
 
 import { trainingData } from "./trainingData";
+import { activityData } from "./activityData";
 
 // ─── Program Tier Types ────────────────────────────────────
 
@@ -13,10 +14,14 @@ export type ProgramTier = "authorized" | "preferred" | "elite" | "ambassador";
 export type ComplianceFilter = "all" | ProgramTier;
 
 export interface EnablementRequirements {
-  salesPro: { required: number; obtained: number };
-  techPro: { required: number; obtained: number };
-  bootcamp: { required: number; obtained: number };
-  implSpec: { required: number; obtained: number };
+  salesPro: { required: number; obtained: number; manualEmails?: string[] };
+  techPro: { required: number; obtained: number; manualEmails?: string[] };
+  bootcamp: { required: number; obtained: number; manualEmails?: string[] };
+  implSpec: { required: number; obtained: number; manualEmails?: string[] };
+  simplyPure: { required: number; obtained: number; manualEmails?: string[] };
+  aspFoundations: { required: number; obtainedFA: number; obtainedFB: number; totalObtained: number; manualEmails?: string[] };
+  aspStoragePro: { required: number; obtainedFA: number; obtainedFB: number; totalObtained: number; manualEmails?: string[] };
+  aspSupportSpec: { required: number; obtainedFA: number; obtainedFB: number; totalObtained: number; manualEmails?: string[] };
 }
 
 export interface BusinessMetrics {
@@ -41,6 +46,10 @@ export interface TierDefinition {
     techPro: number;
     bootcamp: number;
     implSpec: number;
+    simplyPure: number;
+    aspFoundations: number;
+    aspStoragePro: number;
+    aspSupportSpec: number;
     total: number;
   };
   businessMetrics: BusinessMetricThresholds;
@@ -147,7 +156,7 @@ export const TIER_DEFINITIONS: Record<ProgramTier, TierDefinition> = {
     label: "Authorized",
     shortLabel: "Auth",
     description: "Entry-level partner tier with basic enablement",
-    enablement: { salesPro: 1, techPro: 1, bootcamp: 0, implSpec: 0, total: 2 },
+    enablement: { salesPro: 1, techPro: 1, bootcamp: 0, implSpec: 0, simplyPure: 1, aspFoundations: 0, aspStoragePro: 0, aspSupportSpec: 0, total: 3 },
     businessMetrics: { bookingsUSD: null, uniqueCustomers: 1, partnerDeliveredServices: null },
     bg: "color-mix(in srgb, var(--color-ash-gray) 10%, transparent)",
     color: "var(--color-ash-gray)",
@@ -162,7 +171,7 @@ export const TIER_DEFINITIONS: Record<ProgramTier, TierDefinition> = {
     label: "Preferred",
     shortLabel: "Pref",
     description: "Mid-level partner with expanded enablement",
-    enablement: { salesPro: 2, techPro: 2, bootcamp: 1, implSpec: 0, total: 5 },
+    enablement: { salesPro: 2, techPro: 2, bootcamp: 1, implSpec: 0, simplyPure: 2, aspFoundations: 2, aspStoragePro: 2, aspSupportSpec: 2, total: 13 },
     businessMetrics: { bookingsUSD: null, uniqueCustomers: 2, partnerDeliveredServices: null },
     bg: "color-mix(in srgb, var(--color-moss-green) 12%, transparent)",
     color: "var(--color-moss-green)",
@@ -177,7 +186,7 @@ export const TIER_DEFINITIONS: Record<ProgramTier, TierDefinition> = {
     label: "Elite (Zone B)",
     shortLabel: "Elite",
     description: "Advanced partner with full enablement suite",
-    enablement: { salesPro: 5, techPro: 3, bootcamp: 2, implSpec: 1, total: 11 },
+    enablement: { salesPro: 5, techPro: 3, bootcamp: 2, implSpec: 1, simplyPure: 5, aspFoundations: 2, aspStoragePro: 2, aspSupportSpec: 2, total: 22 },
     businessMetrics: { bookingsUSD: 500000, uniqueCustomers: 3, partnerDeliveredServices: 5 },
     bg: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
     color: "var(--color-pure-orange)",
@@ -192,7 +201,7 @@ export const TIER_DEFINITIONS: Record<ProgramTier, TierDefinition> = {
     label: "Ambassador",
     shortLabel: "Amb",
     description: "Top-tier partner with highest enablement and business targets",
-    enablement: { salesPro: 8, techPro: 5, bootcamp: 3, implSpec: 2, total: 18 },
+    enablement: { salesPro: 8, techPro: 5, bootcamp: 3, implSpec: 2, simplyPure: 8, aspFoundations: 2, aspStoragePro: 2, aspSupportSpec: 2, total: 32 },
     businessMetrics: { bookingsUSD: 10000000, uniqueCustomers: 10, partnerDeliveredServices: 15 },
     bg: "color-mix(in srgb, var(--color-basil-green) 10%, transparent)",
     color: "var(--color-basil-green)",
@@ -269,6 +278,22 @@ export function generateRecommendedAction(partner: Partner): string {
     const n = requirements.implSpec.required - requirements.implSpec.obtained;
     enablementGaps.push(`${n} more Impl Spec completion${n !== 1 ? "s" : ""} (${requirements.implSpec.obtained}/${requirements.implSpec.required})`);
   }
+  if (requirements.simplyPure.obtained < requirements.simplyPure.required) {
+    const n = requirements.simplyPure.required - requirements.simplyPure.obtained;
+    enablementGaps.push(`${n} more Simply Pure completion${n !== 1 ? "s" : ""} (${requirements.simplyPure.obtained}/${requirements.simplyPure.required})`);
+  }
+  if (requirements.aspFoundations.totalObtained < requirements.aspFoundations.required) {
+    const n = requirements.aspFoundations.required - requirements.aspFoundations.totalObtained;
+    enablementGaps.push(`${n} more ASP Foundations completion${n !== 1 ? "s" : ""} (${requirements.aspFoundations.totalObtained}/${requirements.aspFoundations.required})`);
+  }
+  if (requirements.aspStoragePro.totalObtained < requirements.aspStoragePro.required) {
+    const n = requirements.aspStoragePro.required - requirements.aspStoragePro.totalObtained;
+    enablementGaps.push(`${n} more Storage Pro completion${n !== 1 ? "s" : ""} (${requirements.aspStoragePro.totalObtained}/${requirements.aspStoragePro.required})`);
+  }
+  if (requirements.aspSupportSpec.totalObtained < requirements.aspSupportSpec.required) {
+    const n = requirements.aspSupportSpec.required - requirements.aspSupportSpec.totalObtained;
+    enablementGaps.push(`${n} more Support Spec completion${n !== 1 ? "s" : ""} (${requirements.aspSupportSpec.totalObtained}/${requirements.aspSupportSpec.required})`);
+  }
 
   // ── Business metric gaps ──────────────────────────────────
   const businessGaps: string[] = [];
@@ -313,20 +338,30 @@ export function computeEnablementGaps(reqs: EnablementRequirements): number {
     Math.max(0, reqs.salesPro.required - reqs.salesPro.obtained) +
     Math.max(0, reqs.techPro.required - reqs.techPro.obtained) +
     Math.max(0, reqs.bootcamp.required - reqs.bootcamp.obtained) +
-    Math.max(0, reqs.implSpec.required - reqs.implSpec.obtained)
+    Math.max(0, reqs.implSpec.required - reqs.implSpec.obtained) +
+    Math.max(0, reqs.simplyPure.required - reqs.simplyPure.obtained) +
+    Math.max(0, reqs.aspFoundations.required - reqs.aspFoundations.totalObtained) +
+    Math.max(0, reqs.aspStoragePro.required - reqs.aspStoragePro.totalObtained) +
+    Math.max(0, reqs.aspSupportSpec.required - reqs.aspSupportSpec.totalObtained)
   );
 }
 
 export function computeEnablementScore(reqs: EnablementRequirements): number {
   const totalRequired =
     reqs.salesPro.required + reqs.techPro.required +
-    reqs.bootcamp.required + reqs.implSpec.required;
+    reqs.bootcamp.required + reqs.implSpec.required +
+    reqs.simplyPure.required + 
+    reqs.aspFoundations.required + reqs.aspStoragePro.required + reqs.aspSupportSpec.required;
   if (totalRequired === 0) return 100;
   const obtained =
     Math.min(reqs.salesPro.obtained, reqs.salesPro.required) +
     Math.min(reqs.techPro.obtained, reqs.techPro.required) +
     Math.min(reqs.bootcamp.obtained, reqs.bootcamp.required) +
-    Math.min(reqs.implSpec.obtained, reqs.implSpec.required);
+    Math.min(reqs.implSpec.obtained, reqs.implSpec.required) +
+    Math.min(reqs.simplyPure.obtained, reqs.simplyPure.required) +
+    Math.min(reqs.aspFoundations.totalObtained, reqs.aspFoundations.required) +
+    Math.min(reqs.aspStoragePro.totalObtained, reqs.aspStoragePro.required) +
+    Math.min(reqs.aspSupportSpec.totalObtained, reqs.aspSupportSpec.required);
   return Math.round((obtained / totalRequired) * 100);
 }
 
@@ -335,7 +370,11 @@ export function isEnablementCompliant(reqs: EnablementRequirements): boolean {
     reqs.salesPro.obtained >= reqs.salesPro.required &&
     reqs.techPro.obtained >= reqs.techPro.required &&
     reqs.bootcamp.obtained >= reqs.bootcamp.required &&
-    reqs.implSpec.obtained >= reqs.implSpec.required
+    reqs.implSpec.obtained >= reqs.implSpec.required &&
+    reqs.simplyPure.obtained >= reqs.simplyPure.required &&
+    reqs.aspFoundations.totalObtained >= reqs.aspFoundations.required &&
+    reqs.aspStoragePro.totalObtained >= reqs.aspStoragePro.required &&
+    reqs.aspSupportSpec.totalObtained >= reqs.aspSupportSpec.required
   );
 }
 
@@ -354,14 +393,27 @@ export function buildRequirements(
   sp: number,
   tsp: number,
   boot: number,
-  impl: number
+  impl: number,
+  simp: number,
+  fTotal: number,
+  sTotal: number,
+  uTotal: number,
+  afFA: number, afFB: number,
+  asFA: number, asFB: number,
+  auFA: number, auFB: number,
+  manualEmails: Partial<Record<keyof EnablementRequirements, string[]>> = {}
 ): EnablementRequirements {
   const def = TIER_DEFINITIONS[tier].enablement;
+  
   return {
-    salesPro: { required: def.salesPro, obtained: sp },
-    techPro: { required: def.techPro, obtained: tsp },
-    bootcamp: { required: def.bootcamp, obtained: boot },
-    implSpec: { required: def.implSpec, obtained: impl },
+    salesPro: { required: def.salesPro, obtained: sp, manualEmails: manualEmails.salesPro },
+    techPro: { required: def.techPro, obtained: tsp, manualEmails: manualEmails.techPro },
+    bootcamp: { required: def.bootcamp, obtained: boot, manualEmails: manualEmails.bootcamp },
+    implSpec: { required: def.implSpec, obtained: impl, manualEmails: manualEmails.implSpec },
+    simplyPure: { required: def.simplyPure, obtained: simp, manualEmails: manualEmails.simplyPure },
+    aspFoundations: { required: def.aspFoundations, obtainedFA: afFA, obtainedFB: afFB, totalObtained: fTotal, manualEmails: manualEmails.aspFoundations },
+    aspStoragePro: { required: def.aspStoragePro, obtainedFA: asFA, obtainedFB: asFB, totalObtained: sTotal, manualEmails: manualEmails.aspStoragePro },
+    aspSupportSpec: { required: def.aspSupportSpec, obtainedFA: auFA, obtainedFB: auFB, totalObtained: uTotal, manualEmails: manualEmails.aspSupportSpec },
   };
 }
 
@@ -380,14 +432,45 @@ function makePartner(
   financials: PartnerFinancials | null = null,
   meta: PartnerMeta | null = null
 ): Partner {
-  // Use CSV-derived trainingData as the single source of truth for obtained counts.
-  // The sp/tsp/boot/impl args serve only as fallbacks when no CSV data exists for this partner.
+  // When trainingData exists, use it as single source of truth for counts.
+  // When it doesn't, try activityData filtered by category keywords.
   const td = trainingData[id];
-  const resolvedSp   = td ? td.salesPro.length  : sp;
-  const resolvedTsp  = td ? td.techPro.length   : tsp;
-  const resolvedBoot = td ? td.bootcamp.length  : boot;
-  const resolvedImpl = td ? td.implSpec.length  : impl;
-  const requirements = buildRequirements(programTier, resolvedSp, resolvedTsp, resolvedBoot, resolvedImpl);
+  const getActivityCount = (keywords: string[]) => {
+    const partnerActivity = activityData[name] || [];
+    const uniqueEmails = new Set(
+      partnerActivity
+        .filter(a => keywords.some(k => a.activity.includes(k)))
+        .map(a => a.email)
+    );
+    return uniqueEmails.size;
+  };
+
+  const resolvedSp  = td ? td.salesPro.length : getActivityCount(['Sales', 'Positioning', 'Business']);
+  const resolvedTsp = td ? td.techPro.length  : getActivityCount(['Technical', 'Architect', 'Solution', 'Pre-Sales', 'Modernization']);
+  const BOOTCAMP_CUTOFF = '2026-02-02';
+  // Bootcamps ONLY count if passed after 2026-02-02. Without trainingData, we cannot verify dates → 0.
+  const resolvedBoot = td ? td.bootcamp.filter(p => !!p.date && p.date >= BOOTCAMP_CUTOFF).length : 0;
+  const resolvedImpl = td ? td.implSpec.length : getActivityCount(['Implementation']);
+  const resolvedSimp = td ? td.simplyPure.length : 0;
+  
+  const afFA = td ? td.aspFoundationsFA.length : 0;
+  const afFB = td ? td.aspFoundationsFB.length : 0;
+  const asFA = td ? td.storageProFA.length : 0;
+  const asFB = td ? td.storageProFB.length : 0;
+  const auFA = td ? td.supportSpecFA.length : 0;
+  const auFB = td ? td.supportSpecFB.length : 0;
+
+  // UNIQUE COUNT logic for ASP (Ensures one person with both FA/FB only counts as 1 individual)
+  const getUniqueCount = (l1: any[] = [], l2: any[] = []) => {
+    const emails = new Set([...l1.map(p => p.email), ...l2.map(p => p.email)]);
+    return emails.size;
+  };
+
+  const foundationsTotal = td ? getUniqueCount(td.aspFoundationsFA, td.aspFoundationsFB) : (afFA + afFB);
+  const storageTotal = td ? getUniqueCount(td.storageProFA, td.storageProFB) : (asFA + asFB);
+  const supportTotal = td ? getUniqueCount(td.supportSpecFA, td.supportSpecFB) : (auFA + auFB);
+
+  const requirements = buildRequirements(programTier, resolvedSp, resolvedTsp, resolvedBoot, resolvedImpl, resolvedSimp, foundationsTotal, storageTotal, supportTotal, afFA, afFB, asFA, asFB, auFA, auFB);
   const totalExams = exams.reduce((s, e) => s + e.certifications.length, 0);
   const tierDef = TIER_DEFINITIONS[programTier];
   const enablementComp = isEnablementCompliant(requirements);
@@ -465,16 +548,15 @@ export const partners: Partner[] = [
     "Gap CLOSED. 18 certs across 11 SEs. $681K FY27 revenue, $21.2M pipeline.",
     ["steven.moore@datasciences.co.za", "howard@datasciences.co.za"],
     [
-      { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
       { email: "jp.marais@datasciences.co.za", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "nelson.lopes@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam"] },
+      { email: "enrico.vanniekerk@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
       { email: "antony@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "koos.hattingh@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate"] },
       { email: "mekeal.beepath@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "kenny.thiart@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam"] },
-      { email: "mndeni.msibi@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate"] },
       { email: "irtond@datasciences.co.za", certifications: ["Pure Certified FlashArray Implementation Specialist"] },
-      { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam", "Pure Platform Positioning Certificate", "Pure Storage Platform Solutions Associate"] },
+      { email: "rudolf.vandergryp@datasciences.co.za", certifications: ["Pure Platform Positioning Certificate", "Pure Storage FlashArray Architect Associate", "Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashBlade Architect Professional Exam", "Pure Storage Platform Solutions Associate"] },
+      { email: "koos.hattingh@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate"] },
+      { email: "nelson.lopes@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam"] },
+      { email: "kenny.thiart@datasciences.co.za", certifications: ["Pure Storage FlashArray Architect Professional Exam", "Pure Storage FlashBlade Architect Professional Exam"] },
       { email: "rukaya.najam@datasciences.co.za", certifications: ["Pure Storage FlashBlade Architect Associate"] },
     ],
     { bookingsUSD: null, uniqueCustomers: 4, partnerDeliveredServices: 9 },
@@ -484,23 +566,23 @@ export const partners: Partner[] = [
     "Gap CLOSED. 7 certs across 3 SEs. Maintain Elite status.",
     ["adolph.strydom@axiz.com", "jen.gouws@axiz.com"],
     [
-      { email: "adolph.strydom@axiz.com", certifications: ["Pure Storage FlashBlade Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashArray Implementation Specialist", "Pure Storage Platform Solutions Associate", "Pure Storage Certified Architect Associate FlashArray"] },
-      { email: "oscar.ronander@axiz.com", certifications: ["Pure Platform Positioning Exam"] },
       { email: "lerato.mabunda@axiz.com", certifications: ["Pure Platform Positioning Certificate"] },
+      { email: "adolph.strydom@axiz.com", certifications: ["Pure Platform Positioning Exam", "Pure Storage Certified Architect Associate FlashArray", "Pure Storage FlashArray Implementation Specialist", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
+      { email: "oscar.ronander@axiz.com", certifications: ["Pure Platform Positioning Exam"] },
     ]),
 
   makePartner(3, "NTT DATA South Africa Proprietary Limited", "elite", 4, 2, 2, 5,
     "Gap CLOSED. 15 certs across 8 SEs. $68K FY27 revenue, $14.7M pipeline.",
     ["lourens.jvrensburg@nttdata.com", "morne.frans@dimensiondata.com"],
     [
-      { email: "mannes.nijeboer@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
-      { email: "morne.frans@dimensiondata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage FlashArray Implementation Specialist"] },
-      { email: "kayode.fatoki@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
-      { email: "angelo.campbell@global.ntt", certifications: ["Pure Storage FlashArray Implementation Specialist", "Pure Certifed FlashArray Support Specialist"] },
+      { email: "kayode.fatoki@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist", "Pure Certified FlashArray Implementation Specialist"] },
+      { email: "angelo.campbell@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist", "Pure Storage FlashArray Implementation Specialist"] },
       { email: "thulani.kunene@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "kamalan.naraidoo@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
       { email: "peetri.riekert@global.ntt", certifications: ["Pure Certifed FlashArray Support Specialist"] },
-      { email: "lourens.jvrensburg@nttdata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage Certified Architect Associate FlashBlade"] },
+      { email: "mannes.nijeboer@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
+      { email: "kamalan.naraidoo@global.ntt", certifications: ["Pure Certified FlashArray Implementation Specialist", "Pure Certified FlashBlade Implementation Specialist"] },
+      { email: "lourens.jvrensburg@nttdata.com", certifications: ["Pure Storage Certified Architect Associate FlashBlade", "Pure Storage FlashArray Architect Associate"] },
+      { email: "morne.frans@dimensiondata.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Storage FlashArray Implementation Specialist", "Pure Storage FlashBlade Architect Associate"] },
     ],
     { bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null },
     { targetFY27: 1000000, pipelineFY27: 14663939, fy27Revenue: 68427, contributionFY27: 0.04, drFY27: 34, fy26Revenue: 2582381, contributionFY26: 0.17, fy25Revenue: 917409, fy24Revenue: 0 }),
@@ -550,9 +632,9 @@ export const partners: Partner[] = [
     "Strong training activity. 6 certs on file. $194K pipeline, 2 DRs registered.",
     ["robert.mlombile@altron.com"],
     [
-      { email: "zane.maphalle@altron.com", certifications: ["Pure Storage FlashArray Architect Associate", "Pure Platform Positioning Exam", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
-      { email: "johan.westman@altron.com", certifications: ["Pure Platform Positioning Exam"] },
       { email: "williamrobert.souter@altron.com", certifications: ["Pure Platform Positioning Certificate"] },
+      { email: "zane.maphalle@altron.com", certifications: ["Pure Platform Positioning Exam", "Pure Storage FlashArray Architect Associate", "Pure Storage FlashBlade Architect Associate", "Pure Storage Platform Solutions Associate"] },
+      { email: "johan.westman@altron.com", certifications: ["Pure Platform Positioning Exam"] },
     ],
     { bookingsUSD: null, uniqueCustomers: 0, partnerDeliveredServices: 0 },
     { targetFY27: 1000000, pipelineFY27: 194302, fy27Revenue: 0, contributionFY27: 0.0, drFY27: 2, fy26Revenue: 0, contributionFY26: 0.0, fy25Revenue: 0, fy24Revenue: 0 }),
@@ -660,6 +742,10 @@ export function getFilteredGapBreakdown(filtered: Partner[]) {
       "Tech Pro Gap": Math.max(0, p.requirements.techPro.required - p.requirements.techPro.obtained),
       "Bootcamp Gap": Math.max(0, p.requirements.bootcamp.required - p.requirements.bootcamp.obtained),
       "Impl Spec Gap": Math.max(0, p.requirements.implSpec.required - p.requirements.implSpec.obtained),
+      "Simply Pure Gap": Math.max(0, p.requirements.simplyPure.required - p.requirements.simplyPure.obtained),
+      "ASP Foundations Gap": Math.max(0, p.requirements.aspFoundations.required - p.requirements.aspFoundations.totalObtained),
+      "ASP Storage Pro Gap": Math.max(0, p.requirements.aspStoragePro.required - p.requirements.aspStoragePro.totalObtained),
+      "ASP Support Spec Gap": Math.max(0, p.requirements.aspSupportSpec.required - p.requirements.aspSupportSpec.totalObtained),
     }));
 }
 
@@ -671,12 +757,18 @@ export function getFilteredEnablementDistribution(filtered: Partner[]): StatusCa
   const tspMet = filtered.filter((p) => p.requirements.techPro.obtained >= p.requirements.techPro.required).length;
   const bootMet = filtered.filter((p) => p.requirements.bootcamp.obtained >= p.requirements.bootcamp.required).length;
   const implMet = filtered.filter((p) => p.requirements.implSpec.obtained >= p.requirements.implSpec.required).length;
+  const simplyMet = filtered.filter((p) => p.requirements.simplyPure.obtained >= p.requirements.simplyPure.required).length;
+  const foundationsMet = filtered.filter((p) => p.requirements.aspFoundations.totalObtained >= p.requirements.aspFoundations.required).length;
+  const storageMet = filtered.filter((p) => p.requirements.aspStoragePro.totalObtained >= p.requirements.aspStoragePro.required).length;
+  const supportMet = filtered.filter((p) => p.requirements.aspSupportSpec.totalObtained >= p.requirements.aspSupportSpec.required).length;
 
   return [
     { category: "Sales Pro", count: spMet, percentage: Math.round((spMet / total) * 100), color: "var(--color-pure-orange)" },
     { category: "Tech Pro", count: tspMet, percentage: Math.round((tspMet / total) * 100), color: "var(--color-basil-green)" },
     { category: "Bootcamp", count: bootMet, percentage: Math.round((bootMet / total) * 100), color: "var(--color-moss-green)" },
     { category: "Impl Specialist", count: implMet, percentage: Math.round((implMet / total) * 100), color: "var(--color-cinnamon-brown)" },
+    { category: "Simply Pure", count: simplyMet, percentage: Math.round((simplyMet / total) * 100), color: "var(--color-pure-orange)" },
+    { category: "ASP Support", count: supportMet, percentage: Math.round((supportMet / total) * 100), color: "var(--color-ash-gray)" },
   ];
 }
 
@@ -688,7 +780,11 @@ export function getFilteredKPIs(filtered: Partner[]): KPIMetric[] {
       Math.min(p.requirements.salesPro.obtained, p.requirements.salesPro.required) +
       Math.min(p.requirements.techPro.obtained, p.requirements.techPro.required) +
       Math.min(p.requirements.bootcamp.obtained, p.requirements.bootcamp.required) +
-      Math.min(p.requirements.implSpec.obtained, p.requirements.implSpec.required),
+      Math.min(p.requirements.implSpec.obtained, p.requirements.implSpec.required) +
+      Math.min(p.requirements.simplyPure.obtained, p.requirements.simplyPure.required) +
+      Math.min(p.requirements.aspFoundations.totalObtained, p.requirements.aspFoundations.required) +
+      Math.min(p.requirements.aspStoragePro.totalObtained, p.requirements.aspStoragePro.required) +
+      Math.min(p.requirements.aspSupportSpec.totalObtained, p.requirements.aspSupportSpec.required),
     0
   );
   const totalRequired = filtered.reduce((s, p) => {
@@ -766,6 +862,8 @@ export const navItems: NavItem[] = [
   { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassedCount },
   { id: "activity", label: "Activity Tracer", icon: "Activity" },
   { id: "asp", label: "ASP Tracking", icon: "ShieldAlert" },
+  { id: "initiatives", label: "RSA Initiatives", icon: "CalendarDays" },
+  { id: "journey", label: "SE Journey", icon: "Map" },
   { id: "commitments", label: "Commitments", icon: "CalendarCheck" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];

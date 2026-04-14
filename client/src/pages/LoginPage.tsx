@@ -136,8 +136,8 @@ export default function LoginPage() {
           {/* Header & Logo */}
           <div className="text-center mb-8">
             <motion.div layout className="flex items-center justify-center gap-3 mb-2">
-              <svg width="40" height="40" viewBox="0 0 100 100" fill="none">
-                <path fillRule="evenodd" clipRule="evenodd" d="M50 0L93.3 25V50H70V35L50 23.5L30 35V65L50 76.5L70 65H93.3V75L50 100L6.7 75V25Z" fill="var(--color-pure-orange)"/>
+              <svg width="40" height="40" viewBox="0 0 88.7 79.6" fill="none">
+                <path fillRule="evenodd" clipRule="evenodd" d="M47.5,79.6H27.9c-4.1,0-7.8-2.2-9.9-5.7L1.5,45.5c-2-3.5-2-7.8,0-11.3L18,5.7C20,2.2,23.8,0,27.9,0h33c4.1,0,7.8,2.2,9.9,5.7l16.5,28.5c2,3.5,2,7.8,0,11.3L83,52.2c-2,3.4-5.8,5.6-9.8,5.6H53.5l10.7-18l-9.9-17.1H34.4l-9.9,17.1L47.5,79.6z" fill="var(--color-pure-orange)"/>
               </svg>
               <h1 className="text-[34px] font-black tracking-tighter" style={{ color: "var(--color-ash-gray)" }}>
                 Everpure

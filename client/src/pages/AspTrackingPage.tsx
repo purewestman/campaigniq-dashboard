@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CheckCircle2, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 import { activityData } from "@/lib/activityData";
+import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { partners } from "@/lib/data";
 import ExportButton from "@/components/ExportButton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,38 +28,91 @@ interface PartnerAspResult {
 export default function AspTrackingPage() {
   const { user } = useAuth();
 
+  const [partnerFilter, setPartnerFilter] = useState("");
+  const [gapFilter, setGapFilter] = useState<"all" | "gaps">("all");
+
   const resultData = useMemo(() => {
     const results: PartnerAspResult[] = [];
 
-    for (const [partner, records] of Object.entries(activityData)) {
+    // Combine both sources using actual Partner names
+    const allPartners = new Set([
+      ...Object.keys(activityData), 
+      ...partners.map(p => p.name)
+    ]);
+
+    for (const partner of Array.from(allPartners)) {
       // Group by email
-      const indvMap: Record<string, { name: string; courses: Set<string> }> = {};
-      records.forEach((r: any) => {
-        if (!indvMap[r.email]) {
-          indvMap[r.email] = { name: r.name, courses: new Set() };
+      const indvMap: Record<string, { 
+        name: string; 
+        hasFoundations: boolean;
+        hasStoragePro: boolean;
+        hasSupportSpec: boolean;
+        courses: Set<string>;
+      }> = {};
+
+      const getIndv = (email: string, firstName?: string, lastName?: string) => {
+        const lowerEmail = email.toLowerCase();
+        if (!indvMap[lowerEmail]) {
+          indvMap[lowerEmail] = { 
+            name: (firstName && lastName) ? `${firstName} ${lastName}` : email, 
+            hasFoundations: false,
+            hasStoragePro: false,
+            hasSupportSpec: false,
+            courses: new Set() 
+          };
         }
-        if (r.activity) indvMap[r.email].courses.add(r.activity.toLowerCase());
+        return indvMap[lowerEmail];
+      };
+
+      // 1. Interpret fuzzy active tracking data from SFDC log
+      const records = activityData[partner] || [];
+      records.forEach((r: any) => {
+        if (!r.email) return;
+        const indv = getIndv(r.email, r.name ? r.name.split(' ')[0] : '', r.name ? r.name.split(' ').slice(1).join(' ') : '');
+        indv.name = r.name || indv.name;
+        if (r.activity) {
+          const c = r.activity.toLowerCase();
+          indv.courses.add(c);
+          if (c.includes("foundations")) indv.hasFoundations = true;
+          if (c.includes("storage professional")) indv.hasStoragePro = true;
+          if (c.includes("support specialist")) indv.hasSupportSpec = true;
+        }
       });
+
+      // 2. Map verified training database completion data
+      const partnerObj = partners.find(p => p.name === partner);
+      const td = partnerObj ? trainingData[partnerObj.id] : undefined;
+      
+      if (td) {
+        const applyCert = (list: TrainingPerson[], flag: 'hasFoundations' | 'hasStoragePro' | 'hasSupportSpec') => {
+          if (!list) return;
+          list.forEach(p => {
+             const indv = getIndv(p.email, p.firstName, p.lastName);
+             if (p.firstName && p.lastName) indv.name = `${p.firstName} ${p.lastName}`;
+             indv[flag] = true;
+          });
+        };
+        applyCert(td.aspFoundationsFA, 'hasFoundations');
+        applyCert(td.aspFoundationsFB, 'hasFoundations');
+        applyCert(td.storageProFA, 'hasStoragePro');
+        applyCert(td.storageProFB, 'hasStoragePro');
+        applyCert(td.supportSpecFA, 'hasSupportSpec');
+        applyCert(td.supportSpecFB, 'hasSupportSpec');
+      }
 
       const candidates: Candidate[] = [];
       let fullyQualifiedCount = 0;
 
       for (const [email, data] of Object.entries(indvMap)) {
-        let hasFoundations = false;
-        let hasStoragePro = false;
-        let hasSupportSpec = false;
+        const hasFoundations = data.hasFoundations;
+        const hasStoragePro = data.hasStoragePro;
+        const hasSupportSpec = data.hasSupportSpec;
 
-        data.courses.forEach(c => {
-          if (c.includes("foundations")) hasFoundations = true;
-          if (c.includes("storage professional")) hasStoragePro = true;
-          if (c.includes("support specialist")) hasSupportSpec = true;
-        });
-
-        // If they have at least one or are close, consider them a candidate to show in the UI.
         const isFullyQualified = hasFoundations && hasStoragePro && hasSupportSpec;
         if (isFullyQualified) fullyQualifiedCount++;
 
-        if (hasFoundations || hasStoragePro || hasSupportSpec) {
+        // Add them to the dashboard if they have started the track
+        if (hasFoundations || hasStoragePro || hasSupportSpec || Array.from(data.courses).some(c => c.includes("asp") || c.includes("storage"))) {
           const missingTags: string[] = [];
           if (!hasFoundations) missingTags.push("Foundations");
           if (!hasStoragePro) missingTags.push("Storage Pro");
@@ -87,13 +141,12 @@ export default function AspTrackingPage() {
       });
     }
 
-    // Sort compliant partners first, then by name
     let sorted = results.sort((a, b) => {
       if (a.isCompliant !== b.isCompliant) return a.isCompliant ? -1 : 1;
       return a.partner.localeCompare(b.partner);
     });
 
-    // ROW-LEVEL SECURITY: if partner login, only show their own row
+    // Apply ROW-LEVEL SECURITY
     if (user?.role === 'partner' && user.domain) {
       const domainPartner = partners.find(p => p.domain === user.domain);
       if (domainPartner) {
@@ -101,8 +154,20 @@ export default function AspTrackingPage() {
       }
     }
 
+    // Apply Filters
+    if (partnerFilter.trim()) {
+      sorted = sorted.filter(r => r.partner.toLowerCase().includes(partnerFilter.toLowerCase()));
+    }
+
+    if (gapFilter === "gaps") {
+      sorted = sorted.map(r => ({
+        ...r,
+        candidates: r.candidates.filter(c => !c.isFullyQualified)
+      })).filter(r => r.candidates.length > 0 || !r.isCompliant);
+    }
+
     return sorted;
-  }, [user]);
+  }, [user, partnerFilter, gapFilter]);
 
   const handleGlobalExport = () => {
     // Collect all candidates across all visible partners
@@ -116,13 +181,14 @@ export default function AspTrackingPage() {
   };
 
   const totalPartners = resultData.length;
+  // Calculate compliant based on original counts (isCompliant is true if >= 2 fully qualified)
   const compliantPartners = resultData.filter(r => r.isCompliant).length;
   const actionRequiredPartners = totalPartners - compliantPartners;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* Header */}
+      {/* Header and KPI Cards */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
@@ -161,6 +227,25 @@ export default function AspTrackingPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Filtering Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input 
+          type="text" 
+          placeholder="Filter by partner name..." 
+          value={partnerFilter}
+          onChange={(e) => setPartnerFilter(e.target.value)}
+          className="px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-pure-orange w-full sm:w-[250px]"
+        />
+        <select 
+          value={gapFilter}
+          onChange={(e) => setGapFilter(e.target.value as "all" | "gaps")}
+          className="px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-pure-orange"
+        >
+          <option value="all">Show All Candidates</option>
+          <option value="gaps">Show Candidates with Gaps</option>
+        </select>
       </div>
 
       {/* Main Table */}

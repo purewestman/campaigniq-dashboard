@@ -31,7 +31,10 @@ import {
   DollarSign,
   Users,
   Wrench,
+  Trash2,
+  Plus,
 } from "lucide-react";
+import { trainingData } from "@/lib/trainingData";
 
 interface ModifyGapModalProps {
   partner: Partner;
@@ -45,12 +48,41 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
   const existingMod = getModification(partner.id);
   const modHistory = getModificationHistory(partner.id);
 
-  // Enablement state
   const [values, setValues] = useState({
     salesPro: partner.requirements.salesPro.obtained,
     techPro: partner.requirements.techPro.obtained,
     bootcamp: partner.requirements.bootcamp.obtained,
     implSpec: partner.requirements.implSpec.obtained,
+    simplyPure: partner.requirements.simplyPure.obtained,
+    aspFoundations: partner.requirements.aspFoundations.totalObtained,
+    aspFoundationsFA: partner.requirements.aspFoundations.obtainedFA,
+    aspFoundationsFB: partner.requirements.aspFoundations.obtainedFB,
+    aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
+    aspStorageProFA: partner.requirements.aspStoragePro.obtainedFA,
+    aspStorageProFB: partner.requirements.aspStoragePro.obtainedFB,
+    aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
+    aspSupportSpecFA: partner.requirements.aspSupportSpec.obtainedFA,
+    aspSupportSpecFB: partner.requirements.aspSupportSpec.obtainedFB,
+  });
+
+  const [addedEmails, setAddedEmails] = useState<Record<string, string[]>>({});
+  const [removedEmails, setRemovedEmails] = useState<Record<string, string[]>>({});
+
+  const [nomineeInput, setNomineeInput] = useState<Record<string, string>>({
+    salesPro: "",
+    techPro: "",
+    bootcamp: "",
+    implSpec: "",
+    simplyPure: "",
+    aspFoundations: "",
+    aspFoundationsFA: "",
+    aspFoundationsFB: "",
+    aspStoragePro: "",
+    aspStorageProFA: "",
+    aspStorageProFB: "",
+    aspSupportSpec: "",
+    aspSupportSpecFA: "",
+    aspSupportSpecFB: "",
   });
 
   // Business metrics state
@@ -77,20 +109,41 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
           techPro: existingMod.techPro,
           bootcamp: existingMod.bootcamp,
           implSpec: existingMod.implSpec,
+          simplyPure: existingMod.simplyPure,
+          aspFoundations: existingMod.aspFoundations,
+          aspFoundationsFA: existingMod.aspFoundationsFA ?? partner.requirements.aspFoundations.obtainedFA,
+          aspFoundationsFB: existingMod.aspFoundationsFB ?? partner.requirements.aspFoundations.obtainedFB,
+          aspStoragePro: existingMod.aspStoragePro,
+          aspStorageProFA: existingMod.aspStorageProFA ?? partner.requirements.aspStoragePro.obtainedFA,
+          aspStorageProFB: existingMod.aspStorageProFB ?? partner.requirements.aspStoragePro.obtainedFB,
+          aspSupportSpec: existingMod.aspSupportSpec,
+          aspSupportSpecFA: existingMod.aspSupportSpecFA ?? partner.requirements.aspSupportSpec.obtainedFA,
+          aspSupportSpecFB: existingMod.aspSupportSpecFB ?? partner.requirements.aspSupportSpec.obtainedFB,
         });
-        setBookingsUSD(existingMod.bookingsUSD != null ? existingMod.bookingsUSD.toString() : "");
-        setUniqueCustomers(existingMod.uniqueCustomers != null ? existingMod.uniqueCustomers.toString() : "");
-        setPds(existingMod.partnerDeliveredServices != null ? existingMod.partnerDeliveredServices.toString() : "");
+        setAddedEmails(existingMod.addedEmails || {});
+        setRemovedEmails(existingMod.removedEmails || {});
       } else {
         setValues({
           salesPro: partner.requirements.salesPro.obtained,
           techPro: partner.requirements.techPro.obtained,
           bootcamp: partner.requirements.bootcamp.obtained,
           implSpec: partner.requirements.implSpec.obtained,
+          simplyPure: partner.requirements.simplyPure.obtained,
+          aspFoundations: partner.requirements.aspFoundations.totalObtained,
+          aspFoundationsFA: partner.requirements.aspFoundations.obtainedFA,
+          aspFoundationsFB: partner.requirements.aspFoundations.obtainedFB,
+          aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
+          aspStorageProFA: partner.requirements.aspStoragePro.obtainedFA,
+          aspStorageProFB: partner.requirements.aspStoragePro.obtainedFB,
+          aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
+          aspSupportSpecFA: partner.requirements.aspSupportSpec.obtainedFA,
+          aspSupportSpecFB: partner.requirements.aspSupportSpec.obtainedFB,
         });
         setBookingsUSD(partner.businessMetrics.bookingsUSD != null ? partner.businessMetrics.bookingsUSD.toString() : "");
         setUniqueCustomers(partner.businessMetrics.uniqueCustomers != null ? partner.businessMetrics.uniqueCustomers.toString() : "");
         setPds(partner.businessMetrics.partnerDeliveredServices != null ? partner.businessMetrics.partnerDeliveredServices.toString() : "");
+        setAddedEmails({});
+        setRemovedEmails({});
       }
       setComment("");
       setError("");
@@ -105,15 +158,46 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
     { key: "techPro" as const, label: "Tech Pro", required: tierDef.enablement.techPro, color: "var(--color-basil-green)" },
     { key: "bootcamp" as const, label: "Bootcamp", required: tierDef.enablement.bootcamp, color: "var(--color-moss-green)" },
     { key: "implSpec" as const, label: "Impl Specialist", required: tierDef.enablement.implSpec, color: "var(--color-cinnamon-brown)" },
+    { key: "simplyPure" as const, label: "Simply Pure", required: tierDef.enablement.simplyPure, color: "var(--color-pure-orange)" },
+    { key: "aspFoundations" as const, label: "ASP Foundations", required: tierDef.enablement.aspFoundations, color: "var(--color-basil-green)" },
+    { key: "aspStoragePro" as const, label: "Storage Pro", required: tierDef.enablement.aspStoragePro, color: "var(--color-moss-green)" },
+    { key: "aspSupportSpec" as const, label: "Support Spec", required: tierDef.enablement.aspSupportSpec, color: "var(--color-ash-gray)" },
   ];
 
   // Preview computations
   const preview = useMemo(() => {
+    const getCount = (key: string, auto: any[]) => {
+      const removed = removedEmails[key] || [];
+      const added = addedEmails[key] || [];
+      return auto.filter(p => !removed.includes(p.email)).length + added.length;
+    };
+
+    const sp = getCount('salesPro', trainingData[partner.id]?.salesPro || []);
+    const tp = getCount('techPro', trainingData[partner.id]?.techPro || []);
+    const bc = getCount('bootcamp', (trainingData[partner.id]?.bootcamp || []).filter(p => !!p.date && p.date >= '2026-02-02'));
+    const is = getCount('implSpec', trainingData[partner.id]?.implSpec || []);
+    const sm = getCount('simplyPure', trainingData[partner.id]?.simplyPure || []);
+
+    const afFA = getCount('aspFoundationsFA', trainingData[partner.id]?.aspFoundationsFA || []);
+    const afFB = getCount('aspFoundationsFB', trainingData[partner.id]?.aspFoundationsFB || []);
+    const asFA = getCount('storageProFA', trainingData[partner.id]?.storageProFA || []);
+    const asFB = getCount('storageProFB', trainingData[partner.id]?.storageProFB || []);
+    const auFA = getCount('supportSpecFA', trainingData[partner.id]?.supportSpecFA || []);
+    const auFB = getCount('supportSpecFB', trainingData[partner.id]?.supportSpecFB || []);
+
+    const foundationsTotal = getCount('aspFoundations', []) + Math.max(0, afFA + afFB); // Simple appox for preview
+    const storageTotal = getCount('aspStoragePro', []) + Math.max(0, asFA + asFB);
+    const supportTotal = getCount('aspSupportSpec', []) + Math.max(0, auFA + auFB);
+
     const reqs = {
-      salesPro: { required: tierDef.enablement.salesPro, obtained: values.salesPro },
-      techPro: { required: tierDef.enablement.techPro, obtained: values.techPro },
-      bootcamp: { required: tierDef.enablement.bootcamp, obtained: values.bootcamp },
-      implSpec: { required: tierDef.enablement.implSpec, obtained: values.implSpec },
+      salesPro: { required: tierDef.enablement.salesPro, obtained: sp },
+      techPro: { required: tierDef.enablement.techPro, obtained: tp },
+      bootcamp: { required: tierDef.enablement.bootcamp, obtained: bc },
+      implSpec: { required: tierDef.enablement.implSpec, obtained: is },
+      simplyPure: { required: tierDef.enablement.simplyPure, obtained: sm },
+      aspFoundations: { required: tierDef.enablement.aspFoundations, obtainedFA: afFA, obtainedFB: afFB, totalObtained: foundationsTotal },
+      aspStoragePro: { required: tierDef.enablement.aspStoragePro, obtainedFA: asFA, obtainedFB: asFB, totalObtained: storageTotal },
+      aspSupportSpec: { required: tierDef.enablement.aspSupportSpec, obtainedFA: auFA, obtainedFB: auFB, totalObtained: supportTotal },
     };
     const bm = {
       bookingsUSD: bookingsUSD ? parseFloat(bookingsUSD) : null,
@@ -139,6 +223,19 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
       techPro: values.techPro,
       bootcamp: values.bootcamp,
       implSpec: values.implSpec,
+      simplyPure: values.simplyPure,
+      aspFoundations: Math.max(values.aspFoundations, values.aspFoundationsFA + values.aspFoundationsFB),
+      aspStoragePro: Math.max(values.aspStoragePro, values.aspStorageProFA + values.aspStorageProFB),
+      aspSupportSpec: Math.max(values.aspSupportSpec, values.aspSupportSpecFA + values.aspSupportSpecFB),
+      aspFoundationsFA: values.aspFoundationsFA,
+      aspFoundationsFB: values.aspFoundationsFB,
+      aspStorageProFA: values.aspStorageProFA,
+      aspStorageProFB: values.aspStorageProFB,
+      aspSupportSpecFA: values.aspSupportSpecFA,
+      aspSupportSpecFB: values.aspSupportSpecFB,
+      // Granular overrides
+      addedEmails,
+      removedEmails,
       bookingsUSD: bookingsUSD ? parseFloat(bookingsUSD) : null,
       uniqueCustomers: uniqueCustomers ? parseInt(uniqueCustomers) : null,
       partnerDeliveredServices: pds ? parseInt(pds) : null,
@@ -158,10 +255,22 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
       techPro: partner.requirements.techPro.obtained,
       bootcamp: partner.requirements.bootcamp.obtained,
       implSpec: partner.requirements.implSpec.obtained,
+      simplyPure: partner.requirements.simplyPure.obtained,
+      aspFoundations: partner.requirements.aspFoundations.totalObtained,
+      aspFoundationsFA: partner.requirements.aspFoundations.obtainedFA,
+      aspFoundationsFB: partner.requirements.aspFoundations.obtainedFB,
+      aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
+      aspStorageProFA: partner.requirements.aspStoragePro.obtainedFA,
+      aspStorageProFB: partner.requirements.aspStoragePro.obtainedFB,
+      aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
+      aspSupportSpecFA: partner.requirements.aspSupportSpec.obtainedFA,
+      aspSupportSpecFB: partner.requirements.aspSupportSpec.obtainedFB,
     });
     setBookingsUSD(partner.businessMetrics.bookingsUSD != null ? partner.businessMetrics.bookingsUSD.toString() : "");
     setUniqueCustomers(partner.businessMetrics.uniqueCustomers != null ? partner.businessMetrics.uniqueCustomers.toString() : "");
     setPds(partner.businessMetrics.partnerDeliveredServices != null ? partner.businessMetrics.partnerDeliveredServices.toString() : "");
+    setAddedEmails({});
+    setRemovedEmails({});
     setComment("");
     setError("");
   };
@@ -365,7 +474,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   </h4>
                   <div className="space-y-3">
                     {categories.map((cat) => {
-                      const val = values[cat.key];
+                      const val = preview.reqs[cat.key as keyof typeof preview.reqs].totalObtained ?? (preview.reqs[cat.key as keyof typeof preview.reqs] as any).obtained;
                       const met = val >= cat.required;
                       const gap = Math.max(0, cat.required - val);
                       return (
@@ -376,7 +485,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-[11px]" style={{ color: "var(--color-basil-green)" }}>
-                                {partner.requirements[cat.key].obtained}
+                                {partner.requirements[cat.key as 'salesPro']?.obtained ?? 0}
                               </span>
                               <ArrowRight className="w-3 h-3" style={{ color: "var(--color-basil-green)" }} />
                               <span
@@ -399,17 +508,6 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setValues((v) => ({ ...v, [cat.key]: Math.max(0, v[cat.key] - 1) }))}
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
-                              style={{
-                                background: "var(--color-cloud-white)",
-                                border: "1px solid var(--color-stone-gray)",
-                                color: "var(--color-basil-green)",
-                              }}
-                            >
-                              −
-                            </button>
                             <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--color-stone-gray)" }}>
                               <motion.div
                                 className="h-full rounded-full"
@@ -419,18 +517,64 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                                 transition={{ type: "spring", damping: 20 }}
                               />
                             </div>
-                            <button
-                              onClick={() => setValues((v) => ({ ...v, [cat.key]: v[cat.key] + 1 }))}
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
-                              style={{
-                                background: "var(--color-cloud-white)",
-                                border: "1px solid var(--color-stone-gray)",
-                                color: "var(--color-basil-green)",
-                              }}
-                            >
-                              +
-                            </button>
                           </div>
+                          
+                          {/* Granular ASP Breakdown for manual entry */}
+                          {(cat.key === 'aspFoundations' || cat.key === 'aspStoragePro' || cat.key === 'aspSupportSpec') && (
+                            <div className="mt-2 grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                              <div>
+                                <label className="text-[9px] font-bold text-slate-400 block mb-1">FLASHARRAY</label>
+                                <div className="flex flex-col gap-1">
+                                  {/* List management for FA */}
+                                  <EmailListManager 
+                                    cat={`${cat.key}FA`}
+                                    autoList={trainingData[partner.id]?.[`${cat.key}FA` as keyof typeof trainingData[9]] || []}
+                                    added={addedEmails[`${cat.key}FA`] || []}
+                                    removed={removedEmails[`${cat.key}FA`] || []}
+                                    onAdd={(email) => setAddedEmails(prev => ({ ...prev, [`${cat.key}FA`]: [...(prev[`${cat.key}FA`] || []), email] }))}
+                                    onRemove={(email, isAuto) => {
+                                      if (isAuto) setRemovedEmails(prev => ({ ...prev, [`${cat.key}FA`]: [...(prev[`${cat.key}FA`] || []), email] }));
+                                      else setAddedEmails(prev => ({ ...prev, [`${cat.key}FA`]: (prev[`${cat.key}FA`] || []).filter(e => e !== email) }));
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-bold text-slate-400 block mb-1">FLASHBLADE</label>
+                                <div className="flex flex-col gap-1">
+                                  {/* List management for FB */}
+                                  <EmailListManager 
+                                    cat={`${cat.key}FB`}
+                                    autoList={trainingData[partner.id]?.[`${cat.key}FB` as keyof typeof trainingData[9]] || []}
+                                    added={addedEmails[`${cat.key}FB`] || []}
+                                    removed={removedEmails[`${cat.key}FB`] || []}
+                                    onAdd={(email) => setAddedEmails(prev => ({ ...prev, [`${cat.key}FB`]: [...(prev[`${cat.key}FB`] || []), email] }))}
+                                    onRemove={(email, isAuto) => {
+                                      if (isAuto) setRemovedEmails(prev => ({ ...prev, [`${cat.key}FB`]: [...(prev[`${cat.key}FB`] || []), email] }));
+                                      else setAddedEmails(prev => ({ ...prev, [`${cat.key}FB`]: (prev[`${cat.key}FB`] || []).filter(e => e !== email) }));
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Standard List Management */}
+                          {!(cat.key === 'aspFoundations' || cat.key === 'aspStoragePro' || cat.key === 'aspSupportSpec') && (
+                            <div className="mt-2">
+                              <EmailListManager 
+                                cat={cat.key}
+                                autoList={trainingData[partner.id]?.[cat.key as keyof typeof trainingData[9]] || []}
+                                added={addedEmails[cat.key] || []}
+                                removed={removedEmails[cat.key] || []}
+                                onAdd={(email) => setAddedEmails(prev => ({ ...prev, [cat.key]: [...(prev[cat.key] || []), email] }))}
+                                onRemove={(email, isAuto) => {
+                                  if (isAuto) setRemovedEmails(prev => ({ ...prev, [cat.key]: [...(prev[cat.key] || []), email] }));
+                                  else setAddedEmails(prev => ({ ...prev, [cat.key]: (prev[cat.key] || []).filter(e => e !== email) }));
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -625,3 +769,100 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
     </AnimatePresence>
   );
 }
+
+// ─── Helper Components ──────────────────────────────────────
+
+function EmailListManager({ 
+  cat, 
+  autoList, 
+  added, 
+  removed, 
+  onAdd, 
+  onRemove 
+}: { 
+  cat: string; 
+  autoList: any[]; 
+  added: string[]; 
+  removed: string[]; 
+  onAdd: (email: string) => void;
+  onRemove: (email: string, isAuto: boolean) => void;
+}) {
+  const [input, setInput] = useState("");
+
+  const handleAdd = () => {
+    if (input && input.includes("@")) {
+      onAdd(input.trim().toLowerCase());
+      setInput("");
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-slate-100/50 rounded-lg border border-slate-200">
+        {autoList.filter(p => !removed.includes(p.email)).map(p => (
+          <EmailTag 
+            key={p.email} 
+            email={p.email} 
+            isAuto 
+            onRemove={() => onRemove(p.email, true)} 
+          />
+        ))}
+        {added.map(email => (
+          <EmailTag 
+            key={email} 
+            email={email} 
+            onRemove={() => onRemove(email, false)} 
+          />
+        ))}
+        {(autoList.length === 0 && added.length === 0) && (
+          <span className="text-[10px] text-slate-400 italic">No emails listed</span>
+        )}
+      </div>
+      <div className="flex gap-1">
+        <input 
+          placeholder="Add email..." 
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
+          className="flex-1 px-2 py-1 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange"
+        />
+        <button 
+          onClick={handleAdd}
+          className="p-1 rounded bg-pure-orange text-white hover:bg-pure-orange/90 transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EmailTag({ 
+  email, 
+  isAuto = false, 
+  onRemove 
+}: { 
+  email: string; 
+  isAuto?: boolean; 
+  onRemove: () => void;
+}) {
+  return (
+    <div 
+      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border transition-all"
+      style={{
+        background: isAuto ? "white" : "color-mix(in srgb, var(--color-pure-orange) 10%, white)",
+        borderColor: isAuto ? "var(--color-stone-gray)" : "color-mix(in srgb, var(--color-pure-orange) 20%, transparent)",
+        color: isAuto ? "var(--color-basil-green)" : "var(--color-pure-orange)",
+      }}
+    >
+      <span className="truncate max-w-[120px]">{email}</span>
+      <button 
+        onClick={(e) => { e.preventDefault(); onRemove(); }}
+        className="hover:text-red-500 transition-colors"
+      >
+        <X className="w-3 h-3" />
+      </button>
+    </div>
+  );
+}
+

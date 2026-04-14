@@ -7,7 +7,7 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
-export type GapCategory = "salesPro" | "techPro" | "bootcamp" | "implSpec";
+export type GapCategory = "salesPro" | "techPro" | "bootcamp" | "implSpec" | "simplyPure" | "aspFoundations" | "aspStoragePro" | "aspSupportSpec";
 
 export interface GapOverride {
   partnerId: number;

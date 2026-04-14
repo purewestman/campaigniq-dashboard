@@ -20,9 +20,12 @@ import {
   generateRecommendedAction,
 } from "@/lib/data";
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
+import { activityData } from "@/lib/activityData";
 import { aspData, type AspPerson } from "@/lib/aspData";
 import { useOverrides, type GapCategory, type GapOverride } from "@/contexts/OverrideContext";
+import { useModifications } from "@/contexts/ModificationContext";
 import ExportButton from "./ExportButton";
+import EnablementTimeline from "./EnablementTimeline";
 import {
   ArrowUpDown,
   MoreHorizontal,
@@ -49,6 +52,8 @@ import {
   FileDown,
   ToggleLeft,
   ToggleRight,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -75,6 +80,10 @@ const categoryLabels: Record<GapCategory, string> = {
   techPro: "Tech Pro",
   bootcamp: "Bootcamp",
   implSpec: "Impl Spec",
+  simplyPure: "Simply Pure",
+  aspFoundations: "ASP Fnd",
+  aspStoragePro: "ASP Storage",
+  aspSupportSpec: "ASP Support",
 };
 
 /** Progress bar with override toggle for a single requirement category */
@@ -85,6 +94,7 @@ function RequirementBarWithOverride({
   required,
   partnerId,
   partnerName,
+  manualEmails,
   onNavigateToActivity,
 }: {
   label: string;
@@ -93,29 +103,139 @@ function RequirementBarWithOverride({
   required: number;
   partnerId: number;
   partnerName: string;
+  manualEmails?: string[];
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
 }) {
   const { getOverride, addOverride, removeOverride } = useOverrides();
+  const { getModification, addModification } = useModifications();
   const override = getOverride(partnerId, category);
   const gap = Math.max(0, required - obtained);
-  const pct = required > 0 ? Math.min(100, Math.round((obtained / required) * 100)) : 100;
-  const isComplete = obtained >= required || !!override;
+  const pct = required > 0 ? Math.min(100, Math.round((obtained / required) * 100)) : (obtained > 0 || !!override ? 100 : 0);
+  const isComplete = (required > 0 ? (obtained >= required || !!override) : (obtained > 0 || !!override));
 
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
   const [showPeople, setShowPeople] = useState(false);
-  const trainingPeople: TrainingPerson[] = trainingData[partnerId]?.[category] ?? [];
+  
+  // Handle ASP and other training categories
+  const getTrainingPeople = () => {
+    const dedupe = (list: any[]) => {
+      const seen = new Set();
+      return list.filter(p => {
+        if (seen.has(p.email)) return false;
+        seen.add(p.email);
+        return true;
+      });
+    };
+
+    const manualPeople = (manualEmails || []).map(email => ({
+      email,
+      firstName: email.split('@')[0],
+      lastName: '(Nominated)',
+      isNominated: true
+    }));
+
+    let sources: any[] = [];
+
+    if (category === 'aspFoundations') {
+      sources = [...(trainingData[partnerId]?.aspFoundationsFA ?? []), ...(trainingData[partnerId]?.aspFoundationsFB ?? [])];
+    } else if (category === 'aspStoragePro') {
+      sources = [...(trainingData[partnerId]?.aspStorageProFA ?? []), ...(trainingData[partnerId]?.aspStorageProFB ?? [])];
+    } else if (category === 'aspSupportSpec') {
+      sources = [...(trainingData[partnerId]?.supportSpecFA ?? []), ...(trainingData[partnerId]?.supportSpecFB ?? [])];
+    } else {
+      sources = (trainingData[partnerId] as any)?.[category] ?? [];
+    }
+
+    // FALLBACK logic: if no specific trainingData, try parsing activityData
+    if (sources.length === 0 && activityData[partnerName]) {
+      const rawActivity = activityData[partnerName];
+      const categoryKeywords: Record<string, string[]> = {
+        salesPro: ['Sales', 'Positioning', 'Business'],
+        techPro: ['Technical', 'Architect', 'Solution', 'Pre-Sales', 'Modernization'],
+        bootcamp: ['Bootcamp'],
+        implSpec: ['Implementation'],
+        simplyPure: ['Simply Pure'],
+        aspFoundations: ['Foundations', 'ASP'],
+        aspStoragePro: ['Storage Pro'],
+        aspSupportSpec: ['Support Specialist']
+      };
+      const keywords = categoryKeywords[category] || [];
+      sources = rawActivity
+        .filter(a => keywords.length === 0 || keywords.some(k => a.activity.includes(k)))
+        .map(a => ({
+          email: a.email,
+          firstName: a.name.split(' ')[0],
+          lastName: a.name.split(' ').slice(1).join(' '),
+        }));
+    }
+    
+    let people = [...manualPeople, ...sources];
+    
+    // Bootcamp: ONLY count post-cutoff dates. Undated records from activityData are excluded.
+      if (category === 'bootcamp') {
+        const BOOTCAMP_CUTOFF = '2026-02-02';
+        people = people.filter((p: any) => p.isNominated || (!!p.date && p.date.substring(0, 10) >= BOOTCAMP_CUTOFF));
+      }
+    
+    return dedupe(people);
+  };
+  
+  const trainingPeople: TrainingPerson[] = getTrainingPeople();
 
   const handleMarkComplete = () => {
-    addOverride({ partnerId, category, comment: comment.trim(), completedBy: "Admin" });
+    const mod = getModification(partnerId) || { partnerId, addedEmails: {}, removedEmails: {}, salesPro: 0, techPro: 0, bootcamp: 0, implSpec: 0, simplyPure: 0, aspFoundations: 0, aspStoragePro: 0, aspSupportSpec: 0, comment: "", modifiedBy: "Admin", bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null };
+    
+    // Map base ASP categories to their FA counterparts for manual entry
+    let targetKey = category as string;
+    if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
+    else if (category === 'aspStoragePro') targetKey = 'storageProFA';
+    else if (category === 'aspSupportSpec') targetKey = 'supportSpecFA';
+
+    // Create a readable nominated name
+    const timestamp = Date.now().toString().slice(-4);
+    const placeholderEmail = `manual.${category}.${timestamp}@partner-nominated.com`;
+    
+    const existingAdded = mod.addedEmails[targetKey] || [];
+    
+    addModification({
+      ...mod,
+      addedEmails: {
+        ...mod.addedEmails,
+        [targetKey]: [...existingAdded, placeholderEmail]
+      },
+      comment: comment.trim() || `Incremental completion of ${label} requirement`,
+      modifiedBy: "Admin"
+    });
+
     setShowComment(false);
     setComment("");
-    toast.success(`${label} marked as complete`);
+    toast.success(`One ${label} requirement added`);
   };
 
   const handleUndo = () => {
-    removeOverride(partnerId, category);
-    toast.info(`${label} override removed`);
+    // If it's a binary override, remove it
+    if (override) {
+      removeOverride(partnerId, category);
+      toast.info(`${label} override removed`);
+    } else {
+      let targetKey = category as string;
+      if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
+      else if (category === 'aspStoragePro') targetKey = 'storageProFA';
+      else if (category === 'aspSupportSpec') targetKey = 'supportSpecFA';
+
+      const mod = getModification(partnerId);
+      if (mod && mod.addedEmails[targetKey] && mod.addedEmails[targetKey].length > 0) {
+        const newList = [...mod.addedEmails[targetKey]];
+        newList.pop();
+        addModification({
+          ...mod,
+          addedEmails: { ...mod.addedEmails, [targetKey]: newList },
+          comment: "Removed last manual requirement"
+        });
+        toast.info(`Last ${label} manual completion removed`);
+      }
+    }
   };
 
   return (
@@ -214,6 +334,29 @@ function RequirementBarWithOverride({
             <Undo2 className="w-3 h-3" />
           </button>
         )}
+        {!override && (() => {
+          let tKey = category as string;
+          if (category === 'aspFoundations') tKey = 'aspFoundationsFA';
+          else if (category === 'aspStoragePro') tKey = 'storageProFA';
+          else if (category === 'aspSupportSpec') tKey = 'supportSpecFA';
+          const m = getModification(partnerId);
+          return m && m.addedEmails?.[tKey] && m.addedEmails[tKey].length > 0;
+        })() && (
+           <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUndo();
+            }}
+            className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:scale-105"
+            style={{
+              background: "color-mix(in srgb, var(--color-cinnamon-brown) 8%, transparent)",
+              color: "var(--color-cinnamon-brown)",
+            }}
+            title="Undo last manual addition"
+          >
+            <Undo2 className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
       {/* Certified individuals panel */}
@@ -232,21 +375,47 @@ function RequirementBarWithOverride({
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-basil-green)" }}>
                 {label} — Completed ({trainingPeople.length})
               </p>
-              {trainingPeople.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
-              ) : (
-                <div className="space-y-1">
-                  {trainingPeople.map((person) => (
-                    <div key={person.email} className="flex items-center gap-2">
-                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "var(--color-moss-green)" }} />
-                      <span className="text-[11px] font-bold text-slate-900">
-                        {person.firstName} {person.lastName}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
+              <div className="space-y-4">
+                  {(category === 'aspFoundations' || category === 'aspStoragePro' || category === 'aspSupportSpec') ? (
+                    <>
+                      {/* FA Section */}
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                          <CheckCircle2 className="w-2.5 h-2.5" /> FlashArray
+                        </p>
+                        <div className="space-y-1 pl-1">
+                          <InlineEmailManager partnerId={partnerId} categoryKey={category === 'aspFoundations' ? 'aspFoundationsFA' : category === 'aspStoragePro' ? 'storageProFA' : 'supportSpecFA'} autoList={(() => {
+                            const td = trainingData[partnerId];
+                            if (!td) return [];
+                            return category === 'aspFoundations' ? td.aspFoundationsFA : category === 'aspStoragePro' ? td.storageProFA : td.supportSpecFA;
+                          })() || []} />
+                        </div>
+                      </div>
+
+                      {/* FB Section */}
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                          <CheckCircle2 className="w-2.5 h-2.5" /> FlashBlade
+                        </p>
+                        <div className="space-y-1 pl-1">
+                          <InlineEmailManager partnerId={partnerId} categoryKey={category === 'aspFoundations' ? 'aspFoundationsFB' : category === 'aspStoragePro' ? 'storageProFB' : 'supportSpecFB'} autoList={(() => {
+                            const td = trainingData[partnerId];
+                            if (!td) return [];
+                            return category === 'aspFoundations' ? td.aspFoundationsFB : category === 'aspStoragePro' ? td.storageProFB : td.supportSpecFB;
+                          })() || []} />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-1">
+                      <InlineEmailManager 
+                        partnerId={partnerId} 
+                        categoryKey={category} 
+                        autoList={trainingPeople.filter((p: any) => !p.isNominated)} 
+                      />
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -640,6 +809,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 required={reqs.salesPro.required}
                 partnerId={partner.id}
                 partnerName={partner.name}
+                manualEmails={reqs.salesPro.manualEmails}
                 onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
@@ -649,6 +819,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 required={reqs.techPro.required}
                 partnerId={partner.id}
                 partnerName={partner.name}
+                manualEmails={reqs.techPro.manualEmails}
                 onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
@@ -658,6 +829,7 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 required={reqs.bootcamp.required}
                 partnerId={partner.id}
                 partnerName={partner.name}
+                manualEmails={reqs.bootcamp.manualEmails}
                 onNavigateToActivity={onNavigateToActivity}
               />
               <RequirementBarWithOverride
@@ -667,6 +839,47 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 required={reqs.implSpec.required}
                 partnerId={partner.id}
                 partnerName={partner.name}
+                manualEmails={reqs.implSpec.manualEmails}
+                onNavigateToActivity={onNavigateToActivity}
+              />
+              <RequirementBarWithOverride
+                label="Simply Pure"
+                category="simplyPure"
+                obtained={reqs.simplyPure.obtained}
+                required={reqs.simplyPure.required}
+                partnerId={partner.id}
+                partnerName={partner.name}
+                manualEmails={reqs.simplyPure.manualEmails}
+                onNavigateToActivity={onNavigateToActivity}
+              />
+              <RequirementBarWithOverride
+                label="ASP Foundations"
+                category="aspFoundations"
+                obtained={reqs.aspFoundations.totalObtained}
+                required={reqs.aspFoundations.required}
+                partnerId={partner.id}
+                partnerName={partner.name}
+                manualEmails={reqs.aspFoundations.manualEmails}
+                onNavigateToActivity={onNavigateToActivity}
+              />
+              <RequirementBarWithOverride
+                label="ASP Storage Pro"
+                category="aspStoragePro"
+                obtained={reqs.aspStoragePro.totalObtained}
+                required={reqs.aspStoragePro.required}
+                partnerId={partner.id}
+                partnerName={partner.name}
+                manualEmails={reqs.aspStoragePro.manualEmails}
+                onNavigateToActivity={onNavigateToActivity}
+              />
+              <RequirementBarWithOverride
+                label="ASP Support Spec"
+                category="aspSupportSpec"
+                obtained={reqs.aspSupportSpec.totalObtained}
+                required={reqs.aspSupportSpec.required}
+                partnerId={partner.id}
+                partnerName={partner.name}
+                manualEmails={reqs.aspSupportSpec.manualEmails}
                 onNavigateToActivity={onNavigateToActivity}
               />
             </div>
@@ -748,6 +961,11 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* ── 12-Month Strategic Roadmap ───────────────────────── */}
+          <div className="md:col-span-2 pt-4 border-t border-slate-200">
+            <EnablementTimeline partner={partner} />
           </div>
 
           {/* ── ASP Eligibility Panel ──────────────────────────────── */}
@@ -1130,5 +1348,104 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
         </table>
       </div>
     </motion.div>
+  );
+}
+
+function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: number, categoryKey: string, autoList: any[] }) {
+  const { getModification, addModification } = useModifications();
+  const mod = getModification(partnerId) || { partnerId, addedEmails: {}, removedEmails: {} };
+  
+  const [newEmail, setNewEmail] = useState("");
+
+  const added = mod.addedEmails?.[categoryKey] || [];
+  const removed = mod.removedEmails?.[categoryKey] || [];
+
+  const handleAdd = () => {
+    if (newEmail && newEmail.includes("@") && !added.includes(newEmail)) {
+      addModification({
+        ...mod,
+        addedEmails: { ...mod.addedEmails, [categoryKey]: [...added, newEmail.toLowerCase()] }
+      });
+      setNewEmail("");
+    }
+  };
+
+  const handleRemove = (email: string, isAuto: boolean) => {
+    if (isAuto) {
+      if (!removed.includes(email)) {
+        addModification({
+          ...mod,
+          removedEmails: { ...mod.removedEmails, [categoryKey]: [...removed, email] }
+        });
+      }
+    } else {
+      addModification({
+        ...mod,
+        addedEmails: { ...mod.addedEmails, [categoryKey]: added.filter(e => e !== email) }
+      });
+    }
+  };
+
+  const combinedList = [
+    // Auto List omitting removed
+    ...autoList.filter(p => !removed.includes(p.email)).map(p => ({ ...p, isNominated: false })),
+    // Manual List
+    ...added.map(email => ({
+      email,
+      firstName: email.split('@')[0],
+      lastName: '(Nominated)',
+      isNominated: true
+    }))
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="space-y-1">
+        {combinedList.map((person) => (
+          <div key={person.email} className="flex items-center justify-between group">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-3 h-3 shrink-0" style={{ color: person.isNominated ? "var(--color-pure-orange)" : "var(--color-moss-green)" }} />
+              <span className="text-[11px] font-bold text-slate-900">
+                {person.firstName} {person.lastName}
+              </span>
+              <span className="text-[10px] text-muted-foreground">{person.email}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {person.isNominated && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#FF702315] text-[#FF7023]">
+                  Nominated
+                </span>
+              )}
+              <button 
+                onClick={() => handleRemove(person.email, !person.isNominated)}
+                className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-opacity"
+                title="Remove person"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        ))}
+        {combinedList.length === 0 && (
+          <p className="text-[10px] text-slate-400 italic">No people listed</p>
+        )}
+      </div>
+      <div className="flex gap-1 mt-2">
+        <input 
+          placeholder="Add email..." 
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+          className="flex-1 px-2 py-1 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0"
+        />
+        <button 
+          onClick={handleAdd}
+          disabled={!newEmail.includes("@")}
+          className="p-1 rounded bg-slate-100 text-slate-600 hover:bg-pure-orange hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-slate-100 disabled:hover:text-slate-600"
+        >
+          <Plus className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
   );
 }

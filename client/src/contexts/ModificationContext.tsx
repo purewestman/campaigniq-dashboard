@@ -22,7 +22,6 @@ import {
   computeEnablementScore,
   isEnablementCompliant,
   isBusinessCompliant,
-  getTierDistribution,
   type Partner,
   type ProgramTier,
   type ComplianceFilter,
@@ -31,8 +30,29 @@ import {
   type EnablementRequirements,
   type BusinessMetrics,
 } from "@/lib/data";
+import { trainingData } from "@/lib/trainingData";
 
 // ─── Types ──────────────────────────────────────────────────
+
+export interface CustomRoadmapItem {
+  id: string;
+  label: string;
+  month: string;
+  category: "enablement" | "demand-gen" | "certification";
+  description: string;
+  status: "planned" | "completed";
+}
+
+export interface RoadmapEvent {
+  id: string;
+  title: string;
+  date: string;
+  category: GapCategory | "general";
+  partnerIds: number[];
+  description: string;
+}
+
+export type GapCategory = keyof EnablementRequirements;
 
 export interface GapModification {
   partnerId: number;
@@ -41,10 +61,26 @@ export interface GapModification {
   techPro: number;
   bootcamp: number;
   implSpec: number;
+  simplyPure: number;
+  aspFoundations: number;
+  aspStoragePro: number;
+  aspSupportSpec: number;
+  // Granular ASP breakdown
+  aspFoundationsFA?: number;
+  aspFoundationsFB?: number;
+  aspStorageProFA?: number;
+  aspStorageProFB?: number;
+  aspSupportSpecFA?: number;
+  aspSupportSpecFB?: number;
+  // Manual List Management (New)
+  addedEmails: Record<string, string[]>;
+  removedEmails: Record<string, string[]>;
   // Business metrics overrides
   bookingsUSD: number | null;
   uniqueCustomers: number | null;
   partnerDeliveredServices: number | null;
+  // Custom Roadmap Items
+  customItems?: CustomRoadmapItem[];
   // Tier reassignment
   programTier?: ProgramTier;
   // Meta
@@ -56,6 +92,7 @@ export interface GapModification {
 interface ModificationContextValue {
   modifications: GapModification[];
   modifiedPartners: Partner[];
+  events: RoadmapEvent[];
   addModification: (mod: Omit<GapModification, "modifiedAt">) => void;
   removeModification: (partnerId: number) => void;
   getModification: (partnerId: number) => GapModification | undefined;
@@ -65,31 +102,75 @@ interface ModificationContextValue {
   getModifiedKPIs: (filtered: Partner[]) => KPIMetric[];
   getModifiedGapBreakdown: (filtered: Partner[]) => any[];
   getModifiedEnablementDistribution: (filtered: Partner[]) => StatusCategory[];
+  addEvent: (event: Omit<RoadmapEvent, "id">) => void;
+  removeEvent: (id: string) => void;
+  globalRoadmap: any[] | null;
+  setGlobalRoadmap: (data: any[] | null) => void;
+  partnerTimelines: Record<number, any[]>;
+  updatePartnerTimeline: (partnerId: number, timeline: any[]) => void;
 }
 
-const STORAGE_KEY = "pei-gap-modifications";
-const HISTORY_KEY = "pei-modification-history";
+// ─── Persistence ──────────────────────────────────────────
+
+const MOD_KEY = "pei-gap-modifications-v2";
+const HISTORY_KEY = "pei-modification-history-v2";
+const STORAGE_EVENTS_KEY = "pei-roadmap-events";
+const GLOBAL_ROADMAP_KEY = "pei-global-roadmap-v1";
+const PARTNER_TIMELINES_KEY = "pei-partner-timelines-v1";
 
 function loadModifications(): GapModification[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const data = localStorage.getItem(MOD_KEY);
+    return data ? JSON.parse(data) : [];
   } catch { return []; }
 }
 
 function loadHistory(): GapModification[] {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const data = localStorage.getItem(HISTORY_KEY);
+    return data ? JSON.parse(data) : [];
   } catch { return []; }
 }
 
+function loadEvents(): RoadmapEvent[] {
+  try {
+    const data = localStorage.getItem(STORAGE_EVENTS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+function loadGlobalRoadmap(): any[] | null {
+  try {
+    const data = localStorage.getItem(GLOBAL_ROADMAP_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch { return null; }
+}
+
+function loadPartnerTimelines(): Record<number, any[]> {
+  try {
+    const data = localStorage.getItem(PARTNER_TIMELINES_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch { return {}; }
+}
+
 function saveModifications(mods: GapModification[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(mods)); } catch {}
+  try { localStorage.setItem(MOD_KEY, JSON.stringify(mods)); } catch {}
+}
+
+function saveEvents(events: RoadmapEvent[]) {
+  try { localStorage.setItem(STORAGE_EVENTS_KEY, JSON.stringify(events)); } catch {}
 }
 
 function saveHistory(history: GapModification[]) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch {}
+}
+
+function saveGlobalRoadmap(data: any[] | null) {
+  try { localStorage.setItem(GLOBAL_ROADMAP_KEY, JSON.stringify(data)); } catch {}
+}
+
+function savePartnerTimelines(data: Record<number, any[]>) {
+  try { localStorage.setItem(PARTNER_TIMELINES_KEY, JSON.stringify(data)); } catch {}
 }
 
 // ─── Recompute partner from modification ────────────────────
@@ -98,11 +179,41 @@ function applyModification(partner: Partner, mod: GapModification): Partner {
   const tier = mod.programTier || partner.programTier;
   const tierDef = TIER_DEFINITIONS[tier];
 
+  const resolveList = (cat: string, autoList: any[]) => {
+      const removals = mod.removedEmails[cat] || [];
+      const additions = mod.addedEmails[cat] || [];
+
+      // Remove from auto list, then add manual list
+      const finalEmails = [...autoList.filter(p => !removals.includes(p.email)).map(p => p.email), ...additions];
+      return Array.from(new Set(finalEmails));
+    };
+
+    const spEmails = resolveList('salesPro', trainingData[partner.id]?.salesPro || []);
+    const tpEmails = resolveList('techPro', trainingData[partner.id]?.techPro || []);
+    const bcEmails = resolveList('bootcamp', (trainingData[partner.id]?.bootcamp || []).filter(p => !!p.date && p.date >= '2026-02-02'));
+    const isEmails = resolveList('implSpec', trainingData[partner.id]?.implSpec || []);
+    const smEmails = resolveList('simplyPure', trainingData[partner.id]?.simplyPure || []);
+
+    const afFAEmails = resolveList('aspFoundationsFA', trainingData[partner.id]?.aspFoundationsFA || []);
+    const afFBEmails = resolveList('aspFoundationsFB', trainingData[partner.id]?.aspFoundationsFB || []);
+    const asFAEmails = resolveList('storageProFA', trainingData[partner.id]?.storageProFA || []);
+    const asFBEmails = resolveList('storageProFB', trainingData[partner.id]?.storageProFB || []);
+    const auFAEmails = resolveList('supportSpecFA', trainingData[partner.id]?.supportSpecFA || []);
+    const auFBEmails = resolveList('supportSpecFB', trainingData[partner.id]?.supportSpecFB || []);
+
+    const foundationsTotal = Array.from(new Set([...afFAEmails, ...afFBEmails])).length;
+    const storageTotal = Array.from(new Set([...asFAEmails, ...asFBEmails])).length;
+    const supportTotal = Array.from(new Set([...auFAEmails, ...auFBEmails])).length;
+
   const requirements: EnablementRequirements = {
-    salesPro: { required: tierDef.enablement.salesPro, obtained: mod.salesPro },
-    techPro: { required: tierDef.enablement.techPro, obtained: mod.techPro },
-    bootcamp: { required: tierDef.enablement.bootcamp, obtained: mod.bootcamp },
-    implSpec: { required: tierDef.enablement.implSpec, obtained: mod.implSpec },
+    salesPro: { required: tierDef.enablement.salesPro, obtained: spEmails.length, manualEmails: mod.addedEmails['salesPro'] || [] },
+    techPro: { required: tierDef.enablement.techPro, obtained: tpEmails.length, manualEmails: mod.addedEmails['techPro'] || [] },
+    bootcamp: { required: tierDef.enablement.bootcamp, obtained: bcEmails.length, manualEmails: mod.addedEmails['bootcamp'] || [] },
+    implSpec: { required: tierDef.enablement.implSpec, obtained: isEmails.length, manualEmails: mod.addedEmails['implSpec'] || [] },
+    simplyPure: { required: tierDef.enablement.simplyPure, obtained: smEmails.length, manualEmails: mod.addedEmails['simplyPure'] || [] },
+    aspFoundations: { required: tierDef.enablement.aspFoundations, obtainedFA: afFAEmails.length, obtainedFB: afFBEmails.length, totalObtained: foundationsTotal, manualEmails: [...(mod.addedEmails['aspFoundationsFA'] || []), ...(mod.addedEmails['aspFoundationsFB'] || [])] },
+    aspStoragePro: { required: tierDef.enablement.aspStoragePro, obtainedFA: asFAEmails.length, obtainedFB: asFBEmails.length, totalObtained: storageTotal, manualEmails: [...(mod.addedEmails['storageProFA'] || []), ...(mod.addedEmails['storageProFB'] || [])] },
+    aspSupportSpec: { required: tierDef.enablement.aspSupportSpec, obtainedFA: auFAEmails.length, obtainedFB: auFBEmails.length, totalObtained: supportTotal, manualEmails: [...(mod.addedEmails['supportSpecFA'] || []), ...(mod.addedEmails['supportSpecFB'] || [])] },
   };
 
   const businessMetrics: BusinessMetrics = {
@@ -137,6 +248,22 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [modifications, setModifications] = useState<GapModification[]>(loadModifications);
   const [history, setHistory] = useState<GapModification[]>(loadHistory);
+  const [events, setEvents] = useState<RoadmapEvent[]>(loadEvents);
+  const [globalRoadmap, setGlobalRoadmapState] = useState<any[] | null>(loadGlobalRoadmap());
+  const [partnerTimelines, setPartnerTimelinesState] = useState<Record<number, any[]>>(loadPartnerTimelines());
+
+  const setGlobalRoadmap = useCallback((data: any[] | null) => {
+    setGlobalRoadmapState(data);
+    saveGlobalRoadmap(data);
+  }, []);
+
+  const updatePartnerTimeline = useCallback((partnerId: number, timeline: any[]) => {
+    setPartnerTimelinesState(prev => {
+      const next = { ...prev, [partnerId]: timeline };
+      savePartnerTimelines(next);
+      return next;
+    });
+  }, []);
 
   const modifiedPartners = useMemo(() => {
     let sourcePartners = basePartners;
@@ -182,6 +309,26 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addEvent = useCallback((event: Omit<RoadmapEvent, "id">) => {
+    const newEvent: RoadmapEvent = {
+      ...event,
+      id: `evt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    setEvents((prev) => {
+      const next = [...prev, newEvent];
+      saveEvents(next);
+      return next;
+    });
+  }, []);
+
+  const removeEvent = useCallback((id: string) => {
+    setEvents((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      saveEvents(next);
+      return next;
+    });
+  }, []);
+
   const getModification = useCallback(
     (partnerId: number) => modifications.find((m) => m.partnerId === partnerId),
     [modifications]
@@ -214,7 +361,11 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
           Math.min(p.requirements.salesPro.obtained, p.requirements.salesPro.required) +
           Math.min(p.requirements.techPro.obtained, p.requirements.techPro.required) +
           Math.min(p.requirements.bootcamp.obtained, p.requirements.bootcamp.required) +
-          Math.min(p.requirements.implSpec.obtained, p.requirements.implSpec.required),
+          Math.min(p.requirements.implSpec.obtained, p.requirements.implSpec.required) +
+          Math.min(p.requirements.simplyPure.obtained, p.requirements.simplyPure.required) +
+          Math.min(p.requirements.aspFoundations.totalObtained, p.requirements.aspFoundations.required) +
+          Math.min(p.requirements.aspStoragePro.totalObtained, p.requirements.aspStoragePro.required) +
+          Math.min(p.requirements.aspSupportSpec.totalObtained, p.requirements.aspSupportSpec.required),
         0
       );
       const totalRequired = filtered.reduce((s, p) => {
@@ -298,6 +449,10 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
           "Tech Pro Gap": Math.max(0, p.requirements.techPro.required - p.requirements.techPro.obtained),
           "Bootcamp Gap": Math.max(0, p.requirements.bootcamp.required - p.requirements.bootcamp.obtained),
           "Impl Spec Gap": Math.max(0, p.requirements.implSpec.required - p.requirements.implSpec.obtained),
+          "Simply Pure Gap": Math.max(0, p.requirements.simplyPure.required - p.requirements.simplyPure.obtained),
+          "ASP Found Gap": Math.max(0, p.requirements.aspFoundations.required - p.requirements.aspFoundations.totalObtained),
+          "ASP Storage Gap": Math.max(0, p.requirements.aspStoragePro.required - p.requirements.aspStoragePro.totalObtained),
+          "ASP Support Gap": Math.max(0, p.requirements.aspSupportSpec.required - p.requirements.aspSupportSpec.totalObtained),
         }));
     },
     []
@@ -312,12 +467,18 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
       const tspMet = filtered.filter((p) => p.requirements.techPro.obtained >= p.requirements.techPro.required).length;
       const bootMet = filtered.filter((p) => p.requirements.bootcamp.obtained >= p.requirements.bootcamp.required).length;
       const implMet = filtered.filter((p) => p.requirements.implSpec.obtained >= p.requirements.implSpec.required).length;
+      const simplyMet = filtered.filter((p) => p.requirements.simplyPure.obtained >= p.requirements.simplyPure.required).length;
+      const foundationsMet = filtered.filter((p) => p.requirements.aspFoundations.totalObtained >= p.requirements.aspFoundations.required).length;
+      const storageMet = filtered.filter((p) => p.requirements.aspStoragePro.totalObtained >= p.requirements.aspStoragePro.required).length;
+      const supportMet = filtered.filter((p) => p.requirements.aspSupportSpec.totalObtained >= p.requirements.aspSupportSpec.required).length;
 
       return [
         { category: "Sales Pro", count: spMet, percentage: Math.round((spMet / total) * 100), color: "var(--color-pure-orange)" },
         { category: "Tech Pro", count: tspMet, percentage: Math.round((tspMet / total) * 100), color: "var(--color-basil-green)" },
         { category: "Bootcamp", count: bootMet, percentage: Math.round((bootMet / total) * 100), color: "var(--color-moss-green)" },
         { category: "Impl Specialist", count: implMet, percentage: Math.round((implMet / total) * 100), color: "var(--color-cinnamon-brown)" },
+        { category: "Simply Pure", count: simplyMet, percentage: Math.round((simplyMet / total) * 100), color: "var(--color-pure-orange)" },
+        { category: "ASP Support", count: supportMet, percentage: Math.round((supportMet / total) * 100), color: "var(--color-ash-gray)" },
       ];
     },
     []
@@ -328,6 +489,7 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
       value={{
         modifications,
         modifiedPartners,
+        events,
         addModification,
         removeModification,
         getModification,
@@ -337,6 +499,12 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
         getModifiedKPIs,
         getModifiedGapBreakdown,
         getModifiedEnablementDistribution,
+        addEvent,
+        removeEvent,
+        globalRoadmap,
+        setGlobalRoadmap,
+        partnerTimelines,
+        updatePartnerTimeline,
       }}
     >
       {children}
