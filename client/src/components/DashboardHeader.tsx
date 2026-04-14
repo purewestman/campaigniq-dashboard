@@ -5,38 +5,146 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Search, Bell, X, Lock, FileClock } from "lucide-react";
+import { CalendarDays, Search, Bell, X, Lock, FileClock, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import PureDividerBackground from "./PureDividerBackground";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModifications } from "@/contexts/ModificationContext";
+import { useOverrides } from "@/contexts/OverrideContext";
+import { loadCommitments } from "@/components/CommitmentTracker";
 
 interface DashboardHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onNavChange?: (id: string) => void;
 }
 
-export default function DashboardHeader({ searchQuery, onSearchChange }: DashboardHeaderProps) {
+interface NotificationItem {
+  id: string;
+  type: "modification" | "override" | "asp" | "commitment";
+  partnerId: number;
+  partnerName: string;
+  message: string;
+  timestamp: number;
+  dateStr: string;
+}
+
+export default function DashboardHeader({ searchQuery, onSearchChange, onNavChange }: DashboardHeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { user, changePassword } = useAuth();
-  const { allModificationHistory } = useModifications();
+  const { allModificationHistory, modifiedPartners } = useModifications();
+  const { overrides, aspOverrides } = useOverrides();
+  
   const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [clearedAt, setClearedAt] = useState<number>(() => {
+    const stored = localStorage.getItem("campaigniq-notifications-cleared");
+    return stored ? parseInt(stored) : 0;
+  });
 
-  const latestHistory = allModificationHistory.slice(-5).reverse();
+  // Unify Data Streams
+  const notifications = useMemo(() => {
+    let items: NotificationItem[] = [];
 
-  // Reset unread count when opening notifications
-  useEffect(() => {
-    if (showNotifications) setUnreadCount(0);
-  }, [showNotifications]);
+    // 1. Partner Score/Tier Modifications
+    allModificationHistory.forEach(mod => {
+      const partner = modifiedPartners.find(p => p.id === mod.partnerId);
+      if (!partner) return;
+      if (user?.role === "partner" && partner.name !== user.name) return; // Restrict visibility
+      
+      const ts = new Date(mod.modifiedAt).getTime();
+      items.push({
+        id: `mod-${mod.partnerId}-${ts}`,
+        type: "modification",
+        partnerId: mod.partnerId,
+        partnerName: partner.name,
+        message: mod.comment ? `Tier/Score Adjusted: "${mod.comment}"` : "Partner metrics adjusted manually",
+        timestamp: ts,
+        dateStr: new Date(mod.modifiedAt).toLocaleString()
+      });
+    });
 
-  // Increment unread count when history changes
-  useEffect(() => {
-    if (allModificationHistory.length > 0 && !showNotifications) {
-      setUnreadCount(prev => prev + 1);
+    // 2. Gap Overrides
+    overrides.forEach(ov => {
+      const partner = modifiedPartners.find(p => p.id === ov.partnerId);
+      if (!partner) return;
+      if (user?.role === "partner" && partner.name !== user.name) return;
+      
+      const ts = new Date(ov.completedAt).getTime();
+      items.push({
+        id: `ov-${ov.partnerId}-${ov.category}-${ts}`,
+        type: "override",
+        partnerId: ov.partnerId,
+        partnerName: partner.name,
+        message: `Requirement Overridden: ${ov.category} by ${ov.completedBy}`,
+        timestamp: ts,
+        dateStr: new Date(ov.completedAt).toLocaleString()
+      });
+    });
+
+    // 3. ASP Manual Approvals
+    aspOverrides.forEach(asp => {
+      const partner = modifiedPartners.find(p => p.id === asp.partnerId);
+      if (!partner) return;
+      if (user?.role === "partner" && partner.name !== user.name) return;
+      
+      const ts = new Date(asp.approvedAt).getTime();
+      items.push({
+        id: `asp-${asp.partnerId}-${ts}`,
+        type: "asp",
+        partnerId: asp.partnerId,
+        partnerName: partner.name,
+        message: "Manually Approved for ASP Tier status",
+        timestamp: ts,
+        dateStr: new Date(asp.approvedAt).toLocaleString()
+      });
+    });
+
+    // 4. Roadmap Commitments
+    const commitments = loadCommitments();
+    commitments.forEach(c => {
+      if (user?.role === "partner" && c.partnerName !== user.name) return;
+      const ts = new Date(c.submittedAt).getTime();
+      items.push({
+        id: `com-${c.partnerId}-${ts}`,
+        type: "commitment",
+        partnerId: c.partnerId,
+        partnerName: c.partnerName,
+        message: `Submitted a roadmap with ${c.commitments.length} tracked milestone(s)`,
+        timestamp: ts,
+        dateStr: new Date(c.submittedAt).toLocaleString()
+      });
+    });
+
+    // Sort descending by time
+    items = items.sort((a, b) => b.timestamp - a.timestamp);
+    return items;
+  }, [allModificationHistory, overrides, aspOverrides, modifiedPartners, user]);
+
+  const unreadCount = notifications.filter(n => n.timestamp > clearedAt).length;
+
+  const handleClearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    setClearedAt(now);
+    localStorage.setItem("campaigniq-notifications-cleared", now.toString());
+    toast.success("All notifications cleared");
+  };
+
+  const handleNotificationClick = (item: NotificationItem) => {
+    setShowNotifications(false);
+    if (!onNavChange) return;
+
+    if (item.type === "modification" || item.type === "override") {
+      onSearchChange(item.partnerName); // Search the partner
+      onNavChange("partners");
+    } else if (item.type === "asp") {
+      onSearchChange(item.partnerName);
+      onNavChange("asp");
+    } else if (item.type === "commitment") {
+      onNavChange("planning");
     }
-  }, [allModificationHistory]);
+  };
 
   const handlePasswordChange = () => {
     const newPass = prompt("Enter a new password for all users in your domain:");
@@ -186,28 +294,50 @@ export default function DashboardHeader({ searchQuery, onSearchChange }: Dashboa
                   >
                     <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
                       <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        <FileClock className="w-4 h-4 text-pure-orange" />
-                        Changelog
+                        <Bell className="w-4 h-4 text-pure-orange" />
+                        Notification Center
                       </h3>
-                      <span className="text-xs text-slate-500 font-medium">{allModificationHistory.length} total edits</span>
+                      <button 
+                        onClick={handleClearAll}
+                        className="text-xs flex items-center gap-1 text-slate-400 hover:text-slate-600 font-bold transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" /> Clear All
+                      </button>
                     </div>
-                    <div className="max-h-[320px] overflow-y-auto w-full p-2 space-y-1">
-                      {latestHistory.length === 0 ? (
-                        <p className="text-[12px] text-slate-500 italic p-4 text-center">No recent changes.</p>
+                    <div className="max-h-[360px] overflow-y-auto w-full p-2 space-y-1">
+                      {notifications.filter(n => n.timestamp > clearedAt).length === 0 ? (
+                        <div className="py-8 px-4 flex flex-col items-center justify-center text-center">
+                          <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 border border-slate-100">
+                            <Bell className="w-4 h-4 text-slate-300" />
+                          </div>
+                          <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">You're caught up!</p>
+                          <p className="text-[11px] text-slate-400 mt-1">No new notifications since last cleared.</p>
+                        </div>
                       ) : (
-                        latestHistory.map((mod, idx) => (
-                          <div key={`${mod.partnerId}-${idx}`} className="p-3 bg-slate-50/50 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg transition-colors flex flex-col gap-1.5 cursor-default">
-                            <div className="flex justify-between items-start">
-                              <span className="text-xs font-bold text-slate-700">Partner ID: {mod.partnerId}</span>
-                              <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Modified</span>
+                        notifications.filter(n => n.timestamp > clearedAt).map((n) => (
+                          <button 
+                            key={n.id} 
+                            onClick={() => handleNotificationClick(n)}
+                            className="w-full text-left p-3 bg-white hover:bg-slate-50 border border-slate-100 rounded-lg transition-colors flex flex-col gap-1.5 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                          >
+                            <div className="flex justify-between items-start w-full">
+                              <span className="text-xs font-bold text-slate-800 truncate pr-2 flex-1">{n.partnerName}</span>
+                              <span className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded font-black tracking-widest uppercase ${
+                                n.type === 'commitment' ? 'bg-sky-50 text-sky-600' :
+                                n.type === 'override' ? 'bg-indigo-50 text-indigo-600' :
+                                n.type === 'asp' ? 'bg-emerald-50 text-emerald-600' :
+                                'bg-orange-50 text-orange-600'
+                              }`}>
+                                {n.type}
+                              </span>
                             </div>
                             <span className="text-[11px] text-slate-500 leading-snug break-words">
-                              {mod.comment ? `"${mod.comment}"` : "Manual email or tier adjustment made."}
+                              {n.message}
                             </span>
-                            <span className="text-[9px] text-slate-400 font-medium">
-                              {new Date(mod.modifiedAt).toLocaleString()}
+                            <span className="text-[9px] text-slate-400 font-bold">
+                              {n.dateStr}
                             </span>
-                          </div>
+                          </button>
                         ))
                       )}
                     </div>

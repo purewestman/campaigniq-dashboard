@@ -227,6 +227,7 @@ export default function Home() {
             <DashboardHeader
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              onNavChange={handleNavChange}
             />
 
             {/* Search indicator */}
