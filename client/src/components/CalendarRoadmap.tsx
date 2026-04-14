@@ -30,7 +30,7 @@ const timelineData = [
         events: [
           { category: "Partner Enablement", items: ["Enablement BCX", "Nutanix Workshop - NTT", "Enablement NTT CT", "Enablement Altron", "9th Bit - Portworx workshop", "Alliance (RedHat) workshop", "Triple H Tech event"] },
           { category: "Partner Demand Gen", items: ["First Technology Round Table", "Customer event NTT CPT", "TCM Customer event"] },
-          { category: "Partner SE Journey", items: ["NEC Monthly tech sessions", "NTT JHB", "FT KZN"] },
+          { category: "Partner SE Journey", items: ["NEC Monthly tech sessions", "NTT JHB CIP", "FT KZN", "DSC PX"] },
           { category: "Partner Digital Initiatives", items: ["Pure/Commvault Webinar"] },
           { category: "EMEA Orange Belt", items: ["Review Webinar"] },
         ]
@@ -45,7 +45,7 @@ const timelineData = [
         events: [
           { category: "Partner Enablement", items: ["FT KZN - PSC enablement", "DSC Pitch assessment", "Enablement NEC - Sales team", "Enablement BCX - EG1 workshop", "NTT/DSC CPT", "Paddock Club Event CPT", "SE Bootcamp on May 5th"] },
           { category: "Partner Demand Gen", items: ["Pure Storage Retail Event - NTT", "Triple H customer event", "Customer event NEC KZN"] },
-          { category: "Partner SE Journey", items: ["KZN FT"] },
+          { category: "Partner SE Journey", items: ["KZN FT", "NTT JHB FA/FB", "DSC FA//Blade"] },
         ]
       },
       {
@@ -62,7 +62,7 @@ const timelineData = [
       {
         name: "July",
         events: [
-          { category: "Partner Enablement", items: ["Nutanix/Pure-NTT", "Cisco/Pure-BCX", "First Technology - Portworx deepdive", "Reddington Customer workshop", "Paddock Club Event"] },
+          { category: "Partner Enablement", items: ["Nutanix/Pure-NTT", "Cisco/Pure-BCX", "First Technology - PX deep-dive", "Reddington Customer workshop", "Paddock Club Event"] },
           { category: "Partner Demand Gen", items: ["FT KZN - PSC Workshop", "NTT JHB Customer session"] },
         ]
       }
@@ -75,7 +75,7 @@ const timelineData = [
         name: "August",
         events: [
           { category: "Main Events", items: ["Elite Requirements Check"] },
-          { category: "Partner Enablement", items: ["Enablement Pitch assessment - Altron", "Enablement Pitch assessment -BCX", "Rubrik/Pure-BCX", "Cape Town Partner check-in person", "Alliance (Commvault) workshop", "SE Bootcamp"] },
+          { category: "Partner Enablement", items: ["Enablement Pitch assessment - Altron", "Enablement Pitch assessment -BCX", "Rubrik/Pure-BCX", "Cape Town Partner check-in person", "Alliance (Commvault) workshop", "SE Bootcamp", "NTT, DSC Solution based"] },
           { category: "Partner Demand Gen", items: ["FT KZN - Womens Day", "Altron Customer session", "BCX Customer event CT"] },
           { category: "EMEA Orange Belt", items: ["Review Webinar"] },
         ]

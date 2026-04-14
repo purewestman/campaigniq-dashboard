@@ -15,7 +15,7 @@ export default function LoginPage() {
   // Login State
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [errorType, setErrorType] = useState<"none" | "invalid" | "unauthorized">("none");
   const [loading, setLoading] = useState(false);
 
   // Setup/Reset State
@@ -28,12 +28,15 @@ export default function LoginPage() {
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
+    setErrorType("none");
     
     setTimeout(() => {
       const result = login(password, username);
-      if (result === 'fail') {
-        setError(true);
+      if (result === 'unauthorized_domain') {
+        setErrorType("unauthorized");
+        setLoading(false);
+      } else if (result === 'fail') {
+        setErrorType("invalid");
         setLoading(false);
       } else if (result === 'setup_required') {
         setView("force_setup");
@@ -188,9 +191,13 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {error && (
+                {errorType !== "none" && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-bold text-center text-red-500 py-2 bg-red-50 rounded-lg">
-                    Incorrect domain or password.
+                    {errorType === "unauthorized" ? (
+                      <>Domain is not authorized for dashboard access.</>
+                    ) : (
+                      <>Incorrect domain or password.</>
+                    )}
                   </motion.div>
                 )}
 

@@ -11,7 +11,7 @@ interface UserIdentity {
 interface AuthContextType {
   isLoggedIn: boolean;
   user: UserIdentity | null;
-  login: (password: string, username?: string) => 'success' | 'setup_required' | 'fail';
+  login: (password: string, username?: string) => 'success' | 'setup_required' | 'fail' | 'unauthorized_domain';
   logout: () => void;
   changePassword: (newPassword: string) => boolean;
   resetPassword: (domain: string, newPassword: string) => boolean;
@@ -49,6 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Partner logic
     const partnerUrlStr = username.toLowerCase().trim();
     const partnerMatch = partners.find(p => p.domain === partnerUrlStr);
+    
+    if (!partnerMatch) {
+      return 'unauthorized_domain';
+    }
     
     if (partnerMatch) {
       const storedPassword = localStorage.getItem(`pwd_${partnerUrlStr}`);

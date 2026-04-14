@@ -30,6 +30,8 @@ import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
 import SecurityLogPage from "@/pages/SecurityLogPage";
+import TrainingHub from "@/pages/TrainingHub";
+import PlanningHub from "@/pages/PlanningHub";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
@@ -162,29 +164,23 @@ export default function Home() {
     switch (activeNav) {
       case "partners":
         return <PartnersPage onNavigateToActivity={navigateToActivity} />;
-      case "tiers":
-        return <TierCompliancePage />;
-      case "gaps":
-        return <GapAnalysisPage />;
-      case "certs":
-        return <CertificationsPage />;
-      case "progression":
-        return <TierProgressionPage />;
       case "training":
-        return <TrainingDetailsPage />;
-      case "activity":
         return (
-          <PartnerActivityPage 
-            initialPartner={activityPartnerFilter || undefined} 
-            initialCourse={activityCourseFilter || undefined} 
-            initialSearch={activitySearchFilter || undefined}
+          <TrainingHub 
+            activityPartnerFilter={activityPartnerFilter}
+            activityCourseFilter={activityCourseFilter}
+            activitySearchFilter={activitySearchFilter}
             onClearFilters={() => {
               setActivityPartnerFilter(null);
               setActivityCourseFilter(null);
               setActivitySearchFilter(null);
             }}
+            onNavigateToActivity={navigateToActivity}
           />
         );
+
+      case "planning":
+        return <PlanningHub />;
 
       case "asp":
         return <AspTrackingPage />;
@@ -192,68 +188,8 @@ export default function Home() {
       case "security":
         return <SecurityLogPage />;
 
-      case "commitments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <CalendarCheck className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
-                Partner Commitment Tracker
-              </h2>
-              <p className="text-[13px] text-muted-foreground mt-1">
-                Partner-submitted enablement timeline commitments from exported PDF plans.
-              </p>
-            </div>
-            <CommitmentTracker 
-              commitments={commitments} 
-              onDelete={handleDeleteCommitment} 
-              onUpdate={() => setCommitments(loadCommitments())}
-            />
-          </div>
-        );
-
-      case "initiatives":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <CalendarDays className="w-5 h-5" style={{ color: "var(--color-basil-green)" }} />
-                FY27 RSA Initiatives
-              </h2>
-              <p className="text-[13px] text-muted-foreground mt-1">
-                Drag-and-drop quarterly planning initiatives map.
-              </p>
-            </div>
-            <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-               <CalendarRoadmap />
-            </section>
-          </div>
-        );
-
-      case "journey":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Map className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
-                Global SE Journey
-              </h2>
-              <p className="text-[13px] text-muted-foreground mt-1">
-                The structured core enablement path mapping direct outcomes for partners.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2">
-                <SEJourneyMap />
-              </div>
-              <div className="xl:col-span-1">
-                <CorePlatforms />
-              </div>
-            </div>
-          </div>
-        );
-
+      case "reports":
+        return <ReportsPage />;
       case "settings":
         return (
           <div className="space-y-6">

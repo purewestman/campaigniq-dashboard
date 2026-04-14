@@ -326,8 +326,8 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                     <Pencil className="w-4 h-4" style={{ color: "var(--color-pure-orange)" }} />
                   </div>
                   <div>
-                    <h3 className="text-[15px] font-bold text-white">Modify Partner</h3>
-                    <p className="text-[11px]" style={{ color: "var(--color-ash-gray)" }}>
+                    <h3 className="text-[15px] font-bold text-slate-900">Modify Partner</h3>
+                    <p className="text-[11px] text-slate-600 font-medium">
                       {partner.name}
                     </p>
                   </div>
@@ -339,7 +339,7 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                       className="p-2 rounded-lg transition-colors"
                       style={{
                         background: showHistory ? "color-mix(in srgb, var(--color-pure-orange) 20%, transparent)" : "transparent",
-                        color: "var(--color-ash-gray)",
+                        color: "var(--color-stone-gray)",
                       }}
                       title="View modification history"
                     >
@@ -348,8 +348,8 @@ export default function ModifyGapModal({ partner, isOpen, onClose }: ModifyGapMo
                   )}
                   <button
                     onClick={onClose}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                    style={{ color: "var(--color-ash-gray)" }}
+                    className="p-2 rounded-lg hover:bg-black/10 transition-colors"
+                    style={{ color: "var(--color-stone-gray)" }}
                   >
                     <X className="w-4 h-4" />
                   </button>

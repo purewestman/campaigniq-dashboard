@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+// Forced HMR reload: clearing ReferenceError cache
 import { motion } from "framer-motion";
 import {
   TIER_DEFINITIONS,
@@ -30,17 +31,53 @@ import {
   Filter,
   Layers,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function ReportsPage() {
+  const { user } = useAuth();
   const { overrides } = useOverrides();
-  const { modifiedPartners, modifications, allModificationHistory } = useModifications();
+  const { modifiedPartners, modifications, allModificationHistory, partnerTimelines } = useModifications();
   const [exporting, setExporting] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"compliance" | "roadmap">("compliance");
+  const [activeTab, setActiveTab] = useState<"compliance" | "roadmap" | "audit">("compliance");
   
   // Table state
   const [complianceFilter, setComplianceFilter] = useState<ComplianceFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Flattened Roadmap Commitments Data
+  const roadmapAuditLog = useMemo(() => {
+    const flat: any[] = [];
+    Object.entries(partnerTimelines || {}).forEach(([partnerIdStr, timeline]) => {
+      const pId = parseInt(partnerIdStr);
+      const partner = modifiedPartners.find(p => p.id === pId);
+      if (!partner) return;
+      
+      // Strict role-based isolation
+      if (user?.role === 'partner' && partner.name !== user.name) return;
+
+      timeline?.forEach((quarter: any) => {
+        quarter?.months?.forEach((month: any) => {
+          month?.events?.forEach((eg: any) => {
+            eg?.items?.forEach((item: any) => {
+              if ((typeof item === 'string' && item.trim()) || (typeof item === 'object' && item.text?.trim())) {
+                flat.push({
+                  partnerName: partner.name,
+                  tier: TIER_DEFINITIONS[partner.programTier]?.label || "Unknown",
+                  quarter: quarter.quarter || "Unknown",
+                  month: month.name || "Unknown",
+                  category: eg.category || "General",
+                  commitment: typeof item === 'string' ? item : item.text,
+                  date: typeof item === 'string' ? '' : (item.date || ''),
+                });
+              }
+            });
+          });
+        });
+      });
+    });
+    return flat.sort((a, b) => a.partnerName.localeCompare(b.partnerName) || a.quarter.localeCompare(b.quarter));
+  }, [partnerTimelines, modifiedPartners, user]);
 
   // Executive Summary Data
   const summary = useMemo(() => {
@@ -156,6 +193,12 @@ export default function ReportsPage() {
         csv += `"${m.partnerName}",${m.salesPro},${m.techPro},${m.bootcamp},${m.implSpec},"${m.comment}","${m.modifiedBy}","${m.modifiedAt}"\n`;
       });
       filename = "fy27-modification-audit-log.csv";
+    } else if (type === "roadmaps") {
+      csv = "Partner,Program Tier,Quarter,Month,Category,Commitment,Target Date\n";
+      roadmapAuditLog.forEach((r) => {
+        csv += `"${r.partnerName}","${r.tier}","${r.quarter}","${r.month}","${r.category}","${r.commitment.replace(/"/g, '""')}","${r.date || 'TBD'}"\n`;
+      });
+      filename = "fy27-partner-roadmaps-audit.csv";
     }
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -204,6 +247,14 @@ export default function ReportsPage() {
           }`}
         >
           Enablement Roadmap
+        </button>
+        <button
+          onClick={() => setActiveTab("audit")}
+          className={`pb-4 px-2 text-sm font-bold transition-all border-b-2 ${
+            activeTab === "audit" ? "border-pure-orange text-pure-orange" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Partner Submissions Audit
         </button>
       </div>
 
@@ -366,6 +417,7 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { id: "partners", label: "Partner Compliance", description: "Full partner data with tier, enablement scores, business metrics, and contact info", icon: Users, color: "var(--color-pure-orange)" },
+                { id: "roadmaps", label: "Roadmap Commitments", description: `${roadmapAuditLog.length} individual roadmap objectives tracked across partners`, icon: Calendar, color: "var(--color-basil-green)" },
                 { id: "gaps", label: "Gap Analysis", description: "Detailed gap breakdown by category for all partners", icon: AlertTriangle, color: "var(--color-cinnamon-brown)" },
                 { id: "certs", label: "Certification Records", description: "All exam records with partner, email, and certification name", icon: Award, color: "var(--color-basil-green)" },
                 { id: "overrides", label: "Override Audit Log", description: `${overrides.length} manual overrides with comments and timestamps`, icon: CheckCircle2, color: "var(--color-moss-green)" },
@@ -439,6 +491,71 @@ export default function ReportsPage() {
             />
           </motion.div>
         </div>
+      )}
+
+      {activeTab === "audit" && (
+        <motion.div
+           initial={{ opacity: 0, y: 12 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="space-y-6 animate-in fade-in duration-500"
+        >
+           <div className="terrain-card p-6 border-l-[3px]" style={{ borderColor: 'var(--color-basil-green)'}}>
+              <h3 className="text-[15px] font-bold text-foreground mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4" style={{ color: "var(--color-basil-green)" }} />
+                Comprehensive Roadmap Submissions DB
+              </h3>
+              
+              <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                 <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                       <thead className="bg-slate-50 border-b border-border">
+                          <tr>
+                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Partner</th>
+                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Quarter / Month</th>
+                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Category</th>
+                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Commitment</th>
+                             <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Target Date</th>
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-border">
+                          {roadmapAuditLog.length > 0 ? roadmapAuditLog.map((row, i) => (
+                             <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-4 py-3">
+                                   <div className="font-bold text-slate-900 text-[12px] whitespace-nowrap">{row.partnerName}</div>
+                                   <div className="text-[10px] text-slate-500">{row.tier}</div>
+                                </td>
+                                <td className="px-4 py-3 text-[12px] text-slate-700 whitespace-nowrap">
+                                   <strong>{row.month}</strong> <span className="text-muted-foreground ml-1">({row.quarter.split(' ')[0]})</span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border bg-slate-50 text-slate-600">
+                                      {row.category}
+                                   </span>
+                                </td>
+                                <td className="px-4 py-3 text-[12px] text-slate-700 font-medium">
+                                   {row.commitment}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                   {row.date && row.date !== 'TBD' ? (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-bold border border-emerald-200 shadow-sm">
+                                         <Calendar className="w-3 h-3" /> {row.date}
+                                      </span>
+                                   ) : (
+                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-lg text-[11px] font-bold border border-amber-200">
+                                         <AlertTriangle className="w-3 h-3" /> Pending Date
+                                      </span>
+                                   )}
+                                </td>
+                             </tr>
+                          )) : (
+                             <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-[13px] italic">No custom roadmap timelines submitted by partners yet.</td></tr>
+                          )}
+                       </tbody>
+                    </table>
+                 </div>
+              </div>
+           </div>
+        </motion.div>
       )}
     </div>
   );

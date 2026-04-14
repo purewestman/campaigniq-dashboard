@@ -856,14 +856,9 @@ const totalExamsPassedCount = partners.reduce((s, p) => s + p.totalExams, 0);
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
   { id: "partners", label: "Partners", icon: "Building2", badge: totalPartnersCount },
-  { id: "tiers", label: "Tier Compliance", icon: "Shield" },
-  { id: "progression", label: "Tier Progression", icon: "TrendingUp" },
-  { id: "gaps", label: "Gap Analysis", icon: "AlertTriangle" },
-  { id: "certs", label: "Certifications", icon: "Award", badge: totalExamsPassedCount },
-  { id: "activity", label: "Activity Tracer", icon: "Activity" },
+  { id: "training", label: "Training & Activity", icon: "Award", badge: totalExamsPassedCount },
   { id: "asp", label: "ASP Tracking", icon: "ShieldAlert" },
-  { id: "initiatives", label: "RSA Initiatives", icon: "CalendarDays" },
-  { id: "journey", label: "SE Journey", icon: "Map" },
-  { id: "commitments", label: "Commitments", icon: "CalendarCheck" },
+  { id: "planning", label: "Strategic Planning", icon: "Map" },
+  { id: "reports", label: "Reporting Center", icon: "FileBarChart" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];
