@@ -321,26 +321,32 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
                           const people = trainingData[partner.id]?.[cat] ?? [];
                           const catLabel = { salesPro: "Sales Pro", techPro: "Tech Pro", bootcamp: "Bootcamp", implSpec: "Impl Spec" }[cat] ?? cat;
                           return (
-                            <div className="mt-2 rounded-lg p-3 border" style={{ background: "var(--color-ash-gray)", borderColor: "var(--color-ash-gray)" }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-basil-green)" }}>
+                            <div 
+                              className="mt-2 rounded-lg p-4 border shadow-sm" 
+                              style={{ 
+                                background: "color-mix(in srgb, var(--color-stone-gray) 15%, transparent)", 
+                                borderColor: "color-mix(in srgb, var(--color-stone-gray) 50%, transparent)" 
+                              }}
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--color-pure-orange)" }}>
                                   {catLabel} — Completed ({people.length})
                                 </p>
-                                <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                                <button onClick={(e) => { e.stopPropagation(); setCertPopover(null); }} className="text-muted-foreground hover:text-foreground transition-colors p-1 bg-black/5 hover:bg-black/10 rounded-md">
                                   <X className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                               {people.length === 0 ? (
                                 <p className="text-[11px] text-muted-foreground italic">No training completions recorded for this category.</p>
                               ) : (
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                   {people.map((person) => (
                                     <div key={person.email} className="flex items-center gap-2">
-                                      <GraduationCap className="w-3 h-3 shrink-0" style={{ color: "var(--color-moss-green)" }} />
-                                      <span className="text-[11px] font-medium text-foreground">
+                                      <GraduationCap className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--color-moss-green)" }} />
+                                      <span className="text-[11px] font-bold text-slate-800">
                                         {person.firstName} {person.lastName}
                                       </span>
-                                      <span className="text-[10px] text-muted-foreground">{person.email}</span>
+                                      <span className="text-[10px] text-slate-500">{person.email}</span>
                                     </div>
                                   ))}
                                 </div>
