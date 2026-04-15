@@ -115,6 +115,11 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
         {dynamicNavItems.map((item) => {
           const Icon = iconMap[item.icon] || LayoutDashboard;
           const isActive = activeNav === item.id;
+          
+          let themeColor = "var(--color-pure-orange)";
+          if (item.id === "training") themeColor = "var(--color-basil-green)";
+          else if (item.id === "planning") themeColor = "var(--color-quartz-pink)";
+          else if (item.id === "reports") themeColor = "var(--color-cinnamon-brown)";
 
           return (
             <button
@@ -134,8 +139,8 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                   layoutId="sidebar-active"
                   className="absolute inset-0 rounded-xl"
                   style={{
-                    background: "linear-gradient(135deg, color-mix(in srgb, var(--color-pure-orange) 25%, transparent), color-mix(in srgb, var(--color-pure-orange) 15%, transparent))",
-                    border: "1px solid color-mix(in srgb, var(--color-pure-orange) 20%, transparent)",
+                    background: `linear-gradient(135deg, color-mix(in srgb, ${themeColor} 25%, transparent), color-mix(in srgb, ${themeColor} 15%, transparent))`,
+                    border: `1px solid color-mix(in srgb, ${themeColor} 20%, transparent)`,
                   }}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
@@ -159,8 +164,8 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                   animate={{ scale: 1 }}
                   className="ml-auto relative z-10 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                   style={{
-                    background: "color-mix(in srgb, var(--color-pure-orange) 25%, transparent)",
-                    color: "var(--color-pure-orange)",
+                    background: `color-mix(in srgb, ${themeColor} 25%, transparent)`,
+                    color: themeColor === "var(--color-pure-orange)" ? themeColor : `color-mix(in srgb, ${themeColor} 90%, white)`,
                   }}
                 >
                   {item.badge}
