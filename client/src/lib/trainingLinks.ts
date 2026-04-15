@@ -48,10 +48,10 @@ export const TRAINING_LINKS: Record<string, TrainingLink> = {
     audience: "Support Engineers, Technical Support",
   },
   aspStoragePro: {
-    title: "Storage Professional Certification",
+    title: "FlashBlade Storage Professional Certification",
     url: "https://purestorage.intellum.com/learn/course/storage-professional-certification",
     description:
-      "FlashArray/FlashBlade Storage Professional Certification exam — required for ASP eligibility.",
+      "FlashBlade Storage Professional Certification exam — required for ASP eligibility.",
     audience: "Systems Engineers, Solution Architects",
   },
   aspSupportSpec: {

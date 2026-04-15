@@ -283,8 +283,8 @@ export function generatePartnerProfileHtml(partner: Partner): string {
        <div style="margin-top:40px; border-top:2px solid #f1f5f9; padding-top:40px;">
          <h2 style="font-size:24px; font-weight:900; color:#1e293b; margin-bottom:24px; letter-spacing:-0.03em;">Authorized Support Partner (ASP) Status</h2>
          ${enablementRow("aspFoundations", "ASP Foundations", partner.requirements.aspFoundations.required, dedupe([...(training?.aspFoundationsFA || []), ...(training?.aspFoundationsFB || [])]), [], { fa: training?.aspFoundationsFA?.length || 0, fb: training?.aspFoundationsFB?.length || 0 })}
-         ${enablementRow("aspStoragePro", "Storage Professional", partner.requirements.aspStoragePro.required, dedupe([...(training?.aspStorageProFA || []), ...(training?.aspStorageProFB || [])]), [], { fa: training?.aspStorageProFA?.length || 0, fb: training?.aspStorageProFB?.length || 0 })}
-         ${enablementRow("aspSupportSpec", "Support Specialist", partner.requirements.aspSupportSpec.required, dedupe([...(training?.supportSpecFA || []), ...(training?.supportSpecFB || [])]), [], { fa: training?.supportSpecFA?.length || 0, fb: training?.supportSpecFB?.length || 0 })}
+         ${enablementRow("aspStoragePro", "FlashBlade Storage Pro", partner.requirements.aspStoragePro.required, dedupe([...(training?.aspStorageProFB || [])]), [], { fa: 0, fb: training?.aspStorageProFB?.length || 0 })}
+         ${enablementRow("aspSupportSpec", "FlashBlade Support Spec", partner.requirements.aspSupportSpec.required, dedupe([...(training?.supportSpecFB || [])]), [], { fa: 0, fb: training?.supportSpecFB?.length || 0 })}
        </div>
     </div>`;
 

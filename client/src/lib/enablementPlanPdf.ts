@@ -389,7 +389,7 @@ function sectionAsp(partner: Partner, aspOverride: AspOverride | undefined) {
         </div>
         <div style="display:flex;gap:12px;">
           ${aspStepBlock(1, "ASP Foundations", "FlashArray/FlashBlade Foundations Training & Assessment", asp?.foundations ?? [], "aspFoundations")}
-          ${aspStepBlock(2, "Storage Pro Cert", "Storage Professional Certification", asp?.storageProCert ?? [], "aspStoragePro")}
+          ${aspStepBlock(2, "Storage Pro Cert", "FlashBlade Storage Professional Certification", asp?.storageProCert ?? [], "aspStoragePro")}
           ${aspStepBlock(3, "Support Spec Cert", "FlashBlade Support Specialist cert or certification", asp?.supportSpecCert ?? [], "aspSupportSpec")}
         </div>
         ${!isEligible && gapParts.length > 0 ? `
@@ -476,7 +476,7 @@ function sectionTimeline(partner: Partner) {
     
     { month: "M7-8", id: "ms-asp-fnd", icon: "🛡️", label: "ASP Foundations Specialization", desc: "Qualify for Authorized Support Partner status with specialized training.", required: true },
     { month: "M7-9", id: "ms-ref", icon: "👥", label: "Customer Success / Reference Stories", desc: "Develop joint customer reference materials and case studies.", required: true },
-    { month: "M8-9", id: "ms-storage", icon: "🏆", label: "Storage Professional Certification", desc: "Advanced certification for storage architects and experts.", required: true },
+    { month: "M8-9", id: "ms-storage", icon: "🏆", label: "ASP Storage Pro", desc: "Advanced certification focusing on the FlashBlade portfolio.", required: true },
     
     { month: "M10-11", id: "ms-support", icon: "🛡️", label: "ASP Support Specialist", desc: "Validate expert-level support capabilities for the full portfolio.", required: true },
     { month: "M10-12", id: "ms-mkt", icon: "📈", label: "Strategic Market Expansion", desc: "Full alignment on solution practices and joint market (MDF) plans.", required: true },

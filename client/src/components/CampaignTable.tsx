@@ -140,7 +140,7 @@ function RequirementBarWithOverride({
     if (category === 'aspFoundations') {
       sources = [...(trainingData[partnerId]?.aspFoundationsFA ?? []), ...(trainingData[partnerId]?.aspFoundationsFB ?? [])];
     } else if (category === 'aspStoragePro') {
-      sources = [...(trainingData[partnerId]?.aspStorageProFA ?? []), ...(trainingData[partnerId]?.aspStorageProFB ?? [])];
+      sources = [...(trainingData[partnerId]?.aspStorageProFB ?? [])];
     } else if (category === 'aspSupportSpec') {
       sources = [...(trainingData[partnerId]?.supportSpecFB ?? [])];
     } else {
@@ -157,7 +157,7 @@ function RequirementBarWithOverride({
         implSpec: ['Implementation'],
         simplyPure: ['Simply Pure'],
         aspFoundations: ['Foundations', 'ASP'],
-        aspStoragePro: ['Storage Pro'],
+        aspStoragePro: ['FlashBlade Storage Professional Certification'],
         aspSupportSpec: ['FlashBlade Support Specialist cert', 'FlashBlade Support Specialist Certification']
       };
       const keywords = categoryKeywords[category] || [];
@@ -165,7 +165,7 @@ function RequirementBarWithOverride({
         .filter(a => {
           if (keywords.length === 0) return true;
           const matchesKw = keywords.some(k => a.activity.toLowerCase().includes(k.toLowerCase()));
-          if (category === 'aspSupportSpec') {
+          if (category === 'aspSupportSpec' || category === 'aspStoragePro') {
             const raw = a.activity.toLowerCase();
             return matchesKw && !raw.includes('prep') && !raw.includes('introduction') && !raw.includes('next steps');
           }
@@ -197,7 +197,7 @@ function RequirementBarWithOverride({
     // Map base ASP categories to their FB/FA counterparts for manual entry
     let targetKey = category as string;
     if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
-    else if (category === 'aspStoragePro') targetKey = 'storageProFA';
+    else if (category === 'aspStoragePro') targetKey = 'storageProFB';
     else if (category === 'aspSupportSpec') targetKey = 'supportSpecFB';
 
     // Create a readable nominated name
@@ -229,7 +229,7 @@ function RequirementBarWithOverride({
     } else {
       let targetKey = category as string;
       if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
-      else if (category === 'aspStoragePro') targetKey = 'storageProFA';
+      else if (category === 'aspStoragePro') targetKey = 'storageProFB';
       else if (category === 'aspSupportSpec') targetKey = 'supportSpecFB';
 
       const mod = getModification(partnerId);
@@ -345,7 +345,7 @@ function RequirementBarWithOverride({
         {!override && (() => {
           let tKey = category as string;
           if (category === 'aspFoundations') tKey = 'aspFoundationsFA';
-          else if (category === 'aspStoragePro') tKey = 'storageProFA';
+          else if (category === 'aspStoragePro') tKey = 'storageProFB';
           else if (category === 'aspSupportSpec') tKey = 'supportSpecFB';
           const m = getModification(partnerId);
           return m && m.addedEmails?.[tKey] && m.addedEmails[tKey].length > 0;
@@ -729,9 +729,9 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
         />
         <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
         <AspStep
-          step={2}
+          step="2"
           label="Storage Pro Cert"
-          sublabel="FlashArray / FlashBlade Storage Professional Certification"
+          sublabel="FlashBlade Storage Professional Certification"
           required={2}
           people={asp?.storageProCert ?? []}
         />

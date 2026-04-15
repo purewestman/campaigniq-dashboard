@@ -121,8 +121,8 @@ export function getDefaultTimeline(partner: Partner): TimelineItem[] {
       monthRange: "Month 8-9",
       quarter: "Q3",
       category: "certification",
-      label: "Storage Professional Certification",
-      description: "Advanced certification for storage architects and implementation experts.",
+      label: "FlashBlade Storage Professional",
+      description: "Advanced certification focusing on the FlashBlade portfolio.",
       status: reqs.aspStoragePro.totalObtained >= reqs.aspStoragePro.required ? "completed" : "planned",
       icon: Award,
       color: "#FF7023"

@@ -22,7 +22,7 @@ export interface PartnerAspData {
 export const aspData: Record<number, PartnerAspData> = {
   1: {
     foundations: [{ email: "jp.marais@datasciences.co.za", firstName: "Jean-Pierre", lastName: "Marais" }, { email: "jacques.vanaswegen@datasciences.co.za", firstName: "Jacques", lastName: "van Aswegen" }, { email: "danie.grobler@datasciences.co.za", firstName: "Danie", lastName: "Grobler" }, { email: "mekeal.beepath@datasciences.co.za", firstName: "Mekeal", lastName: "Beepath" }],
-    storageProCert: [{ email: "riaan.ras@datasciences.co.za", firstName: "Riaan", lastName: "Ras" }, { email: "jp.marais@datasciences.co.za", firstName: "Jean-Pierre", lastName: "Marais" }, { email: "gino.thomas@datasciences.co.za", firstName: "Gino", lastName: "Thomas" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [], // They only had FA
     eligible: false,
   },
@@ -46,37 +46,37 @@ export const aspData: Record<number, PartnerAspData> = {
   },
   5: {
     foundations: [],
-    storageProCert: [{ email: "cameron.madurai@ftechkzn.co.za", firstName: "Cameron", lastName: "Madurai" }, { email: "ramiror@ftechkzn.co.za", firstName: "Ramiro", lastName: "Rampartab" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [], // They only had FA
     eligible: false,
   },
   6: {
     foundations: [],
-    storageProCert: [{ email: "christopher.young@ioco.tech", firstName: "Christopher", lastName: "Young" }, { email: "jim.bokaba@ioco.tech", firstName: "Jim", lastName: "Bokaba" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [],
     eligible: false,
   },
   7: {
     foundations: [],
-    storageProCert: [{ email: "adolph.madzivhandila@sithabile.co.za", firstName: "Adolph", lastName: "Madzivhandila" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [], // Madzivhandila was FA, not FB.
     eligible: false,
   },
   8: {
     foundations: [],
-    storageProCert: [{ email: "dierk.lobbecke@tcm.co.za", firstName: "Dierk", lastName: "Lobbecke" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [], // Lobbecke was FA, not FB.
     eligible: false,
   },
   9: {
     foundations: [{ email: "faizel.saiet@altron.com", firstName: "Faizel", lastName: "Saiet" }, { email: "mpho.mpya@altron.com", firstName: "Mpho", lastName: "Mpya" }, { email: "andrew.govender@altron.com", firstName: "Andrew", lastName: "Govender" }, { email: "selvan.pillay@altron.com", firstName: "Selvan", lastName: "Pillay" }, { email: "williamrobert.souter@altron.com", firstName: "Robert", lastName: "Souter" }, { email: "robert.mlombile@altron.com", firstName: "Robert", lastName: "Mlombile" }],
-    storageProCert: [{ email: "williamrobert.souter@altron.com", firstName: "Robert", lastName: "Souter" }, { email: "mpho.mpya@altron.com", firstName: "Mpho", lastName: "Mpya" }],
+    storageProCert: [{ email: "williamrobert.souter@altron.com", firstName: "Robert", lastName: "Souter" }], // Mpho was FA
     supportSpecCert: [],
     eligible: false,
   },
   15: {
     foundations: [],
-    storageProCert: [{ email: "linda.maoyi@billionrows.co.za", firstName: "Linda", lastName: "Maoyi" }],
+    storageProCert: [], // Only had FA
     supportSpecCert: [],
     eligible: false,
   },
