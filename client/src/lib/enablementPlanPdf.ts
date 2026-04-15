@@ -390,7 +390,7 @@ function sectionAsp(partner: Partner, aspOverride: AspOverride | undefined) {
         <div style="display:flex;gap:12px;">
           ${aspStepBlock(1, "ASP Foundations", "FlashArray/FlashBlade Foundations Training & Assessment", asp?.foundations ?? [], "aspFoundations")}
           ${aspStepBlock(2, "Storage Pro Cert", "Storage Professional Certification", asp?.storageProCert ?? [], "aspStoragePro")}
-          ${aspStepBlock(3, "Support Spec Cert", "Support Specialist Certification", asp?.supportSpecCert ?? [], "aspSupportSpec")}
+          ${aspStepBlock(3, "Support Spec Cert", "FlashBlade Support Specialist cert or certification", asp?.supportSpecCert ?? [], "aspSupportSpec")}
         </div>
         ${!isEligible && gapParts.length > 0 ? `
         <div style="margin-top:14px;padding:10px 14px;background:#fff3cd;border-radius:6px;font-size:11px;color:#92400e;">

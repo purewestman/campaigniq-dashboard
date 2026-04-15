@@ -133,7 +133,7 @@ export function getDefaultTimeline(partner: Partner): TimelineItem[] {
       quarter: "Q4",
       category: "certification",
       label: "ASP Support Specialist",
-      description: "Validate expert-level support capabilities for the full Pure portfolio.",
+      description: "Validate expert-level support capabilities for the full portfolo.",
       status: reqs.aspSupportSpec.totalObtained >= reqs.aspSupportSpec.required ? "completed" : "planned",
       icon: Shield,
       color: "#FF7023"

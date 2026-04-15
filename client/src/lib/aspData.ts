@@ -13,7 +13,7 @@ export interface PartnerAspData {
   foundations: AspPerson[];
   /** Earned FlashArray/FlashBlade Storage Professional Certification */
   storageProCert: AspPerson[];
-  /** Earned FlashArray/FlashBlade Support Specialist Certification */
+  /** Earned FlashBlade Support Specialist Certification */
   supportSpecCert: AspPerson[];
   /** True when all 3 categories have ≥2 individuals */
   eligible: boolean;
@@ -23,13 +23,13 @@ export const aspData: Record<number, PartnerAspData> = {
   1: {
     foundations: [{ email: "jp.marais@datasciences.co.za", firstName: "Jean-Pierre", lastName: "Marais" }, { email: "jacques.vanaswegen@datasciences.co.za", firstName: "Jacques", lastName: "van Aswegen" }, { email: "danie.grobler@datasciences.co.za", firstName: "Danie", lastName: "Grobler" }, { email: "mekeal.beepath@datasciences.co.za", firstName: "Mekeal", lastName: "Beepath" }],
     storageProCert: [{ email: "riaan.ras@datasciences.co.za", firstName: "Riaan", lastName: "Ras" }, { email: "jp.marais@datasciences.co.za", firstName: "Jean-Pierre", lastName: "Marais" }, { email: "gino.thomas@datasciences.co.za", firstName: "Gino", lastName: "Thomas" }],
-    supportSpecCert: [{ email: "danie.grobler@datasciences.co.za", firstName: "Danie", lastName: "Grobler" }, { email: "riaan.ras@datasciences.co.za", firstName: "Riaan", lastName: "Ras" }, { email: "gino.thomas@datasciences.co.za", firstName: "Gino", lastName: "Thomas" }, { email: "jp.marais@datasciences.co.za", firstName: "Jean-Pierre", lastName: "Marais" }, { email: "adrean.rebelo@datasciences.co.za", firstName: "Adrean", lastName: "Rebelo" }],
-    eligible: true,
+    supportSpecCert: [], // They only had FA
+    eligible: false,
   },
   2: {
     foundations: [{ email: "thabo.makhalanyane@axiz.com", firstName: "Thabo", lastName: "Makhalanyane" }, { email: "paul.njoroge@avvint.com", firstName: "Paul", lastName: "Njoroge" }],
     storageProCert: [{ email: "jen.gouws@axiz.com", firstName: "Jen", lastName: "Gouws" }],
-    supportSpecCert: [{ email: "adolph.strydom@axiz.com", firstName: "Adolph", lastName: "Strydom" }],
+    supportSpecCert: [], // Adolph Strydom was FA, not FB.
     eligible: false,
   },
   3: {
@@ -47,7 +47,7 @@ export const aspData: Record<number, PartnerAspData> = {
   5: {
     foundations: [],
     storageProCert: [{ email: "cameron.madurai@ftechkzn.co.za", firstName: "Cameron", lastName: "Madurai" }, { email: "ramiror@ftechkzn.co.za", firstName: "Ramiro", lastName: "Rampartab" }],
-    supportSpecCert: [{ email: "cameron.madurai@ftechkzn.co.za", firstName: "Cameron", lastName: "Madurai" }, { email: "nonjabulot@ftechkzn.co.za", firstName: "Nonjabulo", lastName: "Abby Tshibi" }, { email: "ramiror@ftechkzn.co.za", firstName: "Ramiro", lastName: "Rampartab" }, { email: "steliosk@ftechkzn.co.za", firstName: "Stelios", lastName: "Kyriakides" }, { email: "davinc@ftechkzn.co.za", firstName: "Davin", lastName: "Chapman" }],
+    supportSpecCert: [], // They only had FA
     eligible: false,
   },
   6: {
@@ -59,13 +59,13 @@ export const aspData: Record<number, PartnerAspData> = {
   7: {
     foundations: [],
     storageProCert: [{ email: "adolph.madzivhandila@sithabile.co.za", firstName: "Adolph", lastName: "Madzivhandila" }],
-    supportSpecCert: [{ email: "adolph.madzivhandila@sithabile.co.za", firstName: "Adolph", lastName: "Madzivhandila" }],
+    supportSpecCert: [], // Madzivhandila was FA, not FB.
     eligible: false,
   },
   8: {
     foundations: [],
     storageProCert: [{ email: "dierk.lobbecke@tcm.co.za", firstName: "Dierk", lastName: "Lobbecke" }],
-    supportSpecCert: [{ email: "dierk.lobbecke@tcm.co.za", firstName: "Dierk", lastName: "Lobbecke" }],
+    supportSpecCert: [], // Lobbecke was FA, not FB.
     eligible: false,
   },
   9: {

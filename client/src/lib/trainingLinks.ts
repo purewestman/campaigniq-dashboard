@@ -55,10 +55,10 @@ export const TRAINING_LINKS: Record<string, TrainingLink> = {
     audience: "Systems Engineers, Solution Architects",
   },
   aspSupportSpec: {
-    title: "Support Specialist Certification",
+    title: "FlashBlade Support Specialist cert or certification",
     url: "https://purestorage.intellum.com/learn/course/support-specialist-certification",
     description:
-      "FlashArray/FlashBlade Support Specialist Certification exam — required for ASP eligibility.",
+      "FlashBlade Support Specialist cert or certification exam — required for ASP eligibility.",
     audience: "Support Engineers, Field Service Engineers",
   },
 };

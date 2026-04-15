@@ -142,7 +142,7 @@ function RequirementBarWithOverride({
     } else if (category === 'aspStoragePro') {
       sources = [...(trainingData[partnerId]?.aspStorageProFA ?? []), ...(trainingData[partnerId]?.aspStorageProFB ?? [])];
     } else if (category === 'aspSupportSpec') {
-      sources = [...(trainingData[partnerId]?.supportSpecFA ?? []), ...(trainingData[partnerId]?.supportSpecFB ?? [])];
+      sources = [...(trainingData[partnerId]?.supportSpecFB ?? [])];
     } else {
       sources = (trainingData[partnerId] as any)?.[category] ?? [];
     }
@@ -158,11 +158,19 @@ function RequirementBarWithOverride({
         simplyPure: ['Simply Pure'],
         aspFoundations: ['Foundations', 'ASP'],
         aspStoragePro: ['Storage Pro'],
-        aspSupportSpec: ['Support Specialist']
+        aspSupportSpec: ['FlashBlade Support Specialist cert', 'FlashBlade Support Specialist Certification']
       };
       const keywords = categoryKeywords[category] || [];
       sources = rawActivity
-        .filter(a => keywords.length === 0 || keywords.some(k => a.activity.includes(k)))
+        .filter(a => {
+          if (keywords.length === 0) return true;
+          const matchesKw = keywords.some(k => a.activity.toLowerCase().includes(k.toLowerCase()));
+          if (category === 'aspSupportSpec') {
+            const raw = a.activity.toLowerCase();
+            return matchesKw && !raw.includes('prep') && !raw.includes('introduction') && !raw.includes('next steps');
+          }
+          return matchesKw;
+        })
         .map(a => ({
           email: a.email,
           firstName: a.name.split(' ')[0],
@@ -186,11 +194,11 @@ function RequirementBarWithOverride({
   const handleMarkComplete = () => {
     const mod = getModification(partnerId) || { partnerId, addedEmails: {}, removedEmails: {}, salesPro: 0, techPro: 0, bootcamp: 0, implSpec: 0, simplyPure: 0, aspFoundations: 0, aspStoragePro: 0, aspSupportSpec: 0, comment: "", modifiedBy: "Admin", bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null };
     
-    // Map base ASP categories to their FA counterparts for manual entry
+    // Map base ASP categories to their FB/FA counterparts for manual entry
     let targetKey = category as string;
     if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
     else if (category === 'aspStoragePro') targetKey = 'storageProFA';
-    else if (category === 'aspSupportSpec') targetKey = 'supportSpecFA';
+    else if (category === 'aspSupportSpec') targetKey = 'supportSpecFB';
 
     // Create a readable nominated name
     const timestamp = Date.now().toString().slice(-4);
@@ -222,7 +230,7 @@ function RequirementBarWithOverride({
       let targetKey = category as string;
       if (category === 'aspFoundations') targetKey = 'aspFoundationsFA';
       else if (category === 'aspStoragePro') targetKey = 'storageProFA';
-      else if (category === 'aspSupportSpec') targetKey = 'supportSpecFA';
+      else if (category === 'aspSupportSpec') targetKey = 'supportSpecFB';
 
       const mod = getModification(partnerId);
       if (mod && mod.addedEmails[targetKey] && mod.addedEmails[targetKey].length > 0) {
@@ -338,7 +346,7 @@ function RequirementBarWithOverride({
           let tKey = category as string;
           if (category === 'aspFoundations') tKey = 'aspFoundationsFA';
           else if (category === 'aspStoragePro') tKey = 'storageProFA';
-          else if (category === 'aspSupportSpec') tKey = 'supportSpecFA';
+          else if (category === 'aspSupportSpec') tKey = 'supportSpecFB';
           const m = getModification(partnerId);
           return m && m.addedEmails?.[tKey] && m.addedEmails[tKey].length > 0;
         })() && (
@@ -729,9 +737,9 @@ function AspEligibilityPanel({ partnerId }: { partnerId: number }) {
         />
         <div className="w-px self-stretch" style={{ background: "#e5e7eb" }} />
         <AspStep
-          step={3}
-          label="Support Spec Cert"
-          sublabel="FlashArray / FlashBlade Support Specialist Certification"
+          step="3"
+          label="Support Specialist"
+          sublabel="FlashBlade Support Specialist cert or certification"
           required={2}
           people={asp?.supportSpecCert ?? []}
         />
