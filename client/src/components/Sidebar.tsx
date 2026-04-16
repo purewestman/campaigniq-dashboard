@@ -20,7 +20,6 @@ import {
   Shield,
   TrendingUp,
   Activity,
-  ShieldAlert,
   CalendarCheck,
   CalendarDays,
   LogOut,
@@ -41,7 +40,6 @@ const iconMap: Record<string, React.ElementType> = {
   Shield,
   TrendingUp,
   Activity,
-  ShieldAlert,
   CalendarCheck,
   CalendarDays,
   ClipboardList,
@@ -183,46 +181,6 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
             </button>
           );
         })}
-
-        {/* Admin-only Security Audit */}
-        {useAuth().user?.role === 'admin' && (
-          <button
-            onClick={() => onNavChange('security')}
-            className={`
-              relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-              transition-all duration-200 group
-              ${activeNav === 'security'
-                ? "text-white"
-                : "text-amber-400/60 hover:text-amber-300"
-              }
-            `}
-          >
-             {activeNav === 'security' && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-xl"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1))",
-                    border: "1px solid rgba(251, 191, 36, 0.2)",
-                  }}
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                />
-              )}
-              <ShieldAlert className="w-[18px] h-[18px] shrink-0 relative z-10" />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-[13px] font-bold relative z-10 whitespace-nowrap"
-                  >
-                    Security Audit
-                  </motion.span>
-                )}
-              </AnimatePresence>
-          </button>
-        )}
       </nav>
 
       {/* Logout button */}
