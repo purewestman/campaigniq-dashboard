@@ -1607,6 +1607,20 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
       });
     });
 
+    // Also scan activityData for this partner
+    const fromActivity: { email: string; firstName: string; lastName: string }[] = [];
+    if (activityData[partner.name]) {
+      activityData[partner.name].forEach((a: any) => {
+        if (a.email?.toLowerCase().endsWith(`@${domain}`)) {
+          fromActivity.push({
+            email: a.email,
+            firstName: a.name.split(' ')[0],
+            lastName: a.name.split(' ').slice(1).join(' ') || '',
+          });
+        }
+      });
+    }
+
     // Supplement with computedGlobalDirectory
     const fromGlobal = computedGlobalDirectory.filter(u =>
       u.email.split('@')[1]?.toLowerCase() === domain
@@ -1615,7 +1629,7 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
     // Merge and deduplicate by email
     const seen = new Set<string>();
     const merged: { email: string; firstName: string; lastName: string }[] = [];
-    [...fromTraining, ...fromGlobal].forEach(u => {
+    [...fromTraining, ...fromActivity, ...fromGlobal].forEach(u => {
       const key = u.email.toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
