@@ -55,14 +55,6 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (id === "reports") {
-      setActiveNav("overview");
-      // Give the dom a moment to ensure we are on overview
-      setTimeout(() => {
-        partnerTableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-      return;
-    }
     setActiveNav(id);
   }, []);
 
