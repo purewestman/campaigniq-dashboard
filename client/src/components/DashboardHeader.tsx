@@ -151,20 +151,21 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         type: "commitment" as const,
         partnerId: 0,
         partnerName: ex.partnerName,
-        message: `📄 Enablement Plan submitted by ${ex.signedBy} — Awaiting Approval (Commitment: ${ex.commitmentDate})`,
+        message: `📄 Submitted waiting approval — Enablement Plan signed by ${ex.signedBy}`,
         timestamp: ex.exportedAt,
         dateStr: new Date(ex.exportedAt).toLocaleString(),
       });
 
       // Status change notification if not pending
       if (ex.status !== 'pending_review') {
-        const statusLabel = ex.status === 'approved' ? '✅ Approved' : '🔄 Changes Requested';
+        const isApproved = ex.status === 'approved';
+        const statusLabel = isApproved ? '✅ Approved' : '🔄 Changes Requested';
         items.push({
           id: `se-status-${ex.id}`,
           type: "asp" as const,
           partnerId: 0,
           partnerName: ex.partnerName,
-          message: `${statusLabel} by pureuser on signed PPTX export for ${ex.partnerName}`,
+          message: `${statusLabel} by pureuser`,
           timestamp: ex.exportedAt + 1,
           dateStr: new Date(ex.exportedAt).toLocaleString(),
         });
@@ -573,10 +574,11 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -12, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden"
+                    exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed top-[88px] right-8 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 z-[200] overflow-hidden"
                   >
                     <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
                       <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">

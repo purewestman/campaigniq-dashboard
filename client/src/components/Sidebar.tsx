@@ -57,15 +57,26 @@ interface SidebarProps {
 export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse }: SidebarProps) {
   const { user, logout } = useAuth();
   
-  // Count pending signed exports for badge
-  const [pendingExports, setPendingExports] = useState(() =>
-    loadSignedExports().filter(e => e.status === 'pending_review').length
-  );
+  // Count signed exports for Strategic Planning badge with RLS factored in
+  const [{ pending, approved }, setExportCounts] = useState({ pending: 0, approved: 0 });
+
   useEffect(() => {
-    const reload = () => setPendingExports(loadSignedExports().filter(e => e.status === 'pending_review').length);
-    window.addEventListener('storage', reload);
-    return () => window.removeEventListener('storage', reload);
-  }, []);
+    const updateCounts = () => {
+      const all = loadSignedExports();
+      const visible = user?.role === 'Global Admin' 
+        ? all 
+        : all.filter(e => user?.name && (e.partnerName === user.name || e.isAllPartners));
+      
+      setExportCounts({
+        pending: visible.filter(e => e.status === 'pending_review').length,
+        approved: visible.filter(e => e.status === 'approved').length,
+      });
+    };
+    
+    updateCounts(); // Initial
+    window.addEventListener('storage', updateCounts);
+    return () => window.removeEventListener('storage', updateCounts);
+  }, [user]);
 
   const dynamicNavItems = useMemo(() => {
     let domainPartner = null;
@@ -87,13 +98,19 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
           newItem.badge = domainPartner.totalExams;
         }
       }
-      // Pending signed exports badge on enablement-plans (all roles)
-      if (item.id === 'enablement-plans' && pendingExports > 0) {
-        newItem.pendingBadge = pendingExports;
+      // Signed exports badge on Strategic Planning tab
+      if (item.id === 'planning') {
+        if (pending > 0) {
+          newItem.exportCount = pending;
+          newItem.exportColor = '#ef4444'; // Red
+        } else if (approved > 0) {
+          newItem.exportCount = approved;
+          newItem.exportColor = '#10b981'; // Green
+        }
       }
       return newItem;
     });
-  }, [user, pendingExports]);
+  }, [user, pending, approved]);
   
   return (
     <motion.aside
@@ -168,13 +185,13 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                 />
               )}
               <Icon className="w-[18px] h-[18px] shrink-0 relative z-10" />
-              {/* Red pending badge — visible even when collapsed */}
-              {(item as any).pendingBadge > 0 && (
+              {/* Strategic Planning Export Badge — visible even when collapsed */}
+              {(item as any).exportCount > 0 && (
                 <span
                   className="absolute top-1 left-6 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black flex items-center justify-center z-20 shadow-md"
-                  style={{ background: '#ef4444', color: '#fff' }}
+                  style={{ background: (item as any).exportColor, color: '#fff' }}
                 >
-                  {(item as any).pendingBadge}
+                  {(item as any).exportCount}
                 </span>
               )}
               <AnimatePresence>
