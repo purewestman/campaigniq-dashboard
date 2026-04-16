@@ -180,6 +180,29 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
       color: "var(--color-moss-green)"
     },
 
+    {
+      id: "impl-spec",
+      monthRange: "Month 5-6",
+      quarter: "Q2",
+      category: "enablement",
+      label: "Implementation Specialist",
+      description: "Advanced hands-on configuration and installation training.",
+      status: reqs.implSpec.obtained >= reqs.implSpec.required ? "completed" : "gap",
+      icon: Wrench,
+      color: "var(--color-basil-green)"
+    },
+    {
+      id: "simply-pure",
+      monthRange: "Month 5-6",
+      quarter: "Q2",
+      category: "enablement",
+      label: "Simply Pure",
+      description: "Comprehensive portfolio overview and strategic selling.",
+      status: reqs.simplyPure.obtained >= reqs.simplyPure.required ? "completed" : "gap",
+      icon: Sparkles,
+      color: "var(--color-pure-orange)"
+    },
+
     // --- SPECIALIZATION (M7-9) ---
     {
       id: "asp-foundations",
@@ -188,7 +211,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
       category: "certification",
       label: "ASP Foundations Specialization",
       description: "Qualify for Authorized Support Partner status with specialized storage training.",
-      status: reqs.aspFoundations.totalObtained >= reqs.aspFoundations.required ? "completed" : "planned",
+      status: reqs.aspFoundations.totalObtained >= reqs.aspFoundations.required ? "completed" : "gap",
       icon: Shield,
       color: "var(--color-pure-orange)"
     },
@@ -210,7 +233,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
       category: "certification",
       label: "Storage Professional Certification",
       description: "Advanced certification for storage architects and implementation experts.",
-      status: reqs.aspStoragePro.totalObtained >= reqs.aspStoragePro.required ? "completed" : "planned",
+      status: reqs.aspStoragePro.totalObtained >= reqs.aspStoragePro.required ? "completed" : "gap",
       icon: Award,
       color: "var(--color-pure-orange)"
     },
@@ -223,7 +246,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
       category: "certification",
       label: "ASP Support Specialist",
       description: "Validate expert-level support capabilities for the full Pure portfolio.",
-      status: reqs.aspSupportSpec.totalObtained >= reqs.aspSupportSpec.required ? "completed" : "planned",
+      status: reqs.aspSupportSpec.totalObtained >= reqs.aspSupportSpec.required ? "completed" : "gap",
       icon: Shield,
       color: "var(--color-pure-orange)"
     },
@@ -240,9 +263,9 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
     }
   ];
 
-  // Merge in custom items
+  // Merge in custom items and filter out prebuilt items that are not gaps
   const allTimelineItems: TimelineItem[] = [
-    ...timelineItems,
+    ...timelineItems.filter(item => item.status === "gap"),
     ...customItems.map(ci => ({
       id: ci.id,
       monthRange: ci.month,
