@@ -106,17 +106,28 @@ interface ModificationContextValue {
   removeEvent: (id: string) => void;
   globalRoadmap: any[] | null;
   setGlobalRoadmap: (data: any[] | null) => void;
-  partnerTimelines: Record<number, any[]>;
   updatePartnerTimeline: (partnerId: number, timeline: any[]) => void;
+  // Global Directory
+  addedGlobalUsers: GlobalUser[];
+  addGlobalUser: (user: GlobalUser) => void;
+  removeGlobalUser: (email: string) => void;
+  computedGlobalDirectory: GlobalUser[];
+}
+
+export interface GlobalUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  source: "telemetry" | "manual";
 }
 
 // ─── Persistence ──────────────────────────────────────────
 
-const MOD_KEY = "pei-gap-modifications-v2";
 const HISTORY_KEY = "pei-modification-history-v2";
 const STORAGE_EVENTS_KEY = "pei-roadmap-events";
 const GLOBAL_ROADMAP_KEY = "pei-global-roadmap-v1";
 const PARTNER_TIMELINES_KEY = "pei-partner-timelines-v1";
+const GLOBAL_USERS_KEY = "pei-global-users-v1";
 
 function loadModifications(): GapModification[] {
   try {
@@ -151,6 +162,13 @@ function loadPartnerTimelines(): Record<number, any[]> {
     const data = localStorage.getItem(PARTNER_TIMELINES_KEY);
     return data ? JSON.parse(data) : {};
   } catch { return {}; }
+}
+
+function loadAddedGlobalUsers(): GlobalUser[] {
+  try {
+    const data = localStorage.getItem(GLOBAL_USERS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
 }
 
 function saveModifications(mods: GapModification[]) {
@@ -249,8 +267,9 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
   const [modifications, setModifications] = useState<GapModification[]>(loadModifications);
   const [history, setHistory] = useState<GapModification[]>(loadHistory);
   const [events, setEvents] = useState<RoadmapEvent[]>(loadEvents);
-  const [globalRoadmap, setGlobalRoadmapState] = useState<any[] | null>(loadGlobalRoadmap());
-  const [partnerTimelines, setPartnerTimelinesState] = useState<Record<number, any[]>>(loadPartnerTimelines());
+  const [globalRoadmap, setGlobalRoadmapState] = useState<any[] | null>(loadGlobalRoadmap);
+  const [partnerTimelines, setPartnerTimelinesState] = useState<Record<number, any[]>>(loadPartnerTimelines);
+  const [addedGlobalUsers, setAddedGlobalUsersState] = useState<GlobalUser[]>(loadAddedGlobalUsers);
 
   const setGlobalRoadmap = useCallback((data: any[] | null) => {
     setGlobalRoadmapState(data);
@@ -505,6 +524,10 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
         setGlobalRoadmap,
         partnerTimelines,
         updatePartnerTimeline,
+        addedGlobalUsers,
+        addGlobalUser,
+        removeGlobalUser,
+        computedGlobalDirectory
       }}
     >
       {children}

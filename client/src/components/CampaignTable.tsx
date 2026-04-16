@@ -1545,10 +1545,17 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
 }
 
 function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: number, categoryKey: string, autoList: any[] }) {
-  const { getModification, addModification } = useModifications();
+  const { getModification, addModification, computedGlobalDirectory } = useModifications();
   const mod = getModification(partnerId) || { partnerId, addedEmails: {}, removedEmails: {} };
   
+  // Need the partner to get domain
+  const partner = React.useMemo(() => PROGRAM_TIERS.flatMap(t => partners.filter(p => p.id === partnerId))[0], [partnerId]);
+  
   const [newEmail, setNewEmail] = useState("");
+  
+  const domainUsers = computedGlobalDirectory.filter(u => 
+    partner && u.email.split('@')[1]?.toLowerCase() === partner.domain.toLowerCase()
+  );
 
   const added = mod.addedEmails?.[categoryKey] || [];
   const removed = mod.removedEmails?.[categoryKey] || [];
@@ -1624,19 +1631,22 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
         )}
       </div>
       <div className="flex gap-1 mt-2">
-        <input 
-          placeholder="Add email..." 
+        <select 
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          className="flex-1 px-2 py-1 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0"
-        />
+          className="flex-1 px-2 py-1.5 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0 bg-slate-50"
+        >
+          <option value="" disabled>Select user from domain...</option>
+          {domainUsers.filter(u => !combinedList.find(c => c.email === u.email)).map(u => (
+            <option key={u.email} value={u.email}>{u.firstName} {u.lastName} ({u.email})</option>
+          ))}
+        </select>
         <button 
           onClick={handleAdd}
-          disabled={!newEmail.includes("@")}
-          className="p-1 rounded bg-slate-100 text-slate-600 hover:bg-pure-orange hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-slate-100 disabled:hover:text-slate-600"
+          disabled={!newEmail}
+          className="p-1.5 rounded bg-slate-100 text-slate-600 hover:bg-pure-orange hover:text-white transition-colors disabled:opacity-50 disabled:hover:bg-slate-100 disabled:hover:text-slate-600"
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-4 h-4" />
         </button>
       </div>
     </div>

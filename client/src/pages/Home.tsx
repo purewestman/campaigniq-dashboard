@@ -27,6 +27,7 @@ import TrainingDetailsPage from "@/pages/TrainingDetailsPage";
 import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
 import SecurityLogPage from "@/pages/SecurityLogPage";
+import SettingsPage from "@/pages/SettingsPage";
 import TrainingHub from "@/pages/TrainingHub";
 import PlanningHub from "@/pages/PlanningHub";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
@@ -202,26 +203,7 @@ export default function Home() {
       case "reports":
         return <ReportsPage />;
       case "settings":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                <Settings className="w-5 h-5" style={{ color: "var(--color-walnut-brown)" }} />
-                Settings
-              </h2>
-              <p className="text-[13px] text-muted-foreground mt-1">
-                Dashboard configuration and preferences
-              </p>
-            </div>
-            <div className="terrain-card p-12 text-center">
-              <Settings className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
-              <p className="text-[14px] font-medium text-muted-foreground">Settings page coming soon</p>
-              <p className="text-[12px] text-muted-foreground/60 mt-1">
-                Configure dashboard preferences, notification settings, and data refresh intervals.
-              </p>
-            </div>
-          </div>
-        );
+        return <SettingsPage />;
       case "overview":
       default:
         return (
