@@ -15,6 +15,8 @@ export default function SettingsPage() {
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
   const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical" | "Sales & Technical">("Sales");
 
+  const [forceRender, setForceRender] = useState(0);
+
   const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
   const [pendingRoles, setPendingRoles] = useState<Record<string, string>>({});
 
@@ -56,6 +58,7 @@ export default function SettingsPage() {
     if (confirm(`Are you sure you want to reset the primary login password for ${domain} back to 'everpure'?`)) {
       localStorage.setItem(`pwd_${domain}`, "everpure");
       toast.success(`Password for ${domain} successfully reset.`);
+      setForceRender(p => p + 1);
     }
   };
 
@@ -156,6 +159,7 @@ export default function SettingsPage() {
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Email Address</th>
                   <th className="px-6 py-4">Account Domain</th>
+                  <th className="px-6 py-4">Auth Credential</th>
                   <th className="px-6 py-4">IAM Role</th>
                   <th className="px-6 py-4">Source</th>
                   <th className="px-6 py-4 text-right">Settings</th>
@@ -185,6 +189,20 @@ export default function SettingsPage() {
                         <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[11px] font-bold font-mono border border-slate-200">
                           @{userDomain}
                         </span>
+                      </td>
+                      <td className="px-6 py-3.5">
+                        {isGlobalAdmin ? (() => {
+                          const pwd = localStorage.getItem(`pwd_${userDomain}`) || "everpure";
+                          const isDefault = pwd === "everpure";
+                          return (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-mono font-bold ${isDefault ? 'bg-amber-50 text-amber-600 border-amber-200/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200/50'}`}>
+                              <Key className="w-3 h-3" />
+                              {pwd}
+                            </div>
+                          );
+                        })() : (
+                          <span className="text-slate-400 text-xs italic">Hidden</span>
+                        )}
                       </td>
                       <td className="px-6 py-3.5">
                         {isEditing ? (
