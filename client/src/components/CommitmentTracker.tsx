@@ -176,6 +176,13 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
     toast.success('Record removed');
   };
 
+  const handleWithdrawExport = (exportId: string, partnerName: string) => {
+    if (!confirm(`Withdraw your submitted commitment for "${partnerName}"? You can make changes and resubmit from the Enablement Plans page.`)) return;
+    deleteSignedExport(exportId);
+    setSignedExports(loadSignedExports());
+    toast.info('Submission withdrawn. You can now make changes and resubmit.');
+  };
+
   const statusConfig = {
     pending_review: { label: 'Pending Review', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
     approved:       { label: 'Approved', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
@@ -607,8 +614,20 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
                       <button
                         onClick={() => handleDeleteExport(ex.id)}
                         className="p-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                        title="Delete record"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {/* Partner can withdraw their own pending submission */}
+                    {!isGlobalAdmin && ex.status === 'pending_review' && (
+                      <button
+                        onClick={() => handleWithdrawExport(ex.id, ex.partnerName)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-colors text-[11px] font-bold"
+                        title="Withdraw submission to make changes and resubmit"
+                      >
+                        <X className="w-3 h-3" />
+                        Withdraw
                       </button>
                     )}
                   </div>
