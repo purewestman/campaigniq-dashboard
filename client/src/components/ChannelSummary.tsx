@@ -53,6 +53,7 @@ export default function ComplianceSummary({ activeFilter, onFilterChange, onNavi
   };
 
   const reports = [
+    { id: 'training', label: 'Certification Report', subtitle: 'Partner Certifications', icon: Award, color: 'var(--color-basalt-gray)' },
     { id: 'activity', label: 'Activity Tracer', subtitle: 'Partner Activity', icon: Activity, color: 'var(--color-pure-orange)' },
     { id: 'asp', label: 'ASP Gap Report', subtitle: 'ASP Tracking', icon: Zap, color: 'var(--color-basil-green)' },
     { id: 'reports', label: 'Partner Certification Compliance', subtitle: 'Certification Compliance', icon: FileCheck, color: 'var(--color-walnut-brown)' },
