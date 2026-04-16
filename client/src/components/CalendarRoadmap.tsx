@@ -104,13 +104,18 @@ inject("FY27 EMEA Orange Belt", "Oct", "Review Webinar", "Portfolio");
 
 
 export default function CalendarRoadmap() {
-  const { globalRoadmap, setGlobalRoadmap } = useModifications();
+  const { modifications } = useModifications();
+  const [editableMatrix, setEditableMatrixState] = useState(() => {
+    const fromCtx = modifications.find(m => m.type === "roadmap" && m.targetId === "global_calendar");
+    return fromCtx ? fromCtx.data : structuredClone(BASE_MATRIX);
+  });
 
-  // Support backward compatibility if previous arrays were stored
-  const isLegacy = Array.isArray(globalRoadmap);
-  const dataObject = isLegacy || !globalRoadmap ? BASE_MATRIX : globalRoadmap;
-
-  const [editableMatrix, setEditableMatrixState] = useState<Record<string, Record<string, RoadmapEvent[]>>>(dataObject);
+  const [headerState, setHeaderState] = useState({
+    title: "FY27 Planned Initiatives_RSA",
+    quarters: ["Q1", "Q2", "Q3", "Q4"],
+    months: [...MONTHS],
+    rows: ROWS.map(r => r.replace("FY27 ", "FY27\n"))
+  });
 
   const setEditableMatrix = (updater: any) => {
     setEditableMatrixState((prev: any) => {
@@ -182,11 +187,15 @@ export default function CalendarRoadmap() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 shrink-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden relative z-10">
-            <div>
-              <h1 className="text-3xl font-extrabold text-[#3a4449] tracking-tight">
-                FY27 Planned Initiatives_RSA
-              </h1>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden relative z-10 w-full">
+            <div className="flex-1">
+              <div 
+                contentEditable suppressContentEditableWarning
+                onBlur={e => setHeaderState(p => ({...p, title: e.currentTarget.innerText}))}
+                className="text-4xl font-extrabold text-[#3a4449] tracking-tight outline-none hover:bg-slate-100/50 p-2 -ml-2 rounded-lg transition-colors border border-transparent focus:border-slate-300 inline-block w-full max-w-4xl cursor-text"
+              >
+                {headerState.title}
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <button 
@@ -215,32 +224,47 @@ export default function CalendarRoadmap() {
         </div>
 
         {/* Matrix Container */}
-        <div className="bg-[#b1c4c1] rounded-2xl p-4 md:p-6 overflow-x-auto shadow-sm border-[4px] border-white ring-1 ring-slate-200">
-           <div className="min-w-[1200px]">
+        <div className="bg-[#b1c4c1] rounded-2xl p-6 md:p-8 overflow-x-auto shadow-sm border-[4px] border-white ring-1 ring-slate-200">
+           <div className="min-w-[1600px]">
              {/* Quarters Row */}
-             <div className="grid grid-cols-[160px_repeat(12,1fr)] gap-2 mb-2 text-center text-[#95a8b0] font-black tracking-[0.2em] text-xl pl-[160px]">
-                <div className="col-span-3 border-b border-[#9eb0a8] pb-1 mx-4">Q1</div>
-                <div className="col-span-3 border-b border-[#9eb0a8] pb-1 mx-4">Q2</div>
-                <div className="col-span-3 border-b border-[#9eb0a8] pb-1 mx-4">Q3</div>
-                <div className="col-span-3 border-b border-[#9eb0a8] pb-1 mx-4">Q4</div>
+             <div className="grid grid-cols-[180px_repeat(12,1fr)] gap-2 mb-4 text-center text-[#95a8b0] font-black tracking-[0.2em] text-2xl pl-[180px]">
+                {headerState.quarters.map((q, i) => (
+                  <div key={i} className="col-span-3 border-b-2 border-[#9eb0a8] pb-2 mx-6 relative">
+                     <div 
+                       contentEditable suppressContentEditableWarning 
+                       onBlur={e => setHeaderState(p => { const arr = [...p.quarters]; arr[i] = e.currentTarget.innerText; return {...p, quarters: arr} })}
+                       className="outline-none hover:bg-white/20 rounded px-2 py-1 cursor-text transition-colors"
+                     >{q}</div>
+                  </div>
+                ))}
              </div>
 
              {/* Months Header */}
-             <div className="grid grid-cols-[160px_repeat(12,1fr)] gap-2 mb-4 text-center pb-2">
+             <div className="grid grid-cols-[180px_repeat(12,1fr)] gap-2 mb-6 text-center pb-2">
                 <div className="col-span-1"></div>
-                {MONTHS.map(m => (
-                  <div key={m} className={`font-bold text-lg ${["Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan"].includes(m) ? "text-[#eb5224]" : "text-[#eb5224]"}`}>{m}</div>
+                {MONTHS.map((m, i) => (
+                  <div key={m} className={`font-black text-[22px] tracking-tight ${["Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan"].includes(m) ? "text-[#eb5224]" : "text-[#eb5224]"}`}>
+                     <div 
+                       contentEditable suppressContentEditableWarning
+                       onBlur={e => setHeaderState(p => { const arr = [...p.months]; arr[i] = e.currentTarget.innerText; return {...p, months: arr} })}
+                       className="outline-none hover:bg-white/20 rounded px-2 py-1 cursor-text transition-colors inline-block"
+                     >{headerState.months[i]}</div>
+                  </div>
                 ))}
              </div>
 
              {/* Rows Grid */}
-             <div className="space-y-0 text-sm">
-                {ROWS.map(row => (
-                  <div key={row} className="grid grid-cols-[160px_repeat(12,1fr)] gap-2 border-b border-[#9eb0a8] last:border-0 relative group/row">
+             <div className="space-y-0 text-base">
+                {ROWS.map((row, rowIdx) => (
+                  <div key={row} className="grid grid-cols-[180px_repeat(12,1fr)] gap-2 border-b border-[#9eb0a8] last:border-0 relative group/row min-h-[140px]">
                      {/* Row Header */}
-                     <div className="flex items-center py-4 pr-3 border-r border-dashed border-[#9eb0a8]/60">
-                        <div className="font-w[900] font-black text-[#a12008] text-xs leading-snug whitespace-pre-wrap uppercase tracking-tight">
-                           {row.replace("FY27 ", "FY27\n")}
+                     <div className="flex items-center py-6 pr-4 border-r border-dashed border-[#9eb0a8]/60">
+                        <div 
+                          contentEditable suppressContentEditableWarning
+                          onBlur={e => setHeaderState(p => { const arr = [...p.rows]; arr[rowIdx] = e.currentTarget.innerText; return {...p, rows: arr} })}
+                          className="font-w[900] font-black text-[#a12008] text-[15px] leading-relaxed whitespace-pre-wrap uppercase tracking-tight outline-none hover:bg-white/20 p-2 -ml-2 rounded cursor-text transition-colors w-full"
+                        >
+                           {headerState.rows[rowIdx]}
                         </div>
                      </div>
 
@@ -248,7 +272,7 @@ export default function CalendarRoadmap() {
                      {MONTHS.map(month => (
                        <div 
                          key={month} 
-                         className="min-h-[80px] border-r border-dashed border-[#9eb0a8]/60 last:border-r-0 pt-2 pb-6 px-1.5 relative group/cell transition-colors hover:bg-white/10"
+                         className="border-r border-dashed border-[#9eb0a8]/60 last:border-r-0 pt-3 pb-8 px-2 relative group/cell transition-colors hover:bg-white/10"
                          onDragOver={e => e.preventDefault()}
                          onDrop={e => handleDrop(e, row, month)}
                        >
@@ -265,13 +289,13 @@ export default function CalendarRoadmap() {
                                     {style.isStar ? (
                                       <Star className="text-yellow-400 fill-yellow-400 stroke-yellow-500 shrink-0 mt-0.5 drop-shadow scale-110" size={14} />
                                     ) : (
-                                      <style.icon className={`shrink-0 mt-0.5 ${style.iconColor}`} size={14} />
+                                      <style.icon className={`shrink-0 mt-0.5 ${style.iconColor}`} size={16} />
                                     )}
                                     <div 
                                       contentEditable 
                                       suppressContentEditableWarning
                                       onBlur={e => updateItemText(row, month, i, e.currentTarget.textContent || "Event")}
-                                      className="text-[10.5px] font-semibold text-slate-800 leading-none focus:outline-none focus:bg-white rounded px-0.5 flex-1 break-words"
+                                      className="text-[13px] font-bold text-slate-800 leading-tight focus:outline-none focus:bg-white rounded px-1 py-0.5 flex-1 break-words cursor-text"
                                     >
                                       {event.text}
                                     </div>
