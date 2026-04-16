@@ -277,9 +277,110 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
   // Use persistent context state or fallback to defaults
   const timelineData = partnerTimelines[partner.id] || allTimelineItems;
 
+  // Map timeline item id → requirement field name
+  const GAP_ITEM_MAP: Record<string, keyof typeof reqs> = {
+    "sales-pro":     "salesPro",
+    "tech-pro":      "techPro",
+    "bootcamp":      "bootcamp",
+    "ppp-cert":      "implSpec",
+    "asp-foundations": "aspFoundations",
+    "storage-pro":   "aspStoragePro",
+    "support-spec":  "aspSupportSpec",
+  };
+
   const setTimelineData = (updater: any) => {
     const next = typeof updater === 'function' ? updater(timelineData) : updater;
     updatePartnerTimeline(partner.id, next);
+  };
+
+  // Called when an email is added to a milestone pill.
+  // If the milestone covers a gap requirement, increment the obtained count.
+  const handleAssignEmail = (itemId: string, email: string) => {
+    // 1. Add to timeline
+    setTimelineData((prev: TimelineItem[]) => prev.map(i =>
+      i.id === itemId
+        ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), email])) }
+        : i
+    ));
+
+    // 2. Check if this item maps to a gap requirement
+    const reqKey = GAP_ITEM_MAP[itemId];
+    if (!reqKey) return;
+
+    const req = partner.requirements[reqKey as keyof typeof partner.requirements] as any;
+    const currentMod = getModification(partner.id);
+    const currentObtained: number = (currentMod as any)?.[reqKey] ?? req.obtained ?? req.totalObtained ?? 0;
+    const required: number = req.required ?? 0;
+
+    if (currentObtained >= required) return; // already met
+
+    const newObtained = currentObtained + 1;
+    addModification({
+      ...(currentMod || {
+        partnerId: partner.id,
+        salesPro: reqs.salesPro.obtained,
+        techPro: reqs.techPro.obtained,
+        bootcamp: reqs.bootcamp.obtained,
+        implSpec: reqs.implSpec.obtained,
+        simplyPure: reqs.simplyPure.obtained,
+        aspFoundations: reqs.aspFoundations.totalObtained,
+        aspStoragePro: reqs.aspStoragePro.totalObtained,
+        aspSupportSpec: reqs.aspSupportSpec.totalObtained,
+        bookingsUSD: null,
+        uniqueCustomers: null,
+        partnerDeliveredServices: null,
+        addedEmails: {},
+        removedEmails: {},
+        comment: `Assigned ${email} to ${itemId}`,
+        modifiedBy: "Enablement Plan",
+      }),
+      [reqKey]: newObtained,
+      comment: `Assigned ${email} → fills ${reqKey} gap (${newObtained}/${required})`,
+      modifiedBy: "Enablement Plan",
+    });
+  };
+
+  // Called when an email pill is removed from a milestone
+  const handleUnassignEmail = (itemId: string, email: string) => {
+    setTimelineData((prev: TimelineItem[]) => prev.map(i =>
+      i.id === itemId
+        ? { ...i, emails: (i.emails ?? []).filter(e => e !== email) }
+        : i
+    ));
+
+    const reqKey = GAP_ITEM_MAP[itemId];
+    if (!reqKey) return;
+
+    const req = partner.requirements[reqKey as keyof typeof partner.requirements] as any;
+    const currentMod = getModification(partner.id);
+    const baseObtained: number = req.obtained ?? req.totalObtained ?? 0;
+    const currentObtained: number = (currentMod as any)?.[reqKey] ?? baseObtained;
+
+    if (currentObtained <= baseObtained) return; // don't go below actual certifications
+
+    addModification({
+      ...(currentMod || {
+        partnerId: partner.id,
+        salesPro: reqs.salesPro.obtained,
+        techPro: reqs.techPro.obtained,
+        bootcamp: reqs.bootcamp.obtained,
+        implSpec: reqs.implSpec.obtained,
+        simplyPure: reqs.simplyPure.obtained,
+        aspFoundations: reqs.aspFoundations.totalObtained,
+        aspStoragePro: reqs.aspStoragePro.totalObtained,
+        aspSupportSpec: reqs.aspSupportSpec.totalObtained,
+        bookingsUSD: null,
+        uniqueCustomers: null,
+        partnerDeliveredServices: null,
+        addedEmails: {},
+        removedEmails: {},
+        comment: `Removed ${email} from ${itemId}`,
+        modifiedBy: "Enablement Plan",
+      }),
+      [reqKey]: Math.max(baseObtained, currentObtained - 1),
+      comment: `Removed ${email} → adjusted ${reqKey} (${Math.max(baseObtained, currentObtained - 1)}/${req.required ?? 0})`,
+      modifiedBy: "Enablement Plan",
+    });
   };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -519,9 +620,9 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                                      {em.split('@')[0]}
                                      <button
                                        type="button"
-                                       onClick={() => setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id ? { ...i, emails: (i.emails ?? []).filter(e => e !== em) } : i))}
+                                       onClick={() => handleUnassignEmail(item.id, em)}
                                        className="ml-0.5 hover:text-red-500 transition-colors"
-                                       title="Remove"
+                                       title="Remove assignee"
                                      >×</button>
                                    </span>
                                  ))}
@@ -529,30 +630,24 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                                <input
                                  type="text"
                                  list={datalistId}
-                                 placeholder="+ Add assignee email…"
+                                 placeholder="+ Add assignee…"
                                  className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-44 transition-colors"
                                  onKeyDown={(e) => {
                                    if (e.key === 'Enter' || e.key === ',') {
                                      e.preventDefault();
                                      const val = (e.target as HTMLInputElement).value.trim();
                                      if (val && val.includes('@')) {
-                                       setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id
-                                         ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), val])) }
-                                         : i
-                                       ));
+                                       handleAssignEmail(item.id, val);
                                        (e.target as HTMLInputElement).value = '';
                                      }
                                    }
                                  }}
                                  onChange={(e) => {
-                                   // Auto-add when user selects from datalist
                                    const val = e.target.value.trim();
-                                   const isExact = recommendedEmails.includes(val) || (val.includes('@') && val.endsWith(`@${partner.domain.toLowerCase()}`));
+                                   const isExact = recommendedEmails.includes(val) ||
+                                     (val.includes('@') && val.toLowerCase().endsWith(`@${partner.domain.toLowerCase()}`));
                                    if (isExact) {
-                                     setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id
-                                       ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), val])) }
-                                       : i
-                                     ));
+                                     handleAssignEmail(item.id, val);
                                      e.target.value = '';
                                    }
                                  }}
