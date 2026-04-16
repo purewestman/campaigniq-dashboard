@@ -74,7 +74,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     allModificationHistory.forEach(mod => {
       const partner = modifiedPartners.find(p => p.id === mod.partnerId);
       if (!partner) return;
-      if (user?.role === "partner" && partner.name !== user.name) return; // Restrict visibility
+      if (user?.role !== "Global Admin" && partner.name !== user?.name) return; // Restrict visibility
       
       const ts = new Date(mod.modifiedAt).getTime();
       items.push({
@@ -92,7 +92,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     overrides.forEach(ov => {
       const partner = modifiedPartners.find(p => p.id === ov.partnerId);
       if (!partner) return;
-      if (user?.role === "partner" && partner.name !== user.name) return;
+      if (user?.role !== "Global Admin" && partner.name !== user?.name) return;
       
       const ts = new Date(ov.completedAt).getTime();
       items.push({
@@ -110,7 +110,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     aspOverrides.forEach(asp => {
       const partner = modifiedPartners.find(p => p.id === asp.partnerId);
       if (!partner) return;
-      if (user?.role === "partner" && partner.name !== user.name) return;
+      if (user?.role !== "Global Admin" && partner.name !== user?.name) return;
       
       const ts = new Date(asp.approvedAt).getTime();
       items.push({
@@ -127,7 +127,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     // 4. Roadmap Commitments
     const commitments = loadCommitments();
     commitments.forEach(c => {
-      if (user?.role === "partner" && c.partnerName !== user.name) return;
+      if (user?.role !== "Global Admin" && c.partnerName !== user?.name) return;
       const ts = new Date(c.submittedAt).getTime();
       items.push({
         id: `com-${c.partnerId}-${ts}`,
@@ -479,7 +479,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
               )}
             </AnimatePresence>
           </div>
-          {user?.role === 'partner' && (
+          {user?.role !== 'Global Admin' && (
             <button
               onClick={handlePasswordChange}
               className="flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-medium text-foreground hover:bg-white/60 transition-colors"
