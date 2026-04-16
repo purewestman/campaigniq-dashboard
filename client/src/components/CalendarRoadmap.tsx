@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Star, BookOpen, TrendingUp, Map, Monitor, Award, CalendarDays, Filter, Printer, Trash2, GripVertical } from 'lucide-react';
 import { useModifications } from '@/contexts/ModificationContext';
 import { TIER_DEFINITIONS } from '@/lib/data';
+import { trainingData } from '@/lib/trainingData';
 
 // Data derived from the user's plan
 const timelineData = [
@@ -172,7 +173,7 @@ export default function CalendarRoadmap() {
     const clone = JSON.parse(JSON.stringify(timelineData)).map((q: any) => {
       q.months.forEach((m: any) => {
         m.events.forEach((eg: any) => {
-          eg.items = eg.items.map((str: string) => ({ text: str, date: "" }));
+          eg.items = eg.items.map((str: string) => ({ text: str, date: "", email: "" }));
         });
       });
       return q;
@@ -184,7 +185,7 @@ export default function CalendarRoadmap() {
       const enab = feb.events.find((e: any) => e.category === "Partner Enablement");
       if (enab) {
         enab.items = [
-          ...topGaps.map(str => ({ text: str, date: "" })),
+          ...topGaps.map(str => ({ text: str, date: "", email: "" })),
           ...enab.items
         ];
       }
@@ -194,6 +195,12 @@ export default function CalendarRoadmap() {
   }, [modifiedPartners]); // We deliberately only compute this ONCE as a baseline, but now we use persistent state.
 
   const [editableData, setEditableDataState] = useState(globalRoadmap || initialData);
+
+  const recommendedEmails = useMemo(() => {
+    return Array.from(new Set(Object.values(trainingData).flatMap(ptd => 
+      Object.values(ptd).flatMap(arr => arr.map(p => p.email))
+    )));
+  }, []);
 
   const setEditableData = (updater: any) => {
     setEditableDataState((prev: any) => {
@@ -212,7 +219,7 @@ export default function CalendarRoadmap() {
         catObj = { category: categoryName, items: [] };
         monthObj.events.push(catObj);
       }
-      catObj.items.push({ text: "New Event", date: "" });
+      catObj.items.push({ text: "New Event", date: "", email: "" });
       return clone;
     });
   };
@@ -262,6 +269,9 @@ export default function CalendarRoadmap() {
 
   return (
     <div className="text-slate-800 font-sans print:p-0 print:m-0">
+      <datalist id="roadmap-emails">
+        {recommendedEmails.map(e => <option key={e} value={e} />)}
+      </datalist>
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header Section */}
@@ -463,7 +473,22 @@ export default function CalendarRoadmap() {
                                           {itemObj.text}
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-2 pl-4 sm:pl-0 shrink-0 self-end sm:self-auto">
+                                      <div className="flex items-center gap-2 pl-4 sm:pl-0 pt-2 sm:pt-0 shrink-0 self-end sm:self-auto flex-wrap sm:flex-nowrap justify-end w-full sm:w-auto mt-2 sm:mt-0">
+                                        <input 
+                                          type="text"
+                                          list="roadmap-emails"
+                                          placeholder="Assignee Email..."
+                                          className="text-[10px] sm:text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-200 rounded px-1 py-0.5 w-32 focus:outline-none focus:border-indigo-300 print:text-black font-semibold h-6"
+                                          onChange={(e) => {
+                                            const newEmail = e.target.value;
+                                            setEditableData((prev: any) => {
+                                              const clone = structuredClone(prev);
+                                              clone[qIndex].months[mIndex].events[eIndex].items[iIndex].email = newEmail;
+                                              return clone;
+                                            })
+                                          }}
+                                          value={itemObj.email || ""}
+                                        />
                                         <input 
                                           type="date"
                                           title="Commit Date"
@@ -525,9 +550,11 @@ export default function CalendarRoadmap() {
                                           <div className={`mr-1.5 mt-1 h-1.5 w-1.5 rounded-full shrink-0 ${config.color}`}></div>
                                           <span className="text-slate-700 font-medium leading-tight">{e.item.text}</span>
                                         </div>
-                                        {e.item.date && (
-                                          <div className="text-[9px] text-slate-500 font-bold mt-1 ml-3 border-t border-slate-200/50 pt-1">
-                                            Commit: {e.item.date}
+                                        {/* Date and Email Render */}
+                                        {(e.item.date || e.item.email) && (
+                                          <div className="text-[9px] text-slate-500 mt-1 ml-3 border-t border-slate-200/50 pt-1 flex flex-col gap-0.5">
+                                            {e.item.date && <div className="font-bold">Commit: {e.item.date}</div>}
+                                            {e.item.email && <div className="italic break-all">{e.item.email}</div>}
                                           </div>
                                         )}
                                         <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] whitespace-nowrap px-2 py-1 rounded shadow-xl transition-opacity pointer-events-none z-10">
