@@ -15,14 +15,14 @@ async function getPptxgen() {
 
 // ─── Brand colours ────────────────────────────────────────────────────────────
 const B = {
-  dark:       "2D2A27", // Slide text / dark BG
-  orange:     "FF7023", // Pure Storage / Everpure primary accent
-  cream:      "F3F3F3", // Main slide background (Matched from Template SlideMaster)
-  sand:       "D0C8BA", // Dividers / secondary fills
+  dark:       "1C1918", // Charcoal Black (NotebookLM replica)
+  orange:     "F15C22", // Vibrant Orange (NotebookLM replica)
+  cream:      "F6F0E6", // Sand/Beige Background (NotebookLM replica)
+  sand:       "DCD4C7", // Dividers / secondary fills
   moss:       "5A6359", // Secondary label colour
   peach:      "F2CDC4", // Alternate BG
   white:      "FFFFFF",
-  black:      "1C1C1C",
+  black:      "000000",
   lightGreen: "C5E4CC",
 } as const;
 
@@ -35,21 +35,29 @@ function addStyledTitle(
   title: string,
   subtitle?: string
 ) {
-  // Orange accent bar at top
+  // Thick Charcoal Header Base
   slide.addShape("rect", {
-    x: 0, y: 0, w: "100%", h: 0.07,
-    fill: { color: B.orange },
+    x: 0, y: 0, w: "100%", h: 1.1,
+    fill: { color: B.dark },
     line: { type: "none" },
   });
+  // Orange geometric accent cut in header
+  slide.addShape("rect", {
+    x: 12.8, y: -0.5, w: 1, h: 2,
+    fill: { color: B.orange },
+    line: { type: "none" },
+    rotate: 25
+  });
+  
   slide.addText(title, {
-    x: 0.5, y: 0.15, w: 9, h: 0.7,
-    fontSize: 28, bold: true, color: B.dark,
+    x: 0.5, y: 0.2, w: 9, h: 0.6,
+    fontSize: 28, bold: true, color: B.cream,
     fontFace: FONT,
   });
   if (subtitle) {
     slide.addText(subtitle, {
-      x: 0.5, y: 0.85, w: 9, h: 0.35,
-      fontSize: 13, color: B.moss,
+      x: 0.5, y: 0.75, w: 9, h: 0.3,
+      fontSize: 12, color: B.sand,
       fontFace: FONT,
     });
   }
@@ -133,25 +141,40 @@ export async function exportPartnerPptx(
 
   // ── SLIDE 1: Cover ──────────────────────────────────────────────────────────
   const cover = prs.addSlide();
-  cover.background = { color: B.dark };
+  cover.background = { color: B.cream };
 
-  hexagon(cover, 8.5, 0.3, 1.2, B.orange);
+  // 1. Charcoal Backplate (Right side swoop)
+  cover.addShape("rect", {
+    x: 6.5, y: -2, w: 9, h: 12,
+    fill: { color: B.dark },
+    line: { type: "none" },
+    rotate: 18
+  });
 
-  cover.addText("Partner Enablement Report", {
-    x: 0.6, y: 1.8, w: 8, h: 0.6,
-    fontSize: 14, color: B.sand, bold: false, fontFace: FONT,
+  // 2. Vibrant Orange Main Block (Left side swoop)
+  cover.addShape("rect", {
+    x: -1.5, y: -2, w: 7.8, h: 12,
+    fill: { color: B.orange },
+    line: { type: "none" },
+    rotate: 15
   });
-  cover.addText(partner.name, {
-    x: 0.6, y: 2.35, w: 9, h: 1.1,
-    fontSize: 38, bold: true, color: B.white, fontFace: FONT,
+
+  // Partner Enablement Main Title (Left over Orange)
+  cover.addText(`${partner.name} Partner\nEnablement:\nThe Path to 1000%`, {
+    x: 0.6, y: 2.8, w: 6.5, h: 2.5,
+    fontSize: 52, bold: true, color: B.cream, fontFace: FONT,
   });
-  cover.addText(`${partner.programTier} Tier  |  FY27 Q2`, {
-    x: 0.6, y: 3.55, w: 7, h: 0.45,
-    fontSize: 16, color: B.orange, fontFace: FONT,
+
+  // Subtitle (Right over Charcoal)
+  cover.addText(`${partner.programTier} Tier Diagnostic &\nExecution Roadmap`, {
+    x: 7.5, y: 2.8, w: 5, h: 1.5,
+    fontSize: 24, bold: false, color: B.cream, fontFace: FONT, align: "right"
   });
-  cover.addText(`Generated: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, {
-    x: 0.6, y: 6.8, w: 6, h: 0.3,
-    fontSize: 10, color: B.moss, fontFace: FONT,
+
+  // Date metadata (Bottom Right)
+  cover.addText(`Prepared for ${partner.name} | ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, {
+    x: 6.5, y: 6.8, w: 6.5, h: 0.3,
+    fontSize: 11, color: B.dark, fontFace: FONT, align: "right"
   });
 
   // ── SLIDE 2: Partner Overview ───────────────────────────────────────────────
@@ -325,30 +348,44 @@ export async function exportPartnerPptx(
 
   // ── SLIDE 6: Next Steps ─────────────────────────────────────────────────────
   const next = prs.addSlide();
-  next.background = { color: B.dark };
+  next.background = { color: B.cream };
 
-  hexagon(next, 11.5, 0.3, 1.4, B.orange);
+  // Charcoal block on the left
+  next.addShape("rect", {
+    x: -2, y: -2, w: 6, h: 12,
+    fill: { color: B.dark },
+    line: { type: "none" },
+    rotate: -15
+  });
+
+  // Orange block pushing in
+  next.addShape("rect", {
+    x: 10.5, y: -2, w: 6, h: 12,
+    fill: { color: B.orange },
+    line: { type: "none" },
+    rotate: -15
+  });
 
   next.addText("Next Steps", {
-    x: 0.6, y: 1.5, w: 10, h: 0.7,
-    fontSize: 30, bold: true, color: B.white, fontFace: FONT,
+    x: 4.5, y: 1.0, w: 6, h: 0.7,
+    fontSize: 32, bold: true, color: B.dark, fontFace: FONT,
   });
 
   const steps: string[] = [];
-  if (req.salesPro.obtained < req.salesPro.required)     steps.push(`Enrol ${req.salesPro.required - req.salesPro.obtained} additional Sales-Pro candidates`);
-  if (req.techPro.obtained < req.techPro.required)        steps.push(`Enrol ${req.techPro.required - req.techPro.obtained} additional Tech-Pro candidates`);
-  if (req.bootcamp.obtained < req.bootcamp.required)      steps.push(`Register ${req.bootcamp.required - req.bootcamp.obtained} SE(s) for upcoming Bootcamp`);
-  if (req.implSpec.obtained < req.implSpec.required)      steps.push(`Target ${req.implSpec.required - req.implSpec.obtained} Implementation Specialist certification(s)`);
+  if (req.salesPro.obtained < req.salesPro.required)      steps.push(`Enrol ${req.salesPro.required - req.salesPro.obtained} additional Sales-Pro candidates`);
+  if (req.techPro.obtained < req.techPro.required)         steps.push(`Enrol ${req.techPro.required - req.techPro.obtained} additional Tech-Pro candidates`);
+  if (req.bootcamp.obtained < req.bootcamp.required)       steps.push(`Register ${req.bootcamp.required - req.bootcamp.obtained} SE(s) for upcoming Bootcamp`);
+  if (req.implSpec.obtained < req.implSpec.required)       steps.push(`Target ${req.implSpec.required - req.implSpec.obtained} Implementation Specialist certification(s)`);
   if (steps.length === 0) steps.push("All core enablement requirements are met — maintain programme currency");
   if (timeline.length === 0) steps.push("Create a 12-month enablement roadmap via the CampaignIQ platform");
 
   steps.slice(0, 6).forEach((s, i) => {
-    next.addShape("ellipse", { x: 0.5, y: 2.5 + i * 0.7 + 0.12, w: 0.25, h: 0.25, fill: { color: B.orange }, line: { type: "none" } });
-    next.addText(s, { x: 0.95, y: 2.5 + i * 0.7, w: 11.5, h: 0.5, fontSize: 13, color: B.cream, fontFace: FONT });
+    next.addShape("rect", { x: 4.5, y: 2.2 + i * 0.8 + 0.15, w: 0.2, h: 0.2, fill: { color: B.orange }, line: { type: "none" } });
+    next.addText(s, { x: 4.8, y: 2.2 + i * 0.8, w: 6, h: 0.5, fontSize: 13, color: B.dark, fontFace: FONT });
   });
 
   next.addText("Everpure | FY27 Partner Enablement", {
-    x: 0.6, y: 7.1, w: 8, h: 0.25,
+    x: 4.5, y: 7.1, w: 8, h: 0.25,
     fontSize: 9, color: B.moss, fontFace: FONT,
   });
 
@@ -372,11 +409,38 @@ export async function exportAllPartnersPptx(
 
   // Cover
   const cover = prs.addSlide();
-  cover.background = { color: B.dark };
-  hexagon(cover, 8.5, 0.3, 1.2, B.orange);
-  cover.addText("FY27 Partner Enablement", { x: 0.6, y: 1.8, w: 8, h: 0.6, fontSize: 14, color: B.sand, fontFace: FONT });
-  cover.addText("Consolidated Report", { x: 0.6, y: 2.35, w: 9, h: 1.0, fontSize: 38, bold: true, color: B.white, fontFace: FONT });
-  cover.addText(`${partners.length} Partners  |  Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, { x: 0.6, y: 3.45, w: 9, h: 0.45, fontSize: 14, color: B.orange, fontFace: FONT });
+  cover.background = { color: B.cream };
+
+  // 1. Charcoal Backplate (Right side swoop)
+  cover.addShape("rect", {
+    x: 6.5, y: -2, w: 9, h: 12,
+    fill: { color: B.dark },
+    line: { type: "none" },
+    rotate: 18
+  });
+
+  // 2. Vibrant Orange Main Block (Left side swoop)
+  cover.addShape("rect", {
+    x: -1.5, y: -2, w: 7.8, h: 12,
+    fill: { color: B.orange },
+    line: { type: "none" },
+    rotate: 15
+  });
+
+  cover.addText("FY27 Portfolio\nConsolidated Report", {
+    x: 0.6, y: 2.8, w: 6.5, h: 2.5,
+    fontSize: 48, bold: true, color: B.cream, fontFace: FONT,
+  });
+
+  cover.addText(`Aggregated Enablement &\nRoadmap Data`, {
+    x: 7.5, y: 2.8, w: 5, h: 1.5,
+    fontSize: 24, bold: false, color: B.cream, fontFace: FONT, align: "right"
+  });
+
+  cover.addText(`${partners.length} Associated Partners | Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, {
+    x: 6.5, y: 6.8, w: 6.5, h: 0.3,
+    fontSize: 11, color: B.dark, fontFace: FONT, align: "right"
+  });
 
   // Summary table
   const sumSlide = prs.addSlide();
