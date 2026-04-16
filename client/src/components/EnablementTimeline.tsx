@@ -24,6 +24,7 @@ import {
 import type { Partner } from "@/lib/data";
 import { activityData } from "@/lib/activityData";
 import { useModifications, type CustomRoadmapItem as CustomItem } from "@/contexts/ModificationContext";
+import { trainingData } from "@/lib/trainingData";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +38,7 @@ interface TimelineItem {
   status: "completed" | "planned" | "gap";
   icon: any;
   color: string;
+  email?: string;
 }
 
 interface EnablementTimelineProps {
@@ -49,6 +51,12 @@ export default function EnablementTimeline({ partner }: EnablementTimelineProps)
   const activities = activityData[partner.name] || [];
   const mod = getModification(partner.id);
   const customItems = mod?.customItems || [];
+
+  const recommendedEmails = React.useMemo(() => {
+    return Array.from(new Set(Object.values(trainingData).flatMap(ptd => 
+      Object.values(ptd).flatMap(arr => arr.map(p => p.email))
+    )));
+  }, []);
 
   // Helper to check if an activity is completed
   const hasActivity = (keywords: string[]) => {
@@ -294,6 +302,9 @@ export default function EnablementTimeline({ partner }: EnablementTimelineProps)
 
   return (
     <div className="space-y-8">
+      <datalist id="timeline-emails">
+        {recommendedEmails.map(e => <option key={e} value={e} />)}
+      </datalist>
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
@@ -471,6 +482,19 @@ export default function EnablementTimeline({ partner }: EnablementTimelineProps)
                             >
                               {item.description}
                             </p>
+                            <div className="mt-2 text-right">
+                               <input 
+                                 type="text"
+                                 list="timeline-emails"
+                                 placeholder="Assignee Email..."
+                                 className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-40 transition-colors"
+                                 onChange={(e) => {
+                                   const newEmail = e.target.value;
+                                   setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id ? { ...i, email: newEmail } : i));
+                                 }}
+                                 value={item.email || ""}
+                               />
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
