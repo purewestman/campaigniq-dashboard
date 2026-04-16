@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!email.includes('@')) return 'fail';
     
     const domain = email.split('@')[1];
-    const partnerMatch = partners.find(p => p.domain === domain);
+    const partnerMatch = partners.find(p => isLinkedDomain(p.domain, domain));
     
     if (!partnerMatch) {
       return 'unauthorized_domain';
