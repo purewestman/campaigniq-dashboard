@@ -113,9 +113,8 @@ function RequirementBarWithOverride({
   const { getOverride, addOverride, removeOverride } = useOverrides();
   const { getModification, addModification } = useModifications();
   const override = getOverride(partnerId, category);
-  const gap = Math.max(0, required - obtained);
-  const pct = required > 0 ? Math.min(100, Math.round((obtained / required) * 100)) : (obtained > 0 || !!override ? 100 : 0);
-  const isComplete = (required > 0 ? (obtained >= required || !!override) : (obtained > 0 || !!override));
+  // gap/pct/isComplete computed below after effectiveObtained is known
+  let gap = 0, pct = 0, isComplete = false;
 
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState("");
@@ -195,6 +194,18 @@ function RequirementBarWithOverride({
   
   const trainingPeople: TrainingPerson[] = getTrainingPeople();
 
+  // Real obtained = max of static value and people actually showing as completed
+  // (capped at required so we don't show > 100%)
+  const completedCount = trainingPeople.filter((p: any) => !p.isNominated).length;
+  const effectiveObtained = required > 0
+    ? Math.min(required, Math.max(obtained, completedCount))
+    : Math.max(obtained, completedCount);
+
+  // Now compute gap/pct/isComplete with the real count
+  gap = Math.max(0, required - effectiveObtained);
+  pct = required > 0 ? Math.min(100, Math.round((effectiveObtained / required) * 100)) : (effectiveObtained > 0 || !!override ? 100 : 0);
+  isComplete = required > 0 ? (effectiveObtained >= required || !!override) : (effectiveObtained > 0 || !!override);
+
   const handleMarkComplete = () => {
     const mod = getModification(partnerId) || { partnerId, addedEmails: {}, removedEmails: {}, salesPro: 0, techPro: 0, bootcamp: 0, implSpec: 0, simplyPure: 0, aspFoundations: 0, aspStoragePro: 0, aspSupportSpec: 0, comment: "", modifiedBy: "Admin", bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null };
     
@@ -256,7 +267,7 @@ function RequirementBarWithOverride({
         <span className="text-[11px] font-medium text-foreground">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">
-            {obtained}/{required}
+            {effectiveObtained}/{required}
           </span>
           {gap > 0 && !override && (
             <span
