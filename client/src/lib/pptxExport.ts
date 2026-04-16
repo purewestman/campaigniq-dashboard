@@ -126,9 +126,15 @@ export interface TimelineItem {
   emails?: string[];
 }
 
+export interface ExportSignature {
+  name: string;
+  date: string;
+}
+
 export async function exportPartnerPptx(
   partner: PartnerForExport,
   timeline: TimelineItem[],
+  signature?: ExportSignature,
   filename?: string
 ) {
   const PptxGenJS = await getPptxgen();
@@ -176,6 +182,13 @@ export async function exportPartnerPptx(
     x: 6.5, y: 6.8, w: 6.5, h: 0.3,
     fontSize: 11, color: B.dark, fontFace: FONT, align: "right"
   });
+
+  if (signature) {
+    cover.addText(`Electronically Signed By: ${signature.name}\nCommitment Date: ${signature.date}`, {
+      x: 0.6, y: 6.5, w: 5, h: 0.8,
+      fontSize: 11, bold: true, color: B.cream, fontFace: FONT, align: "left"
+    });
+  }
 
   // ── SLIDE 2: Partner Overview ───────────────────────────────────────────────
   const overview = prs.addSlide();
@@ -397,7 +410,8 @@ export async function exportPartnerPptx(
 // Global export: all partners in one deck (one partner per section)
 export async function exportAllPartnersPptx(
   partners: PartnerForExport[],
-  timelines: Record<number, TimelineItem[]>
+  timelines: Record<number, TimelineItem[]>,
+  signature?: ExportSignature
 ) {
   const PptxGenJS = await getPptxgen();
   const prs = new PptxGenJS();
@@ -437,10 +451,17 @@ export async function exportAllPartnersPptx(
     fontSize: 24, bold: false, color: B.cream, fontFace: FONT, align: "right"
   });
 
-  cover.addText(`${partners.length} Associated Partners | Generated ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`, {
+  cover.addText(`Prepared ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} | ${partners.length} Partners`, {
     x: 6.5, y: 6.8, w: 6.5, h: 0.3,
     fontSize: 11, color: B.dark, fontFace: FONT, align: "right"
   });
+
+  if (signature) {
+    cover.addText(`Electronically Signed By: ${signature.name}\nCommitment Date: ${signature.date}`, {
+      x: 0.6, y: 6.5, w: 5, h: 0.8,
+      fontSize: 11, bold: true, color: B.cream, fontFace: FONT, align: "left"
+    });
+  }
 
   // Summary table
   const sumSlide = prs.addSlide();

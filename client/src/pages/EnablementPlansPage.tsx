@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, ChevronRight, Download, DownloadCloud,
   CheckCircle2, AlertTriangle, Target, BarChart3,
-  Calendar, UserPlus, X, Users,
+  Calendar, UserPlus, X, Users, PenTool,
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type TimelineItem, partners, isLinkedDomain } from "@/lib/data";
@@ -181,31 +181,51 @@ export default function EnablementPlansPage() {
     }
   }, [modifiedPartners, partnerTimelines, filter, search]);
 
-  const handleExportOne = async (partnerId: number) => {
-    const partner = modifiedPartners.find(p => p.id === partnerId);
-    if (!partner) return;
-    setExportingId(partnerId);
-    try {
-      await exportPartnerPptx(partner as any, partnerTimelines[partnerId] ?? []);
-      toast.success(`${partner.name} deck exported!`);
-    } catch (e) {
-      console.error(e);
-      toast.error("Export failed — see console for details");
-    } finally {
-      setExportingId(null);
-    }
+  const [signModal, setSignModal] = useState<{ type: 'none' | 'one' | 'all', partnerId?: number }>({ type: 'none' });
+  const [signData, setSignData] = useState({ name: '', date: new Date().toISOString().split('T')[0] });
+
+  const handleExportOneClick = (partnerId: number) => {
+    setSignModal({ type: 'one', partnerId });
   };
 
-  const handleExportAll = async () => {
-    setExportingAll(true);
-    try {
-      await exportAllPartnersPptx(modifiedPartners as any[], partnerTimelines);
-      toast.success("All partners deck exported!");
-    } catch (e) {
-      console.error(e);
-      toast.error("Export failed — see console for details");
-    } finally {
-      setExportingAll(false);
+  const handleExportAllClick = () => {
+    setSignModal({ type: 'all' });
+  };
+
+  const executeExport = async () => {
+    if (!signData.name) {
+      toast.error("Authorized Signatory Name is required");
+      return;
+    }
+    const signatureInfo = { name: signData.name, date: signData.date };
+
+    if (signModal.type === 'one' && signModal.partnerId) {
+      const partner = modifiedPartners.find(p => p.id === signModal.partnerId);
+      if (!partner) return;
+      
+      setSignModal({ type: 'none' });
+      setExportingId(signModal.partnerId);
+      try {
+        await exportPartnerPptx(partner as any, partnerTimelines[signModal.partnerId] ?? [], signatureInfo);
+        toast.success(`${partner.name} deck exported!`);
+      } catch (e) {
+        console.error(e);
+        toast.error("Export failed — see console for details");
+      } finally {
+        setExportingId(null);
+      }
+    } else if (signModal.type === 'all') {
+      setSignModal({ type: 'none' });
+      setExportingAll(true);
+      try {
+        await exportAllPartnersPptx(modifiedPartners as any[], partnerTimelines, signatureInfo);
+        toast.success("All partners deck exported!");
+      } catch (e) {
+        console.error(e);
+        toast.error("Export failed — see console for details");
+      } finally {
+        setExportingAll(false);
+      }
     }
   };
 
@@ -241,8 +261,8 @@ export default function EnablementPlansPage() {
             </p>
           </div>
           <button
-            onClick={handleExportAll}
-            disabled={exportingAll}
+            onClick={handleExportAllClick}
+            disabled={exportingAll || signModal.type !== 'none'}
             className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md disabled:opacity-60"
           >
             <DownloadCloud className="w-4 h-4" />
@@ -387,8 +407,8 @@ export default function EnablementPlansPage() {
                   {/* Footer — export */}
                   <div className="px-4 pb-4 pt-2 mt-auto border-t border-slate-100">
                     <button
-                      onClick={() => handleExportOne(partner.id)}
-                      disabled={exportingId === partner.id}
+                      onClick={() => handleExportOneClick(partner.id)}
+                      disabled={exportingId === partner.id || signModal.type !== 'none'}
                       className="tour-step-5 w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-[var(--color-pure-orange)] hover:text-white border border-slate-200 text-slate-700 text-[12px] font-bold px-3 py-2 rounded-lg transition-all active:scale-95 disabled:opacity-60"
                     >
                       <Download className="w-3.5 h-3.5" />
@@ -408,6 +428,70 @@ export default function EnablementPlansPage() {
           )}
         </div>
       </div>
+
+      {/* Signature Modal Overlay */}
+      {signModal.type !== 'none' && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                  <PenTool className="w-5 h-5 text-pure-orange" />
+                  Sign & Commit
+                </h3>
+                <p className="text-[13px] text-slate-500 mt-1 font-medium">
+                  Electronically sign and seal this document before exporting.
+                </p>
+              </div>
+              <button 
+                onClick={() => setSignModal({ type: 'none' })}
+                className="p-2 -mr-2 text-slate-400 hover:bg-slate-50 rounded-full transition-colors"
+                title="Cancel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-5 bg-slate-50">
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Authorized Signatory Name</label>
+                  <input
+                    type="text"
+                    value={signData.name}
+                    onChange={(e) => setSignData(prev => ({...prev, name: e.target.value}))}
+                    placeholder="e.g. Jane Doe"
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:border-pure-orange transition-all"
+                  />
+               </div>
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Commitment Date</label>
+                  <input
+                    type="date"
+                    value={signData.date}
+                    onChange={(e) => setSignData(prev => ({...prev, date: e.target.value}))}
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl bg-white text-[14px] font-bold text-slate-900 focus:outline-none focus:border-pure-orange transition-all"
+                  />
+               </div>
+            </div>
+
+            <div className="p-5 bg-white flex items-center justify-end gap-3 rounded-b-2xl border-t border-slate-100">
+              <button
+                onClick={() => setSignModal({ type: 'none' })}
+                className="px-5 py-2.5 text-[13px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeExport}
+                disabled={!signData.name}
+                className="px-6 py-2.5 bg-pure-orange text-white rounded-xl shadow-md font-bold text-[13px] hover:bg-orange-600 focus:ring-2 focus:ring-orange-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Confirm & Export PPTX
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
