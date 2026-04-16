@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Star, Printer, Trash2, GripVertical, Plus } from 'lucide-react';
+import { Star, Printer, Trash2, GripVertical, Plus, Box, Award, BookOpen, Layers, Zap, Cpu, Briefcase, Wrench } from 'lucide-react';
 import { useModifications } from '@/contexts/ModificationContext';
 
 export type TagType = "Simply Pure" | "Technical Sales Pro" | "SE Bootcamp" | "Architecture + Depth" | "Elective - Deep Dive" | "CIP, Solution based" | "Portfolio" | "Tools" | "Milestone" | "Custom";
@@ -15,17 +15,17 @@ export interface RoadmapEvent {
 const MONTHS = ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"];
 const ROWS = ["FY27 Main Events", "FY27 Partner Enablement", "FY27 Partner SE Journey", "FY27 EMEA Orange Belt"];
 
-const TAG_STYLES: Record<TagType, { bg: string, text: string, border: string, isStar?: boolean }> = {
-  "Simply Pure": { bg: "bg-slate-900", text: "text-white", border: "border-slate-800" },
-  "Technical Sales Pro": { bg: "bg-blue-600", text: "text-white", border: "border-blue-700" },
-  "SE Bootcamp": { bg: "bg-red-500", text: "text-white", border: "border-red-600" },
-  "Architecture + Depth": { bg: "bg-[#c39bd3]", text: "text-white", border: "border-[#a569bd]" },
-  "Elective - Deep Dive": { bg: "bg-yellow-400", text: "text-slate-900", border: "border-yellow-500" },
-  "CIP, Solution based": { bg: "bg-[#9c4d62]", text: "text-white", border: "border-[#78283f]" },
-  "Portfolio": { bg: "bg-teal-500", text: "text-white", border: "border-teal-600" },
-  "Tools": { bg: "bg-[#b35a1f]", text: "text-white", border: "border-[#934511]" },
-  "Milestone": { bg: "bg-transparent", text: "text-slate-800", border: "border-slate-300", isStar: true },
-  "Custom": { bg: "bg-slate-200", text: "text-slate-700", border: "border-slate-300" }
+const TAG_STYLES: Record<TagType, { bg: string, text: string, border: string, isStar?: boolean, icon: React.ElementType, iconColor: string }> = {
+  "Simply Pure": { bg: "bg-slate-900", text: "text-white", border: "border-slate-800", icon: Box, iconColor: "text-slate-900" },
+  "Technical Sales Pro": { bg: "bg-blue-600", text: "text-white", border: "border-blue-700", icon: Award, iconColor: "text-blue-600" },
+  "SE Bootcamp": { bg: "bg-red-500", text: "text-white", border: "border-red-600", icon: BookOpen, iconColor: "text-red-500" },
+  "Architecture + Depth": { bg: "bg-[#c39bd3]", text: "text-white", border: "border-[#a569bd]", icon: Layers, iconColor: "text-[#c39bd3]" },
+  "Elective - Deep Dive": { bg: "bg-yellow-400", text: "text-slate-900", border: "border-yellow-500", icon: Zap, iconColor: "text-yellow-500 fill-yellow-400/50" },
+  "CIP, Solution based": { bg: "bg-[#9c4d62]", text: "text-white", border: "border-[#78283f]", icon: Cpu, iconColor: "text-[#9c4d62]" },
+  "Portfolio": { bg: "bg-teal-500", text: "text-white", border: "border-teal-600", icon: Briefcase, iconColor: "text-teal-500" },
+  "Tools": { bg: "bg-[#b35a1f]", text: "text-white", border: "border-[#934511]", icon: Wrench, iconColor: "text-[#b35a1f]" },
+  "Milestone": { bg: "bg-transparent", text: "text-slate-800", border: "border-slate-300", isStar: true, icon: Star, iconColor: "text-yellow-500 fill-yellow-400 drop-shadow scale-110" },
+  "Custom": { bg: "bg-slate-200", text: "text-slate-700", border: "border-slate-300", icon: Plus, iconColor: "text-slate-400" }
 };
 
 const BASE_MATRIX: Record<string, Record<string, RoadmapEvent[]>> = {};
@@ -202,16 +202,15 @@ export default function CalendarRoadmap() {
           {/* Legend */}
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 relative z-10">
             <div className="text-lg font-black text-slate-500 mr-2 flex items-center pr-4 border-r border-slate-200">Key</div>
-            {Object.entries(TAG_STYLES).filter(([tag]) => tag !== "Custom" && tag !== "Milestone").map(([tag, style]) => (
-               <button 
-                 key={tag} 
-                 className="flex items-center gap-2 group hover:opacity-80 transition-opacity"
-                 onClick={() => {}} 
-               >
-                 <div className={`w-6 h-3 rounded-full \${style.bg}`}></div>
-                 <span className="text-xs font-semibold text-slate-700">{tag}</span>
-               </button>
-            ))}
+            {Object.entries(TAG_STYLES).filter(([tag]) => tag !== "Custom" && tag !== "Milestone").map(([tag, style]) => {
+               const IconCmp = style.icon;
+               return (
+                 <div key={tag} className="flex items-center gap-2 group">
+                   <IconCmp className={`w-4 h-4 ${style.iconColor}`} />
+                   <span className="text-xs font-bold text-slate-600">{tag}</span>
+                 </div>
+               );
+            })}
           </div>
         </div>
 
@@ -230,7 +229,7 @@ export default function CalendarRoadmap() {
              <div className="grid grid-cols-[160px_repeat(12,1fr)] gap-2 mb-4 text-center pb-2">
                 <div className="col-span-1"></div>
                 {MONTHS.map(m => (
-                  <div key={m} className={`font-bold text-lg \${["Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan"].includes(m) ? "text-[#eb5224]" : "text-[#eb5224]"}`}>{m}</div>
+                  <div key={m} className={`font-bold text-lg ${["Feb","Mar","Apr","May","Jun","Aug","Sep","Oct","Nov","Dec","Jan"].includes(m) ? "text-[#eb5224]" : "text-[#eb5224]"}`}>{m}</div>
                 ))}
              </div>
 
@@ -241,7 +240,7 @@ export default function CalendarRoadmap() {
                      {/* Row Header */}
                      <div className="flex items-center py-4 pr-3 border-r border-dashed border-[#9eb0a8]/60">
                         <div className="font-w[900] font-black text-[#a12008] text-xs leading-snug whitespace-pre-wrap uppercase tracking-tight">
-                           {row.replace("FY27 ", "FY27\\n")}
+                           {row.replace("FY27 ", "FY27\n")}
                         </div>
                      </div>
 
@@ -261,12 +260,12 @@ export default function CalendarRoadmap() {
                                    key={event.id}
                                    draggable
                                    onDragStart={e => handleDragStart(e, row, month, i)}
-                                   className={`relative flex items-start gap-1 p-1 rounded-sm transition-all group/item cursor-grab active:cursor-grabbing hover:shadow-md z-10 \${style.isStar ? "" : "hover:bg-white/90"}`}
+                                   className={`relative flex items-start gap-1 p-1 rounded-sm transition-all group/item cursor-grab active:cursor-grabbing hover:shadow-md z-10 ${style.isStar ? "" : "hover:bg-white/90"}`}
                                  >
                                     {style.isStar ? (
                                       <Star className="text-yellow-400 fill-yellow-400 stroke-yellow-500 shrink-0 mt-0.5 drop-shadow scale-110" size={14} />
                                     ) : (
-                                      <div className={`w-3.5 h-2 shrink-0 rounded-full mt-1.5 \${style.bg}`}></div>
+                                      <style.icon className={`shrink-0 mt-0.5 ${style.iconColor}`} size={14} />
                                     )}
                                     <div 
                                       contentEditable 
