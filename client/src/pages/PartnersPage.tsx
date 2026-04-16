@@ -51,11 +51,13 @@ const tierIcons: Record<ProgramTier, React.ElementType> = {
 };
 
 interface PartnersPageProps {
+  initialSearch?: string;
+  onClearSearch?: () => void;
   onNavigateToActivity?: (partner: string, course?: string, search?: string) => void;
 }
 
-export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps) {
-  const [search, setSearch] = useState("");
+export default function PartnersPage({ initialSearch, onClearSearch, onNavigateToActivity }: PartnersPageProps) {
+  const [search, setSearch] = useState(initialSearch || "");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [modifyPartner, setModifyPartner] = useState<Partner | null>(null);
@@ -151,6 +153,20 @@ export default function PartnersPage({ onNavigateToActivity }: PartnersPageProps
             );
           })}
         </div>
+        
+        {/* If we have an initial filter pre-applied from the drill down, show clear button */}
+        {initialSearch && onClearSearch && (
+          <button 
+            onClick={() => {
+              setSearch("");
+              onClearSearch();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-medium text-amber-600 bg-amber-50 highlight-amber border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            Clear Partner Drill-down
+          </button>
+        )}
       </div>
 
       {/* Partner Cards Grid */}

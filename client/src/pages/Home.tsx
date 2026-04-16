@@ -44,6 +44,7 @@ export default function Home() {
   const [activityPartnerFilter, setActivityPartnerFilter] = useState<string | null>(null);
   const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
   const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
+  const [partnerSearchFilter, setPartnerSearchFilter] = useState<string | null>(null);
   const [forceActivityTab, setForceActivityTab] = useState(0);
   const [commitments, setCommitments] = useState<PartnerCommitment[]>(loadCommitments);
   const partnerTableRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,13 @@ export default function Home() {
     }
     setActiveNav(id);
   }, []);
+
+  // Navigation helpers to switch pages with filters
+  const navigateToPartner = (partnerName: string) => {
+    setPartnerSearchFilter(partnerName);
+    setActiveNav("partners");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Listen for commitment submissions from PDF windows
   useEffect(() => {
@@ -168,7 +176,13 @@ export default function Home() {
   const renderPageContent = () => {
     switch (activeNav) {
       case "partners":
-        return <PartnersPage onNavigateToActivity={navigateToActivity} />;
+        return (
+          <PartnersPage 
+            initialSearch={partnerSearchFilter || undefined}
+            onClearSearch={() => setPartnerSearchFilter(null)}
+            onNavigateToActivity={navigateToActivity} 
+          />
+        );
       case "training":
         return (
           <TrainingHub 
@@ -260,7 +274,7 @@ export default function Home() {
             <section className="mb-6">
               <PartnerStatusGrid 
                 partners={filteredPartners} 
-                onNavigateToActivity={navigateToActivity} 
+                onNavigateToPartner={navigateToPartner} 
               />
             </section>
           </>

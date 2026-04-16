@@ -855,7 +855,6 @@ const totalExamsPassedCount = partners.reduce((s, p) => s + p.totalExams, 0);
 
 export const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: "LayoutDashboard" },
-  { id: "partners", label: "Partners", icon: "Building2", badge: totalPartnersCount },
   { id: "training", label: "Training & Activity", icon: "Award", badge: totalExamsPassedCount },
   { id: "asp", label: "ASP Tracking", icon: "ShieldAlert" },
   { id: "planning", label: "Strategic Planning", icon: "Map" },

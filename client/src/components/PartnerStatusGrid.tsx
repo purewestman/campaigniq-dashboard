@@ -3,10 +3,10 @@ import { AlertCircle, CheckCircle2, ChevronRight, TrendingUp, Award, Building2 }
 
 interface PartnerStatusGridProps {
   partners: Partner[];
-  onNavigateToActivity?: (partnerName: string) => void;
+  onNavigateToPartner?: (partnerName: string) => void;
 }
 
-export default function PartnerStatusGrid({ partners, onNavigateToActivity }: PartnerStatusGridProps) {
+export default function PartnerStatusGrid({ partners, onNavigateToPartner }: PartnerStatusGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {partners.map((partner) => {
@@ -129,11 +129,12 @@ export default function PartnerStatusGrid({ partners, onNavigateToActivity }: Pa
             {/* Footer Action */}
             <div className="p-3 border-t bg-slate-50 flex-none">
               <button 
-                onClick={() => onNavigateToActivity && onNavigateToActivity(partner.name)}
-                className="w-full text-center py-1.5 text-[12px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded transition-colors"
-                title="View Training Details"
+                onClick={() => onNavigateToPartner && onNavigateToPartner(partner.name)}
+                className="w-full flex items-center justify-center gap-1 py-1.5 text-[12px] font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 rounded-md transition-colors"
+                title="View Detailed Compliance Tracking"
               >
-                View Activity Details
+                Open Compliance Breakdown
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
