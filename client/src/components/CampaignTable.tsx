@@ -195,11 +195,8 @@ function RequirementBarWithOverride({
   const trainingPeople: TrainingPerson[] = getTrainingPeople();
 
   // Real obtained = max of static value and people actually showing as completed
-  // (capped at required so we don't show > 100%)
   const completedCount = trainingPeople.filter((p: any) => !p.isNominated).length;
-  const effectiveObtained = required > 0
-    ? Math.min(required, Math.max(obtained, completedCount))
-    : Math.max(obtained, completedCount);
+  const effectiveObtained = Math.max(obtained, completedCount);
 
   // Now compute gap/pct/isComplete with the real count
   gap = Math.max(0, required - effectiveObtained);
