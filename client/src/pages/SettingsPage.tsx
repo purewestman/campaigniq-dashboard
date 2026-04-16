@@ -1,16 +1,24 @@
 import React, { useState } from "react";
 import { useModifications } from "@/contexts/ModificationContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, updateUserRole, addedGlobalUsers } = useModifications();
+  const { user } = useAuth();
+  const isGlobalAdmin = user?.role === 'Global Admin';
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
   const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical">("Sales");
 
-  const filteredUsers = computedGlobalDirectory.filter(u => 
+  const domainDirectory = isGlobalAdmin 
+    ? computedGlobalDirectory 
+    : computedGlobalDirectory.filter(u => u.email.toLowerCase().endsWith(`@${user?.domain?.toLowerCase()}`));
+
+  const filteredUsers = domainDirectory.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
     u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.lastName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -20,6 +28,14 @@ export default function SettingsPage() {
     if (!newUser.email || !newUser.email.includes("@")) {
       toast.error("Valid email required");
       return;
+    }
+    
+    if (!isGlobalAdmin) {
+      const emailDomain = newUser.email.split('@')[1]?.toLowerCase();
+      if (emailDomain !== user?.domain?.toLowerCase()) {
+         toast.error(`Access Denied: You may only add users for the @${user?.domain} domain.`);
+         return;
+      }
     }
     addGlobalUser({
       ...newUser,
@@ -39,10 +55,10 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-black tracking-tight text-slate-900 border-b-4 border-pure-orange inline-block pb-2 max-w-fit">
-            Global User Directory
+            {isGlobalAdmin ? "Global User Directory" : "Partner Identity Directory"}
           </h1>
           <p className="text-[14px] text-slate-500 font-medium">
-            Administrative management of all {computedGlobalDirectory.length} captured partner users across domains.
+            Administrative management of {isGlobalAdmin ? `all ${domainDirectory.length} captured partner users across domains` : `personnel associated with ${user?.domain || 'your organization'}`}.
           </p>
         </div>
 

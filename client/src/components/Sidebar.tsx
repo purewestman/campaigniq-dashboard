@@ -56,11 +56,16 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
   
   const dynamicNavItems = useMemo(() => {
     let domainPartner = null;
-    if (user?.role === 'partner' && user.domain) {
+    if (user?.role !== 'Global Admin' && user?.domain) {
       domainPartner = partners.find(p => p.domain === user.domain);
     }
 
-    return navItems.map(item => {
+    let items = navItems;
+    if (user?.role !== 'Global Admin' && user?.role !== 'Admin') {
+      items = items.filter(item => item.id !== 'settings');
+    }
+
+    return items.map(item => {
       const newItem = { ...item };
       if (domainPartner) {
         if (item.id === "partners") {
