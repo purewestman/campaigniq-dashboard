@@ -123,15 +123,15 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     },
   };
 
-  // ── measure target ─────────────────────────────────────────────────────────
+  // ── measure target with retry polling ─────────────────────────────────────
+  // Tries every 300ms for up to 15 attempts (~4.5s) before giving up.
   const measureTarget = useCallback(
-    (idx: number, stepList: TourStep[]) => {
+    (idx: number, stepList: TourStep[], attempt = 0) => {
       const step = stepList[idx];
       if (!step) return;
       const el = document.querySelector(step.target);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Move the fake cursor to the element right away
         setTimeout(() => {
           const fresh = document.querySelector(step.target);
           if (fresh) {
@@ -139,7 +139,11 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
             setTargetRect(fresh.getBoundingClientRect());
           }
         }, 380);
+      } else if (attempt < 15) {
+        // Target not in DOM yet — retry after 300ms
+        setTimeout(() => measureTarget(idx, stepList, attempt + 1), 300);
       } else {
+        // Exhausted retries — skip this step gracefully
         setTargetRect(null);
       }
     },

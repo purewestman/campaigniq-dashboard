@@ -172,24 +172,28 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         await delay(1200);
       },
     },
-    // ── Step 3: gap dropdown ───────────────────────────────────────
+    // ── Step 3: gap dropdown ─────────────────────────────────────────────
     {
       target: ".tour-step-gap-select",
       title: "Step 3 — Assign an Employee to a Gap",
       content: "For each enablement gap, use this dropdown to pick a qualified domain user who will complete the certification. Watch as the tour selects a sample user then clicks Add.",
       placement: "top" as const,
+      // Wait for the expanded row animation to finish before trying to find the select
+      preAction: async () => {
+        await new Promise(r => setTimeout(r, 800));
+      },
       autoAction: async ({ delay, selectValue, clickEl }: any) => {
-        // Focus the gap dropdown
+        // Safely check if the dropdown has real options to select
         const sel = document.querySelector<HTMLSelectElement>(".tour-step-gap-select");
         if (sel && sel.options.length > 1) {
-          // Select the first real option (index 1)
-          await delay(600);
+          await delay(500);
           selectValue(".tour-step-gap-select", sel.options[1]?.value ?? "");
-          await delay(800);
-          // Click the + Add button beside it
+          await delay(900);
+          // Click the + Add button sitting beside the select
           clickEl(".tour-step-gap-select + button");
-          await delay(700);
+          await delay(800);
         }
+        // If no options: gracefully do nothing and let user click Next
       },
     },
     // ── Step 4: Submit to Enablement Plan ────────────────────────────
