@@ -44,6 +44,14 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     return stored ? parseInt(stored) : 0;
   });
 
+  // Flash help button on first mount
+  const [helpPulse, setHelpPulse] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setHelpPulse(true), 800);
+    const offTimer = setTimeout(() => setHelpPulse(false), 5000);
+    return () => { clearTimeout(timer); clearTimeout(offTimer); };
+  }, []);
+
   // Unify Data Streams
   const notifications = useMemo(() => {
     let items: NotificationItem[] = [];
@@ -320,23 +328,59 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
           {/* Help button – white bg so it pops against the dark/orange header */}
-          <button
-            title="Take a guided walkthrough"
-            onClick={() => {
-              if (onNavChange) onNavChange("overview");
-              setTimeout(() => startTour(buildTourSteps()), 400);
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:scale-105 active:scale-95 shadow-md"
-            style={{
-              background: "rgba(255,255,255,0.95)",
-              borderColor: "rgba(255,255,255,0.6)",
-              color: "var(--color-basil-green)",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <HelpCircle className="w-4 h-4" />
-            <span className="hidden sm:inline font-black">Help</span>
-          </button>
+          <div className="relative">
+            <button
+              title="Take a guided walkthrough"
+              onClick={() => {
+                setHelpPulse(false);
+                if (onNavChange) onNavChange("overview");
+                setTimeout(() => startTour(buildTourSteps()), 400);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:scale-105 active:scale-95 shadow-md ${
+                helpPulse ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110' : ''
+              }`}
+              style={{
+                background: helpPulse ? "#ffffff" : "rgba(255,255,255,0.95)",
+                borderColor: helpPulse ? "var(--color-basil-green)" : "rgba(255,255,255,0.6)",
+                color: "var(--color-basil-green)",
+                backdropFilter: "blur(8px)",
+                boxShadow: helpPulse ? "0 0 0 4px rgba(82,160,120,0.35), 0 4px 16px rgba(0,0,0,0.15)" : undefined,
+                transition: "all 0.3s ease",
+              }}
+            >
+              <HelpCircle className={`w-4 h-4 ${helpPulse ? 'animate-pulse' : ''}`} />
+              <span className="hidden sm:inline font-black">Help</span>
+            </button>
+
+            {/* Callout tooltip */}
+            <AnimatePresence>
+              {helpPulse && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.92 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.92 }}
+                  transition={{ duration: 0.25 }}
+                  className="absolute right-0 top-[calc(100%+12px)] z-50 w-56 pointer-events-none"
+                >
+                  {/* Arrow */}
+                  <div
+                    className="absolute -top-2 right-6 w-3.5 h-3.5 rotate-45 rounded-sm"
+                    style={{ background: "var(--color-ash-gray)" }}
+                  />
+                  <div
+                    className="rounded-2xl px-4 py-3 text-white text-[12px] font-semibold leading-relaxed shadow-2xl"
+                    style={{ background: "var(--color-ash-gray)" }}
+                  >
+                    <p className="font-black text-[13px] mb-0.5 flex items-center gap-1.5">
+                      <HelpCircle className="w-3.5 h-3.5 text-white/70" />
+                      Start Here!
+                    </p>
+                    Click <strong>Help</strong> for a guided walkthrough of the dashboard.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           {user?.role === 'partner' && (
             <button
               onClick={handlePasswordChange}
