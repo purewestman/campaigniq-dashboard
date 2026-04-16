@@ -12,7 +12,8 @@ import {
   Calendar, UserPlus, X, Users,
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
-import { type TimelineItem, partners, trainingData, isLinkedDomain } from "@/lib/data";
+import { type TimelineItem, partners, isLinkedDomain } from "@/lib/data";
+import { trainingData } from "@/lib/trainingData";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
 import EnablementTimeline from "@/components/EnablementTimeline";
 import { toast } from "sonner";
