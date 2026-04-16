@@ -410,26 +410,50 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
             <AnimatePresence>
               {helpPulse && (
                 <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.92 }}
+                  initial={{ opacity: 0, y: -8, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.92 }}
-                  transition={{ duration: 0.25 }}
-                  className="absolute right-0 top-[calc(100%+12px)] z-50 w-56 pointer-events-none"
+                  exit={{ opacity: 0, y: -8, scale: 0.9 }}
+                  transition={{ duration: 0.3, type: "spring", stiffness: 280, damping: 22 }}
+                  className="absolute right-0 top-[calc(100%+14px)] z-50 w-80"
                 >
                   {/* Arrow */}
                   <div
-                    className="absolute -top-2 right-6 w-3.5 h-3.5 rotate-45 rounded-sm"
+                    className="absolute -top-2 right-7 w-4 h-4 rotate-45 rounded-sm"
                     style={{ background: "var(--color-ash-gray)" }}
                   />
                   <div
-                    className="rounded-2xl px-4 py-3 text-white text-[12px] font-semibold leading-relaxed shadow-2xl"
+                    className="rounded-2xl shadow-2xl overflow-hidden"
                     style={{ background: "var(--color-ash-gray)" }}
                   >
-                    <p className="font-black text-[13px] mb-0.5 flex items-center gap-1.5">
-                      <HelpCircle className="w-3.5 h-3.5 text-white/70" />
-                      Start Here!
-                    </p>
-                    Click <strong>Help</strong> for a guided walkthrough of the dashboard.
+                    {/* Body */}
+                    <div className="px-5 pt-5 pb-4">
+                      <p className="font-black text-[15px] text-white mb-1.5 flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4 text-white/70 shrink-0" />
+                        Welcome to the Dashboard!
+                      </p>
+                      <p className="text-white/80 text-[13px] leading-relaxed">
+                        Not sure where to start? Click <strong className="text-white">Start Tour</strong> for a guided walkthrough of every feature — takes under 2 minutes.
+                      </p>
+                    </div>
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 px-5 pb-5">
+                      <button
+                        onClick={() => {
+                          setHelpPulse(false);
+                          if (onNavChange) onNavChange("overview");
+                          setTimeout(() => startTour(buildTourSteps()), 400);
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-[var(--color-pure-orange)] hover:bg-orange-500 text-white text-[13px] font-black transition-all active:scale-95 shadow-lg"
+                      >
+                        Start Tour →
+                      </button>
+                      <button
+                        onClick={() => setHelpPulse(false)}
+                        className="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[13px] font-semibold transition-all border border-white/10"
+                      >
+                        Later
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
