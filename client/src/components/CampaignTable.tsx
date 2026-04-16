@@ -1047,7 +1047,9 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [targetTiers, setTargetTiers] = useState<Record<number, ProgramTier>>({});
   const { getOverrideCount, isAspEligible } = useOverrides();
+  const { addModification, getModification } = useModifications();
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -1154,7 +1156,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
               <th className="px-4 py-3 w-8" />
               <SortHeader label="Partner" sortKeyName="name" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
-                Tier
+                Current Tier
+              </th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
+                Target Status
               </th>
               <SortHeader label="Score" sortKeyName="enablementScore" align="right" />
               <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
@@ -1174,20 +1179,28 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
           <tbody>
             {sorted.length > 0 ? (
               sorted.map((partner, i) => {
-                const tierDef = TIER_DEFINITIONS[partner.programTier];
+                const currentTierDef = TIER_DEFINITIONS[partner.programTier];
+                const targetTierLevel = targetTiers[partner.id] || partner.programTier;
+                const tierDef = TIER_DEFINITIONS[targetTierLevel];
                 const TierIcon = tierIconMap[partner.programTier];
+                const TargetTierIcon = tierIconMap[targetTierLevel];
                 const isExpanded = expandedId === partner.id;
                 const overrideCount = getOverrideCount(partner.id);
+                
                 const totalRequired =
-                  partner.requirements.salesPro.required +
-                  partner.requirements.techPro.required +
-                  partner.requirements.bootcamp.required +
-                  partner.requirements.implSpec.required;
+                  tierDef.enablement.salesPro +
+                  tierDef.enablement.techPro +
+                  tierDef.enablement.bootcamp +
+                  tierDef.enablement.implSpec;
+                  
                 const totalObtained =
-                  Math.min(partner.requirements.salesPro.obtained, partner.requirements.salesPro.required) +
-                  Math.min(partner.requirements.techPro.obtained, partner.requirements.techPro.required) +
-                  Math.min(partner.requirements.bootcamp.obtained, partner.requirements.bootcamp.required) +
-                  Math.min(partner.requirements.implSpec.obtained, partner.requirements.implSpec.required);
+                  Math.min(partner.requirements.salesPro.obtained, tierDef.enablement.salesPro) +
+                  Math.min(partner.requirements.techPro.obtained, tierDef.enablement.techPro) +
+                  Math.min(partner.requirements.bootcamp.obtained, tierDef.enablement.bootcamp) +
+                  Math.min(partner.requirements.implSpec.obtained, tierDef.enablement.implSpec);
+                  
+                const localGaps = Math.max(0, totalRequired - totalObtained);
+                const localScore = totalRequired > 0 ? Math.round((totalObtained / totalRequired) * 100) : 100;
 
                 return (
                   <React.Fragment key={partner.id}>
@@ -1233,25 +1246,44 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                       <td className="px-4 py-3.5">
                         <span
                           className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full"
-                          style={{ background: tierDef.bg, color: tierDef.color }}
+                          style={{ background: currentTierDef.bg, color: currentTierDef.color }}
                         >
                           <TierIcon className="w-3 h-3" />
-                          {tierDef.shortLabel}
+                          {currentTierDef.shortLabel}
                         </span>
+                      </td>
+                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative group">
+                          <select 
+                            className="text-[11px] font-medium px-2.5 py-1 rounded-full border border-transparent hover:border-slate-300 focus:outline-none appearance-none cursor-pointer pr-6 bg-transparent w-full"
+                            style={{ 
+                              background: tierDef.bg, 
+                              color: tierDef.color,
+                              boxShadow: targetTierLevel !== partner.programTier ? '0 0 0 1px currentColor' : 'none'
+                             }}
+                            value={targetTierLevel}
+                            onChange={(e) => setTargetTiers(p => ({ ...p, [partner.id]: e.target.value as ProgramTier }))}
+                          >
+                            {PROGRAM_TIERS.map(t => (
+                              <option key={t} value={t}>{TIER_DEFINITIONS[t as ProgramTier].shortLabel}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="w-3 h-3 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: tierDef.color }} />
+                        </div>
                       </td>
                       <td className="px-4 py-3.5 text-right">
                         <span
                           className="text-[13px] font-bold"
                           style={{
                             color:
-                              partner.enablementScore >= 80
+                              localScore >= 80
                                 ? "var(--color-pure-orange)"
-                                : partner.enablementScore >= 40
+                                : localScore >= 40
                                 ? "var(--color-moss-green)"
                                 : "var(--color-cinnamon-brown)",
                           }}
                         >
-                          {partner.enablementScore}%
+                          {localScore}%
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
@@ -1260,11 +1292,11 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                             <div
                               className="h-full rounded-full"
                               style={{
-                                width: `${partner.enablementScore}%`,
+                                width: `${localScore}%`,
                                 background:
-                                  partner.enablementScore >= 80
+                                  localScore >= 80
                                     ? "var(--color-pure-orange)"
-                                    : partner.enablementScore >= 40
+                                    : localScore >= 40
                                     ? "var(--color-moss-green)"
                                     : "var(--color-cinnamon-brown)",
                               }}
@@ -1280,14 +1312,14 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                           className="text-[13px] font-bold"
                           style={{
                             color:
-                              partner.totalGaps === 0
+                              localGaps === 0
                                 ? "var(--color-pure-orange)"
-                                : partner.totalGaps <= 3
+                                : localGaps <= 3
                                 ? "var(--color-walnut-brown)"
                                 : "var(--color-cinnamon-brown)",
                           }}
                         >
-                          {partner.totalGaps}
+                          {localGaps}
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-right">
@@ -1331,12 +1363,75 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
+                        {localGaps > 0 && targetTierLevel !== partner.programTier && (
+                          <button
+                            className="bg-pure-orange hover:bg-pure-orange/90 text-white text-[10px] font-bold px-2.5 py-1.5 rounded flex items-center gap-1.5 transition-colors whitespace-nowrap"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              
+                              const missingItems: any[] = [];
+                              const gapList = [
+                                { key: "salesPro", label: "Sales Professional" },
+                                { key: "techPro", label: "Technical Professional" },
+                                { key: "bootcamp", label: "SE Bootcamp" },
+                                { key: "implSpec", label: "Implementation Specialization" }
+                              ];
+                              
+                              gapList.forEach(g => {
+                                const req = tierDef.enablement[g.key as keyof typeof tierDef.enablement];
+                                const obt = partner.requirements[g.key as keyof typeof partner.requirements].obtained;
+                                const needed = Math.max(0, req - obt);
+                                for (let i = 0; i < needed; i++) {
+                                  missingItems.push({
+                                    id: `gap-${partner.id}-${g.key}-${Date.now()}-${i}`,
+                                    label: `${g.label} (Required for ${tierDef.shortLabel})`,
+                                    month: "M1-3",
+                                    category: "enablement",
+                                    description: `Automatically identified gap for Target Tier: ${tierDef.label}`,
+                                    status: "planned",
+                                  });
+                                }
+                              });
+                              
+                              if (missingItems.length > 0) {
+                                const currentMod = getModification(partner.id);
+                                const existingCustomItems = currentMod?.customItems || [];
+                                addModification({
+                                  ...(currentMod || {
+                                    partnerId: partner.id,
+                                    salesPro: partner.requirements.salesPro.obtained,
+                                    techPro: partner.requirements.techPro.obtained,
+                                    bootcamp: partner.requirements.bootcamp.obtained,
+                                    implSpec: partner.requirements.implSpec.obtained,
+                                    simplyPure: partner.requirements.simplyPure.obtained,
+                                    aspFoundations: partner.requirements.aspFoundations.totalObtained,
+                                    aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
+                                    aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
+                                    bookingsUSD: partner.businessMetrics.bookingsUSD,
+                                    uniqueCustomers: partner.businessMetrics.uniqueCustomers,
+                                    partnerDeliveredServices: partner.businessMetrics.partnerDeliveredServices,
+                                    addedEmails: {},
+                                    removedEmails: {},
+                                    comment: `Assigned ${missingItems.length} tier requirement gaps to plan.`,
+                                    modifiedBy: "Admin"
+                                  }),
+                                  customItems: [...existingCustomItems, ...missingItems]
+                                });
+                              }
+                            }}
+                          >
+                            <Calendar className="w-3 h-3" />
+                            Plan Gaps
+                          </button>
+                        )}
                         <button
-                          className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
+                          className="p-1 rounded-lg hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
+                        </div>
                       </td>
                     </motion.tr>
                     {isExpanded && <ExpandedRow key={`exp-${partner.id}`} partner={partner} onNavigateToActivity={onNavigateToActivity} />}
