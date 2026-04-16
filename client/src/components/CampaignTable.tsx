@@ -37,6 +37,7 @@ import {
   Minus,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Filter,
   ShieldCheck,
   CheckCircle2,
