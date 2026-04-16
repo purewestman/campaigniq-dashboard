@@ -3,7 +3,7 @@
  * Data is stored in localStorage under key 'pei_timeline_commitments'.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   CalendarCheck, 
@@ -17,10 +17,26 @@ import {
   Check, 
   AlertCircle,
   Calendar,
-  Users
+  Users,
+  FileSignature,
+  MessageSquare,
+  ThumbsUp,
+  ThumbsDown,
+  Send,
+  ChevronDown,
+  ChevronUp,
+  Shield,
 } from "lucide-react";
 import { trainingData } from "../lib/trainingData";
 import { toast } from "sonner";
+import {
+  loadSignedExports,
+  addCommentToExport,
+  updateExportStatus,
+  deleteSignedExport,
+  type SignedExportRecord,
+} from "@/lib/signedExports";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface CommitmentMilestone {
   id: string;
@@ -104,6 +120,68 @@ interface Props {
 }
 
 export default function CommitmentTracker({ commitments, onDelete, onUpdate }: Props) {
+  const { user } = useAuth();
+  const isGlobalAdmin = user?.role === 'Global Admin';
+
+  const [activeTab, setActiveTab] = useState<'milestones' | 'signed'>('milestones');
+
+  // Live-reload signed exports on storage events (fired after addCommentToExport / updateExportStatus)
+  const [signedExports, setSignedExports] = useState<SignedExportRecord[]>(() => loadSignedExports());
+  useEffect(() => {
+    const reload = () => setSignedExports(loadSignedExports());
+    window.addEventListener('storage', reload);
+    return () => window.removeEventListener('storage', reload);
+  }, []);
+
+  // Apply domain-level RLS for partners
+  const visibleExports = useMemo(() => {
+    if (isGlobalAdmin) return signedExports;
+    if (!user?.name) return [];
+    return signedExports.filter(e => e.partnerName === user.name || e.isAllPartners);
+  }, [signedExports, isGlobalAdmin, user]);
+
+  // Per-export comment draft state
+  const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
+  const [expandedExport, setExpandedExport] = useState<string | null>(null);
+
+  const handleApprove = (exportId: string) => {
+    updateExportStatus(exportId, 'approved');
+    setSignedExports(loadSignedExports());
+    toast.success('Export marked as Approved');
+  };
+
+  const handleRequestChanges = (exportId: string) => {
+    updateExportStatus(exportId, 'changes_requested');
+    setSignedExports(loadSignedExports());
+    toast.info('Changes requested on commitment');
+  };
+
+  const handleSubmitComment = (exportId: string) => {
+    const text = (commentDraft[exportId] || '').trim();
+    if (!text) return;
+    addCommentToExport(exportId, {
+      author: user?.name || user?.email || 'Unknown',
+      role: user?.role || 'Partner',
+      text,
+    });
+    setSignedExports(loadSignedExports());
+    setCommentDraft(prev => ({ ...prev, [exportId]: '' }));
+    toast.success('Comment added');
+  };
+
+  const handleDeleteExport = (exportId: string) => {
+    if (!confirm('Remove this signed export record?')) return;
+    deleteSignedExport(exportId);
+    setSignedExports(loadSignedExports());
+    toast.success('Record removed');
+  };
+
+  const statusConfig = {
+    pending_review: { label: 'Pending Review', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+    approved:       { label: 'Approved', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    changes_requested: { label: 'Changes Requested', color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200' },
+  };
+
   const [editingMilestone, setEditingMilestone] = useState<{ partnerId: number, mId: string } | null>(null);
   
   // State for the edit form
@@ -134,7 +212,7 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
     onUpdate();
     toast.success("Milestone updated successfully");
   };
-  if (commitments.length === 0) {
+  if (commitments.length === 0 && visibleExports.length === 0) {
     return (
       <div
         className="terrain-card p-8 text-center"
@@ -143,7 +221,7 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
         <CalendarCheck className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
         <p className="text-[13px] font-medium text-muted-foreground">No partner commitments submitted yet.</p>
         <p className="text-[11px] text-muted-foreground/60 mt-1">
-          Export a partner's enablement plan PDF, fill in proposed dates, and click "Submit to Dashboard".
+          Export a partner’s enablement plan PDF, fill in proposed dates, and click “Submit to Dashboard”.
         </p>
       </div>
     );
@@ -151,8 +229,30 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
 
   return (
     <div className="space-y-4">
+      {/* Tab switcher */}
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+        <button
+          onClick={() => setActiveTab('milestones')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold transition-all ${
+            activeTab === 'milestones' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <CalendarCheck className="w-4 h-4" /> Timeline Milestones
+          {commitments.length > 0 && <span className="bg-orange-100 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded-full">{commitments.length}</span>}
+        </button>
+        <button
+          onClick={() => setActiveTab('signed')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold transition-all ${
+            activeTab === 'signed' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <FileSignature className="w-4 h-4" /> Signed Exports
+          {visibleExports.length > 0 && <span className="bg-blue-100 text-blue-600 text-[10px] font-black px-1.5 py-0.5 rounded-full">{visibleExports.length}</span>}
+        </button>
+      </div>
+      {activeTab === 'milestones' && (
       <AnimatePresence>
-        {commitments.map((c) => {
+        {commitments.filter(Boolean).map((c) => {
           const agreed = c.commitments.filter((m) => m.agreed).length;
           const total = c.commitments.length;
           const allAgreed = agreed === total;
@@ -439,6 +539,140 @@ export default function CommitmentTracker({ commitments, onDelete, onUpdate }: P
           );
         })}
       </AnimatePresence>
+      )}
+      {/* ── SIGNED EXPORTS TAB ── */}
+      {activeTab === 'signed' && (
+        <AnimatePresence mode="sync">
+          {visibleExports.length === 0 ? (
+            <div className="terrain-card p-8 text-center">
+              <FileSignature className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
+              <p className="text-[13px] font-medium text-muted-foreground">No signed exports yet.</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-1">
+                Sign and export a PPTX deck from the Enablement Plans page to see it here.
+              </p>
+            </div>
+          ) : visibleExports.map(ex => {
+            const sc = statusConfig[ex.status];
+            const isExpanded = expandedExport === ex.id;
+            return (
+              <motion.div
+                key={ex.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="terrain-card overflow-hidden mb-4"
+              >
+                {/* Header */}
+                <div className="px-5 py-4 flex items-center justify-between gap-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                      <FileSignature className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-slate-900">{ex.partnerName}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Signed by <strong>{ex.signedBy}</strong> · Commitment {ex.commitmentDate} · {new Date(ex.exportedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-[11px] font-bold px-3 py-1 rounded-full border ${sc.bg} ${sc.color} ${sc.border}`}>
+                      {sc.label}
+                    </span>
+                    {isGlobalAdmin && ex.status === 'pending_review' && (
+                      <>
+                        <button
+                          onClick={() => handleApprove(ex.id)}
+                          title="Approve"
+                          className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-colors"
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleRequestChanges(ex.id)}
+                          title="Request Changes"
+                          className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors"
+                        >
+                          <ThumbsDown className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => setExpandedExport(isExpanded ? null : ex.id)}
+                      className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition-colors"
+                    >
+                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+                    {isGlobalAdmin && (
+                      <button
+                        onClick={() => handleDeleteExport(ex.id)}
+                        className="p-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Expanded: Comments */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-slate-50 px-5 py-4 space-y-3">
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                          <MessageSquare className="w-3.5 h-3.5" /> Comments & Review
+                        </p>
+
+                        {ex.comments.length === 0 && (
+                          <p className="text-[12px] text-slate-400 italic">No comments yet.</p>
+                        )}
+                        {ex.comments.map(c => (
+                          <div key={c.id} className="flex gap-3">
+                            <div className="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-[10px] font-black text-slate-600">
+                              {c.author.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 bg-white rounded-xl px-3 py-2.5 border border-slate-200">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[12px] font-black text-slate-800">{c.author}</span>
+                                <span className="text-[10px] text-slate-400">{c.role}</span>
+                                <span className="text-[10px] text-slate-300 ml-auto">{new Date(c.timestamp).toLocaleString()}</span>
+                              </div>
+                              <p className="text-[13px] text-slate-700">{c.text}</p>
+                            </div>
+                          </div>
+                        ))}
+
+                        <div className="flex gap-2 pt-1">
+                          <input
+                            type="text"
+                            value={commentDraft[ex.id] || ''}
+                            onChange={e => setCommentDraft(prev => ({ ...prev, [ex.id]: e.target.value }))}
+                            onKeyDown={e => { if (e.key === 'Enter') handleSubmitComment(ex.id); }}
+                            placeholder={isGlobalAdmin ? 'Add approval note or feedback…' : 'Add a comment…'}
+                            className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-pure-orange transition-all"
+                          />
+                          <button
+                            onClick={() => handleSubmitComment(ex.id)}
+                            disabled={!(commentDraft[ex.id] || '').trim()}
+                            className="p-2.5 bg-pure-orange text-white rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-40"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      )}
     </div>
   );
 }

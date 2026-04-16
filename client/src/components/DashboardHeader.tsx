@@ -14,6 +14,7 @@ import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
 import { useTour } from "@/contexts/TourContext";
 import { loadCommitments } from "@/components/CommitmentTracker";
+import { loadSignedExports } from "@/lib/signedExports";
 
 interface DashboardHeaderProps {
   searchQuery: string;
@@ -50,6 +51,14 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     const timer = setTimeout(() => setHelpPulse(true), 800);
     const offTimer = setTimeout(() => setHelpPulse(false), 5000);
     return () => { clearTimeout(timer); clearTimeout(offTimer); };
+  }, []);
+
+  // Live-reload signed exports for notification stream
+  const [signedExportsData, setSignedExportsData] = useState(() => loadSignedExports());
+  useEffect(() => {
+    const reload = () => setSignedExportsData(loadSignedExports());
+    window.addEventListener('storage', reload);
+    return () => window.removeEventListener('storage', reload);
   }, []);
 
   // Unify Data Streams
@@ -126,10 +135,55 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
       });
     });
 
+    // 5. Signed PPTX Exports (submissions, approvals, comments)
+    signedExportsData.forEach(ex => {
+      // RLS: partner only sees their own
+      if (user?.role !== 'Global Admin' && user?.name && ex.partnerName !== user.name && !ex.isAllPartners) return;
+
+      // Submission notification
+      items.push({
+        id: `se-sub-${ex.id}`,
+        type: "commitment" as const,
+        partnerId: 0,
+        partnerName: ex.partnerName,
+        message: `📄 Signed PPTX export submitted by ${ex.signedBy} — Commitment date: ${ex.commitmentDate}`,
+        timestamp: ex.exportedAt,
+        dateStr: new Date(ex.exportedAt).toLocaleString(),
+      });
+
+      // Status change notification if not pending
+      if (ex.status !== 'pending_review') {
+        const statusLabel = ex.status === 'approved' ? '✅ Approved' : '🔄 Changes Requested';
+        items.push({
+          id: `se-status-${ex.id}`,
+          type: "asp" as const,
+          partnerId: 0,
+          partnerName: ex.partnerName,
+          message: `${statusLabel} by pureuser on signed PPTX export for ${ex.partnerName}`,
+          timestamp: ex.exportedAt + 1,
+          dateStr: new Date(ex.exportedAt).toLocaleString(),
+        });
+      }
+
+      // Comment notifications
+      ex.comments.forEach(c => {
+        if (user?.role !== 'Global Admin' && c.role === 'Global Admin') return; // partner already sees admin notes
+        items.push({
+          id: `se-comment-${c.id}`,
+          type: "modification" as const,
+          partnerId: 0,
+          partnerName: ex.partnerName,
+          message: `💬 ${c.author} (${c.role}) commented on ${ex.partnerName}: "${c.text.slice(0, 60)}${c.text.length > 60 ? '…' : ''}"`,
+          timestamp: c.timestamp,
+          dateStr: new Date(c.timestamp).toLocaleString(),
+        });
+      });
+    });
+
     // Sort descending by time
     items = items.sort((a, b) => b.timestamp - a.timestamp);
     return items;
-  }, [allModificationHistory, overrides, aspOverrides, modifiedPartners, user]);
+  }, [allModificationHistory, overrides, aspOverrides, modifiedPartners, user, signedExportsData]);
 
   const unreadCount = notifications.filter(n => n.timestamp > clearedAt).length;
 

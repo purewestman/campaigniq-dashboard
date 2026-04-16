@@ -15,9 +15,11 @@ import { useModifications } from "@/contexts/ModificationContext";
 import { type TimelineItem, partners, isLinkedDomain } from "@/lib/data";
 import { trainingData } from "@/lib/trainingData";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
+import { addSignedExport } from "@/lib/signedExports";
 import EnablementTimeline from "@/components/EnablementTimeline";
 import { toast } from "sonner";
 import type { Partner } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FilterMode = "all" | "has_gaps" | "has_plan" | "no_plan" | "compliant";
 
@@ -160,6 +162,7 @@ function AssigneePicker({
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function EnablementPlansPage() {
   const { modifiedPartners, partnerTimelines } = useModifications();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<FilterMode>("all");
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -207,7 +210,15 @@ export default function EnablementPlansPage() {
       setExportingId(signModal.partnerId);
       try {
         await exportPartnerPptx(partner as any, partnerTimelines[signModal.partnerId] ?? [], signatureInfo);
-        toast.success(`${partner.name} deck exported!`);
+        // Record the signed export for the commitments tab
+        addSignedExport({
+          partnerName: partner.name,
+          partnerDomain: partner.domain,
+          signedBy: signData.name,
+          commitmentDate: signData.date,
+          isAllPartners: false,
+        });
+        toast.success(`${partner.name} deck exported & committed!`);
       } catch (e) {
         console.error(e);
         toast.error("Export failed — see console for details");
@@ -219,7 +230,15 @@ export default function EnablementPlansPage() {
       setExportingAll(true);
       try {
         await exportAllPartnersPptx(modifiedPartners as any[], partnerTimelines, signatureInfo);
-        toast.success("All partners deck exported!");
+        // Record consolidated signed export
+        addSignedExport({
+          partnerName: `All Partners (${modifiedPartners.length})`,
+          partnerDomain: 'everpure.com',
+          signedBy: signData.name,
+          commitmentDate: signData.date,
+          isAllPartners: true,
+        });
+        toast.success("All partners deck exported & committed!");
       } catch (e) {
         console.error(e);
         toast.error("Export failed — see console for details");
