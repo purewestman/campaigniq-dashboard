@@ -18,6 +18,7 @@ import {
   formatPercent,
   getRevenueAttainment,
   generateRecommendedAction,
+  partners,
 } from "@/lib/data";
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
 import { activityData } from "@/lib/activityData";
@@ -543,38 +544,42 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
         {people.length}/{required} individuals
       </p>
 
-      {/* Who? popover */}
+      {/* Who? accordion */}
       {people.length > 0 && (
-        <div className="relative">
+        <div className="mt-3 text-[11px]">
           <button
             onClick={() => setOpen(o => !o)}
-            className="text-[10px] font-medium underline underline-offset-2 transition-colors"
+            className="flex items-center gap-1.5 font-semibold transition-colors w-full p-1.5 rounded-md hover:bg-black/5"
             style={{ color: ASP_ORANGE }}
           >
-            {open ? "Hide" : "Who?"}
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} />
+            {open ? "Hide Individuals" : "View Individuals"}
           </button>
-          {open && (
-            <div
-              className="absolute z-30 left-0 top-6 w-64 rounded-xl shadow-xl border p-3 space-y-1.5"
-              style={{ background: "#ffffff", borderColor: "#e5e7eb" }}
-            >
-              <p className="text-[10px] uppercase tracking-wider font-bold mb-2" style={{ color: ASP_ORANGE }}>
-                {label.toUpperCase()} — {people.length} INDIVIDUAL{people.length !== 1 ? "S" : ""}
-              </p>
-              {people.map(p => (
-                <div key={p.email} className="flex items-center gap-1.5 text-[11px]">
-                  <GraduationCap className="w-3 h-3 shrink-0" style={{ color: ASP_ORANGE }} />
-                  <span className="font-bold text-slate-900">{p.firstName} {p.lastName}</span>
-                  <span className="text-slate-500 truncate text-[10px]">{p.email}</span>
+          
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="p-3 space-y-2 mt-1.5 border-l-[3px] bg-slate-50/70 rounded-r-md" style={{ borderColor: ASP_ORANGE }}>
+                  {people.map(p => (
+                    <div key={p.email} className="flex flex-col">
+                      <span className="font-bold text-slate-800">{p.firstName} {p.lastName}</span>
+                      <span className="text-slate-500 text-[10px]">{p.email}</span>
+                    </div>
+                  ))}
+                  {people.length < required && (
+                    <p className="text-[10px] text-muted-foreground pt-2 border-t border-black/10 mt-2">
+                      Need {required - people.length} more to qualify.
+                    </p>
+                  )}
                 </div>
-              ))}
-              {people.length < required && (
-                <p className="text-[10px] text-muted-foreground pt-1 border-t border-black/10">
-                  Need {required - people.length} more to qualify.
-                </p>
-              )}
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>
