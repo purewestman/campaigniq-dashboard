@@ -16,7 +16,10 @@ import {
   Trophy,
   X,
   FileCheck,
+  FileDown,
+  Sheet,
 } from "lucide-react";
+import { generateActivityReportHtml } from "@/lib/activityReportPdf";
 import {
   BarChart,
   Bar,
@@ -294,12 +297,76 @@ export default function CertificationsPage() {
             <h3 className="text-[14px] font-bold text-foreground">All Exam Records</h3>
             <p className="text-[11px] text-muted-foreground">{filteredExams.length} of {allExams.length} records</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)", borderColor: search ? "color-mix(in srgb, var(--color-basil-green) 40%, transparent)" : "var(--color-stone-gray)" }}>
-            <Search className="w-3.5 h-3.5 text-muted-foreground" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search exams, emails, partners..." className="bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none flex-1" />
-            {search && (
-              <button onClick={() => setSearch("")} className="p-0.5 rounded hover:bg-black/5">
-                <X className="w-3 h-3 text-muted-foreground" />
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Search box */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border min-w-[250px]" style={{ background: "color-mix(in srgb, var(--color-cloud-white) 95%, transparent)", borderColor: search ? "color-mix(in srgb, var(--color-basil-green) 40%, transparent)" : "var(--color-stone-gray)" }}>
+              <Search className="w-3.5 h-3.5 text-muted-foreground" />
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search exams, emails, partners..." className="bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground outline-none flex-1" />
+              {search && (
+                <button onClick={() => setSearch("")} className="p-0.5 rounded hover:bg-black/5">
+                  <X className="w-3 h-3 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+
+            {/* PDF download */}
+            {filteredExams.length > 0 && (
+              <button
+                onClick={() => {
+                  const stats = [
+                    { label: "Records", value: filteredExams.length },
+                    { label: "Unique People", value: new Set(filteredExams.map(e => e.email)).size },
+                    { label: "Partners", value: new Set(filteredExams.map(e => e.partnerName)).size },
+                    { label: search ? `Filter: "${search}"` : "Showing", value: search ? filteredExams.length : "All" },
+                  ];
+                  const rows = filteredExams.map(e => ({
+                    col1: e.partnerName,
+                    col2: e.email,
+                    col3: e.certification,
+                    col4: e.programTier,
+                  }));
+                  const html = generateActivityReportHtml(
+                    search ? `Exam Records — "${search}"` : "All Exam Records",
+                    `PEI · FY27 Global Reseller Programme · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
+                    stats,
+                    ["Partner", "Email", "Certification", "Tier"],
+                    rows
+                  );
+                  const win = window.open("", "_blank");
+                  if (!win) return;
+                  win.document.write(html);
+                  win.document.close();
+                  win.focus();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all"
+                title="Download as PDF"
+              >
+                <FileDown className="w-3.5 h-3.5 text-basil-green" style={{ color: "var(--color-basil-green)" }} />
+                PDF
+              </button>
+            )}
+
+            {/* CSV download */}
+            {filteredExams.length > 0 && (
+              <button
+                onClick={() => {
+                  const header = "Partner,Email,Certification,Tier";
+                  const csvRows = filteredExams.map(e =>
+                    [`"${e.partnerName}"`, `"${e.email}"`, `"${e.certification}"`, `"${e.programTier}"`].join(",")
+                  );
+                  const blob = new Blob([[header, ...csvRows].join("\n")], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = search ? `exam-records-${search.replace(/\s+/g,"_")}.csv` : "exam-records-all.csv";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all"
+                title="Download as CSV"
+              >
+                <Sheet className="w-3.5 h-3.5" style={{ color: "var(--color-pure-orange)" }} />
+                CSV
               </button>
             )}
           </div>
