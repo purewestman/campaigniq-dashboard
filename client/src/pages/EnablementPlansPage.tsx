@@ -1,17 +1,18 @@
 /**
  * EnablementPlansPage.tsx
  * Dedicated page: partner cards + compact 12-Month roadmap per partner.
+ * Each card has a plan-level assignee picker (domain-filtered, manual entry allowed).
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, ChevronRight, Download, DownloadCloud,
-  CheckCircle2, AlertTriangle, Clock, Target, BarChart3,
-  Calendar,
+  CheckCircle2, AlertTriangle, Target, BarChart3,
+  Calendar, UserPlus, X, Users,
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
-import { TIER_DEFINITIONS } from "@/lib/data";
+import { trainingData } from "@/lib/trainingData";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
 import EnablementTimeline from "@/components/EnablementTimeline";
 import { toast } from "sonner";
@@ -26,6 +27,137 @@ const TIER_COLOR: Record<string, string> = {
   Partner: "var(--color-ash-gray)",
 };
 
+// ── Per-card assignee picker ──────────────────────────────────────────────────
+function AssigneePicker({
+  partnerId,
+  domain,
+}: {
+  partnerId: number;
+  domain: string;
+}) {
+  const { getModification, addModification } = useModifications();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Store plan-level assignees under addedEmails.plan
+  const mod = getModification(partnerId);
+  const assignees: string[] = (mod?.addedEmails as any)?.plan ?? [];
+
+  // Domain emails from trainingData
+  const domainEmails = useMemo(() => {
+    return Array.from(new Set(
+      Object.values(trainingData).flatMap(ptd =>
+        Object.values(ptd as any).flatMap((arr: any) => (arr as any[]).map((p: any) => p.email))
+      )
+    )).filter(e => e.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
+  }, [domain]);
+
+  const datalistId = `plan-emails-${partnerId}`;
+
+  const addAssignee = (email: string) => {
+    const val = email.trim();
+    if (!val || !val.includes("@")) return;
+    // Allow same-domain or already in our list
+    if (!val.toLowerCase().endsWith(`@${domain.toLowerCase()}`)) {
+      toast.error(`Only @${domain} addresses can be added.`);
+      return;
+    }
+    if (assignees.includes(val)) return; // dedupe
+    const newList = [...assignees, val];
+    addModification({
+      ...(mod || {
+        partnerId,
+        salesPro: 0, techPro: 0, bootcamp: 0, implSpec: 0, simplyPure: 0,
+        aspFoundations: 0, aspStoragePro: 0, aspSupportSpec: 0,
+        bookingsUSD: null, uniqueCustomers: null, partnerDeliveredServices: null,
+        addedEmails: {}, removedEmails: {},
+        comment: "", modifiedBy: "Enablement Plan",
+      }),
+      addedEmails: { ...(mod?.addedEmails ?? {}), plan: newList },
+      comment: `Assigned ${val} to plan`,
+      modifiedBy: "Enablement Plan",
+    });
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const removeAssignee = (email: string) => {
+    const newList = assignees.filter(e => e !== email);
+    addModification({
+      ...(mod!),
+      addedEmails: { ...(mod?.addedEmails ?? {}), plan: newList },
+      comment: `Removed ${email} from plan`,
+      modifiedBy: "Enablement Plan",
+    });
+  };
+
+  return (
+    <div className="px-4 pb-3 pt-2 border-t border-slate-100">
+      <datalist id={datalistId}>
+        {domainEmails.map(e => <option key={e} value={e} />)}
+      </datalist>
+
+      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
+        <Users className="w-3 h-3" /> Plan Assignees
+      </p>
+
+      {/* Existing assignee pills */}
+      {assignees.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {assignees.map(em => (
+            <span
+              key={em}
+              className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-indigo-100"
+            >
+              {em.split("@")[0]}
+              <button
+                type="button"
+                onClick={() => removeAssignee(em)}
+                className="ml-0.5 hover:text-red-500 transition-colors"
+                title="Remove"
+              >
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Input row: dropdown + add button */}
+      <div className="flex items-center gap-1.5">
+        <input
+          ref={inputRef}
+          type="text"
+          list={datalistId}
+          placeholder={`name@${domain}`}
+          className="flex-1 text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[var(--color-pure-orange)] transition-colors placeholder:text-slate-300"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              addAssignee((e.target as HTMLInputElement).value);
+            }
+          }}
+          onChange={(e) => {
+            // Auto-add when user picks from datalist (exact match)
+            const val = e.target.value.trim();
+            if (domainEmails.includes(val)) {
+              addAssignee(val);
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => addAssignee(inputRef.current?.value ?? "")}
+          className="shrink-0 flex items-center gap-1 bg-slate-900 hover:bg-[var(--color-pure-orange)] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all active:scale-95"
+          title="Add assignee"
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function EnablementPlansPage() {
   const { modifiedPartners, partnerTimelines } = useModifications();
   const [filter, setFilter] = useState<FilterMode>("all");
@@ -105,7 +237,7 @@ export default function EnablementPlansPage() {
               Partner Enablement Plans
             </h1>
             <p className="text-[14px] text-slate-500 mt-1">
-              Gap allocation, 12-month roadmap and PPTX export — per partner.
+              Gap allocation, 12-month roadmap, plan assignees and PPTX export — per partner.
             </p>
           </div>
           <button
@@ -204,7 +336,7 @@ export default function EnablementPlansPage() {
                       </div>
                     </div>
 
-                    {/* Gap pills inline — always visible */}
+                    {/* Gap pills — always visible */}
                     {gapRows.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {gapRows.map(g => (
@@ -216,7 +348,10 @@ export default function EnablementPlansPage() {
                     )}
                   </div>
 
-                  {/* Expand / collapse: 12-Month Roadmap */}
+                  {/* ── Plan Assignees (always visible) ───────────────── */}
+                  <AssigneePicker partnerId={partner.id} domain={partner.domain} />
+
+                  {/* ── Roadmap toggle ─────────────────────────────────── */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : partner.id)}
                     className="flex items-center justify-between px-4 py-2 text-[11px] font-bold text-slate-500 hover:text-[var(--color-pure-orange)] hover:bg-orange-50/50 transition-colors border-t border-slate-100"
@@ -231,7 +366,7 @@ export default function EnablementPlansPage() {
                     />
                   </button>
 
-                  {/* Roadmap — compact scale */}
+                  {/* Roadmap — compact */}
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div
@@ -248,7 +383,7 @@ export default function EnablementPlansPage() {
                     )}
                   </AnimatePresence>
 
-                  {/* Footer */}
+                  {/* Footer — export */}
                   <div className="px-4 pb-4 pt-2 mt-auto border-t border-slate-100">
                     <button
                       onClick={() => handleExportOne(partner.id)}
