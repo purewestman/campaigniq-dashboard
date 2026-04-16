@@ -298,17 +298,17 @@ function RequirementBarWithOverride({
           />
         </div>
         
-        {/* Toggle certified people */}
+        {/* Toggle certified people — chevron > */}
         <button
           onClick={(e) => { e.stopPropagation(); setShowPeople((p) => !p); }}
-          className="text-[9px] font-medium px-2 py-1 rounded-lg transition-all hover:bg-black/10 active:scale-95 shrink-0"
-          style={{
-            background: showPeople ? "color-mix(in srgb, var(--color-basil-green) 16%, transparent)" : "color-mix(in srgb, var(--color-basil-green) 8%, transparent)",
-            color: "var(--color-basil-green)",
-          }}
+          className="p-1 rounded-md transition-all hover:bg-black/10 active:scale-95 shrink-0"
+          style={{ color: "var(--color-basil-green)" }}
           title={`View ${label} certified individuals`}
         >
-          {showPeople ? "Hide" : "Who?"}
+          <ChevronRight
+            className="w-3.5 h-3.5 transition-transform duration-200"
+            style={{ transform: showPeople ? "rotate(90deg)" : "rotate(0deg)" }}
+          />
         </button>
         {/* Override / Undo buttons */}
         {gap > 0 && !override && (
@@ -549,7 +549,7 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
         <div className="mt-2">
           <button
             onClick={() => setOpen(o => !o)}
-            className="flex items-center gap-1 text-[10px] font-semibold transition-colors group"
+            className="p-1 rounded-md transition-all hover:bg-black/10 active:scale-95"
             style={{ color: ASP_ORANGE }}
             title={open ? "Hide individuals" : "Show individuals"}
           >
@@ -557,7 +557,6 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
               className="w-3.5 h-3.5 transition-transform duration-200"
               style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
             />
-            {open ? "Hide" : "Who?"}
           </button>
 
           <AnimatePresence>
