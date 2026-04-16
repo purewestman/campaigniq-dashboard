@@ -12,7 +12,7 @@ export default function SettingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
-  const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical">("Sales");
+  const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical" | "Sales & Technical">("Sales");
 
   const domainDirectory = isGlobalAdmin 
     ? computedGlobalDirectory 
@@ -115,6 +115,7 @@ export default function SettingsPage() {
                  <option value="Admin">Admin</option>
                  <option value="Sales">Sales</option>
                  <option value="Technical">Technical</option>
+                 <option value="Sales & Technical">Sales & Technical (Both)</option>
                </select>
             </div>
             <div className="flex justify-end gap-2">
@@ -166,6 +167,7 @@ export default function SettingsPage() {
                       <option value="Admin">Admin</option>
                       <option value="Sales">Sales</option>
                       <option value="Technical">Technical</option>
+                      <option value="Sales & Technical">Sales & Technical (Both)</option>
                     </select>
                   </td>
                   <td className="px-6 py-3.5">

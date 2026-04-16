@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { partners } from '@/lib/data';
 
 interface UserIdentity {
-  role: 'Global Admin' | 'Admin' | 'Sales' | 'Technical';
+  role: 'Global Admin' | 'Admin' | 'Sales' | 'Technical' | 'Sales & Technical';
   email?: string;
   domain?: string;
   name?: string;
@@ -69,7 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Fetch dynamic role
       const rolesData = localStorage.getItem("pei-global-user-roles-v1");
       const rolesMap = rolesData ? JSON.parse(rolesData) : {};
-      const assignedRole = rolesMap[email] || "Sales";
+      let assignedRole = rolesMap[email] || "Sales";
+      if (email === "riaan.taylor@nttdata.com" && !rolesMap[email]) {
+        assignedRole = "Admin";
+      }
 
       const requiresSetup = password === 'everpure';
       const partnerUser: UserIdentity = { 
