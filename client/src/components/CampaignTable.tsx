@@ -1047,7 +1047,16 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
   const [sortKey, setSortKey] = useState<SortKey>("totalGaps");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [targetTiers, setTargetTiers] = useState<Record<number, ProgramTier>>({});
+  const [targetTiers, setTargetTiers] = useState<Record<number, ProgramTier>>(() => {
+    try {
+      const saved = localStorage.getItem("campaigniq_target_tiers");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [planModal, setPlanModal] = useState<{ partnerId: number, missingItems: any[], targetPeriod: string } | null>(null);
+  
   const { getOverrideCount, isAspEligible } = useOverrides();
   const { addModification, getModification } = useModifications();
 
@@ -1102,6 +1111,98 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
   );
 
   return (
+    <>
+      <AnimatePresence>
+        {planModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-pure-orange px-5 py-4 flex items-center justify-between">
+                <h4 className="text-white font-bold flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Assign Gaps to Plan
+                </h4>
+                <button onClick={() => setPlanModal(null)} className="text-white/80 hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-5 space-y-5">
+                <p className="text-[13px] text-slate-600 font-medium">
+                  You are assigning <strong className="text-slate-900">{planModal.missingItems.length} missing requirement(s)</strong> to this partner's 12-Month Roadamp.
+                </p>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Target Period</label>
+                  <select 
+                    title="Select period"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-pure-orange"
+                    value={planModal.targetPeriod}
+                    onChange={(e) => setPlanModal(p => p ? { ...p, targetPeriod: e.target.value } : null)}
+                  >
+                    <option value="M1-3">Q1 Focus Period</option>
+                    <option value="M4-6">Q2 Focus Period</option>
+                    <option value="M7-9">Q3 Focus Period</option>
+                    <option value="M10-12">Q4 Focus Period</option>
+                  </select>
+                </div>
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button 
+                    onClick={() => setPlanModal(null)}
+                    className="px-4 py-2 rounded-lg text-[13px] font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const partnerId = planModal.partnerId;
+                      const partner = partners.find(p => p.id === partnerId);
+                      if (!partner) return;
+                      
+                      const itemsWithMonth = planModal.missingItems.map(item => ({...item, month: planModal.targetPeriod}));
+                      const currentMod = getModification(partnerId);
+                      const existingCustomItems = currentMod?.customItems || [];
+                      addModification({
+                        ...(currentMod || {
+                          partnerId: partner.id,
+                          salesPro: partner.requirements.salesPro.obtained,
+                          techPro: partner.requirements.techPro.obtained,
+                          bootcamp: partner.requirements.bootcamp.obtained,
+                          implSpec: partner.requirements.implSpec.obtained,
+                          simplyPure: partner.requirements.simplyPure.obtained,
+                          aspFoundations: partner.requirements.aspFoundations.totalObtained,
+                          aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
+                          aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
+                          bookingsUSD: partner.businessMetrics.bookingsUSD,
+                          uniqueCustomers: partner.businessMetrics.uniqueCustomers,
+                          partnerDeliveredServices: partner.businessMetrics.partnerDeliveredServices,
+                          addedEmails: {},
+                          removedEmails: {},
+                          comment: `Assigned ${itemsWithMonth.length} tier requirement gaps to plan.`,
+                          modifiedBy: "Admin"
+                        }),
+                        customItems: [...existingCustomItems, ...itemsWithMonth]
+                      });
+                      setPlanModal(null);
+                    }}
+                    className="px-4 py-2 rounded-lg text-[13px] font-bold text-white bg-pure-orange hover:bg-[#e66315] shadow-sm transition-colors"
+                  >
+                    Save to Roadmap
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -1262,7 +1363,14 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                               boxShadow: targetTierLevel !== partner.programTier ? '0 0 0 1px currentColor' : 'none'
                              }}
                             value={targetTierLevel}
-                            onChange={(e) => setTargetTiers(p => ({ ...p, [partner.id]: e.target.value as ProgramTier }))}
+                            onChange={(e) => {
+                              const newVal = e.target.value as ProgramTier;
+                              setTargetTiers(p => {
+                                const next = { ...p, [partner.id]: newVal };
+                                localStorage.setItem("campaigniq_target_tiers", JSON.stringify(next));
+                                return next;
+                              });
+                            }}
                           >
                             {PROGRAM_TIERS.map(t => (
                               <option key={t} value={t}>{TIER_DEFINITIONS[t as ProgramTier].shortLabel}</option>
@@ -1395,28 +1503,10 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
                               });
                               
                               if (missingItems.length > 0) {
-                                const currentMod = getModification(partner.id);
-                                const existingCustomItems = currentMod?.customItems || [];
-                                addModification({
-                                  ...(currentMod || {
-                                    partnerId: partner.id,
-                                    salesPro: partner.requirements.salesPro.obtained,
-                                    techPro: partner.requirements.techPro.obtained,
-                                    bootcamp: partner.requirements.bootcamp.obtained,
-                                    implSpec: partner.requirements.implSpec.obtained,
-                                    simplyPure: partner.requirements.simplyPure.obtained,
-                                    aspFoundations: partner.requirements.aspFoundations.totalObtained,
-                                    aspStoragePro: partner.requirements.aspStoragePro.totalObtained,
-                                    aspSupportSpec: partner.requirements.aspSupportSpec.totalObtained,
-                                    bookingsUSD: partner.businessMetrics.bookingsUSD,
-                                    uniqueCustomers: partner.businessMetrics.uniqueCustomers,
-                                    partnerDeliveredServices: partner.businessMetrics.partnerDeliveredServices,
-                                    addedEmails: {},
-                                    removedEmails: {},
-                                    comment: `Assigned ${missingItems.length} tier requirement gaps to plan.`,
-                                    modifiedBy: "Admin"
-                                  }),
-                                  customItems: [...existingCustomItems, ...missingItems]
+                                setPlanModal({
+                                  partnerId: partner.id,
+                                  missingItems,
+                                  targetPeriod: "M1-3"
                                 });
                               }
                             }}
