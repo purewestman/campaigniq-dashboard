@@ -54,10 +54,10 @@ export default function SettingsPage() {
     toast.success("User added to Global Directory");
   };
 
-  const handleResetPassword = (domain: string) => {
-    if (confirm(`Are you sure you want to reset the primary login password for ${domain} back to 'everpure'?`)) {
-      localStorage.setItem(`pwd_${domain}`, "everpure");
-      toast.success(`Password for ${domain} successfully reset.`);
+  const handleResetPassword = (email: string) => {
+    if (confirm(`Are you sure you want to reset the primary login password for ${email} back to 'everpure'?`)) {
+      localStorage.setItem(`pwd_${email}`, "everpure");
+      toast.success(`Password for ${email} successfully reset.`);
       setForceRender(p => p + 1);
     }
   };
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                       </td>
                       <td className="px-6 py-3.5">
                         {isGlobalAdmin ? (() => {
-                          const pwd = localStorage.getItem(`pwd_${userDomain}`) || "everpure";
+                          const pwd = localStorage.getItem(`pwd_${userObj.email.toLowerCase()}`) || "everpure";
                           const isDefault = pwd === "everpure";
                           return (
                             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[11px] font-mono font-bold ${isDefault ? 'bg-amber-50 text-amber-600 border-amber-200/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200/50'}`}>
@@ -325,7 +325,7 @@ export default function SettingsPage() {
                             </button>
                             {isGlobalAdmin && (
                               <button 
-                                onClick={() => { handleResetPassword(userDomain); setActionMenuFor(null); }}
+                                onClick={() => { handleResetPassword(userObj.email.toLowerCase()); setActionMenuFor(null); }}
                                 className="px-2 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md flex items-center gap-1 text-[11px] font-bold shadow-sm"
                                 title={`Reset password for domain @${userDomain}`}
                               >
