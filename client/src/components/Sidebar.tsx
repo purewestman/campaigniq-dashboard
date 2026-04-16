@@ -5,7 +5,7 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { navItems, partners } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
+import { loadSignedExports } from "@/lib/signedExports";
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
@@ -56,6 +57,16 @@ interface SidebarProps {
 export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse }: SidebarProps) {
   const { user, logout } = useAuth();
   
+  // Count pending signed exports for badge
+  const [pendingExports, setPendingExports] = useState(() =>
+    loadSignedExports().filter(e => e.status === 'pending_review').length
+  );
+  useEffect(() => {
+    const reload = () => setPendingExports(loadSignedExports().filter(e => e.status === 'pending_review').length);
+    window.addEventListener('storage', reload);
+    return () => window.removeEventListener('storage', reload);
+  }, []);
+
   const dynamicNavItems = useMemo(() => {
     let domainPartner = null;
     if (user?.role !== 'Global Admin' && user?.domain) {
@@ -76,9 +87,13 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
           newItem.badge = domainPartner.totalExams;
         }
       }
+      // Pending signed exports badge on enablement-plans (all roles)
+      if (item.id === 'enablement-plans' && pendingExports > 0) {
+        newItem.pendingBadge = pendingExports;
+      }
       return newItem;
     });
-  }, [user]);
+  }, [user, pendingExports]);
   
   return (
     <motion.aside
@@ -153,6 +168,15 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
                 />
               )}
               <Icon className="w-[18px] h-[18px] shrink-0 relative z-10" />
+              {/* Red pending badge — visible even when collapsed */}
+              {(item as any).pendingBadge > 0 && (
+                <span
+                  className="absolute top-1 left-6 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black flex items-center justify-center z-20 shadow-md"
+                  style={{ background: '#ef4444', color: '#fff' }}
+                >
+                  {(item as any).pendingBadge}
+                </span>
+              )}
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span

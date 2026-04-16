@@ -151,7 +151,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         type: "commitment" as const,
         partnerId: 0,
         partnerName: ex.partnerName,
-        message: `📄 Signed PPTX export submitted by ${ex.signedBy} — Commitment date: ${ex.commitmentDate}`,
+        message: `📄 Enablement Plan submitted by ${ex.signedBy} — Awaiting Approval (Commitment: ${ex.commitmentDate})`,
         timestamp: ex.exportedAt,
         dateStr: new Date(ex.exportedAt).toLocaleString(),
       });
