@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { isLinkedDomain } from "@/lib/data";
-import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert, Settings2, Check, X, Key } from "lucide-react";
+import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert, Settings2, Check, X, Key, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -71,6 +71,68 @@ export default function SettingsPage() {
     setActionMenuFor(null);
   };
 
+  const handleExportCsv = () => {
+    const header = "firstName,lastName,email,role,source\n";
+    // Using domainDirectory so we export the same list we are authorized to see, rather than the search-filtered subset
+    const rows = domainDirectory.map(u => `${u.firstName || ""},${u.lastName || ""},${u.email},${u.role || "Sales"},${u.source || "organic"}`).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `everpure_users_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportCsv = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+      const lines = text.split("\n").filter(line => line.trim().length > 0);
+      if (lines.length <= 1) {
+        toast.error("CSV empty or missing data rows.");
+        return;
+      }
+      let added = 0;
+      let skipped = 0;
+      for (let i = 1; i < lines.length; i++) {
+        // Simple CSV split (assumes no commas in fields)
+        const cols = lines[i].split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+        if (cols.length >= 3) {
+          const [firstName, lastName, email, roleInput, sourceInput] = cols;
+          if (email && email.includes("@")) {
+            if (!isGlobalAdmin) {
+              const emailDomain = email.split('@')[1]?.toLowerCase();
+              if (!isLinkedDomain(user?.domain, emailDomain)) {
+                 skipped++;
+                 continue; // prevent cross-domain ingestion via CSV
+              }
+            }
+            const resolvedRole = ["Admin", "Sales", "Technical", "Sales & Technical"].includes(roleInput) 
+              ? roleInput as any 
+              : "Sales";
+            
+            addGlobalUser({
+              firstName: firstName || "",
+              lastName: lastName || "",
+              email: email.toLowerCase(),
+              role: resolvedRole,
+              source: sourceInput || "csv_import"
+            });
+            added++;
+          }
+        }
+      }
+      toast.success(`Import complete! Loaded ${added} users.` + (skipped > 0 ? ` Skipped ${skipped} unauthorized domains.` : ''));
+      if (e.target) e.target.value = ''; // Reset file input
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="flex-1 w-full bg-[#FAFAFA] min-h-screen text-slate-800 font-sans p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -100,12 +162,24 @@ export default function SettingsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button 
-              onClick={() => setIsAdding(!isAdding)}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
-            >
-              <UserPlus className="w-4 h-4" /> Add User
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+               <button 
+                 onClick={handleExportCsv}
+                 className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+               >
+                 <Download className="w-4 h-4" /> Export CSV
+               </button>
+               <label className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm cursor-pointer">
+                 <Upload className="w-4 h-4" /> Import CSV
+                 <input type="file" accept=".csv" className="hidden" onChange={handleImportCsv} />
+               </label>
+               <button 
+                 onClick={() => setIsAdding(!isAdding)}
+                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+               >
+                 <UserPlus className="w-4 h-4" /> Add User
+               </button>
+            </div>
           </div>
 
           {/* Add User Panel */}
