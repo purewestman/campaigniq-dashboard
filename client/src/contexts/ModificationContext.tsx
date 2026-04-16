@@ -22,6 +22,7 @@ import {
   computeEnablementScore,
   isEnablementCompliant,
   isBusinessCompliant,
+  isLinkedDomain,
   type Partner,
   type ProgramTier,
   type ComplianceFilter,
@@ -300,8 +301,8 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
     let sourcePartners = basePartners;
     
     // ROW-LEVEL SECURITY: If logged in as partner, filter their visible dataset instantly
-    if (user?.role === 'partner' && user.domain) {
-      sourcePartners = basePartners.filter(p => p.domain === user.domain);
+    if (user?.role !== 'Global Admin' && user?.domain) {
+      sourcePartners = basePartners.filter(p => isLinkedDomain(user.domain, p.domain));
     }
 
     return sourcePartners.map((partner) => {

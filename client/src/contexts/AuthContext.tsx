@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const rolesData = localStorage.getItem("pei-global-user-roles-v1");
       const rolesMap = rolesData ? JSON.parse(rolesData) : {};
       let assignedRole = rolesMap[email] || "Sales";
-      if (email === "riaan.taylor@nttdata.com" && !rolesMap[email]) {
+      if ((email === "riaan.taylor@nttdata.com" || email === "riaan.taylor@ntt.com") && !rolesMap[email]) {
         assignedRole = "Admin";
       }
 

@@ -22,7 +22,7 @@ export function isLinkedDomain(userDomain: string | undefined, targetDomain: str
   if (ud === td) return true;
   
   // Specific group rule: nttdata.com can see dimensiondata.com and global.ntt
-  const nttGroup = ['nttdata.com', 'dimensiondata.com', 'global.ntt'];
+  const nttGroup = ['nttdata.com', 'dimensiondata.com', 'global.ntt', 'ntt.com'];
   if (nttGroup.includes(ud) && nttGroup.includes(td)) {
       return true;
   }

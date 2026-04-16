@@ -12,6 +12,7 @@ export default function SettingsPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [showUsers, setShowUsers] = useState(false);
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
   const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical" | "Sales & Technical">("Sales");
 
@@ -64,8 +65,20 @@ export default function SettingsPage() {
         </div>
 
         {/* Action Bar */}
-        <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <button 
+            onClick={() => setShowUsers(!showUsers)}
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm"
+          >
+            <Users className="w-4 h-4" /> 
+            {showUsers ? "Hide Directory" : "Manage Users"}
+          </button>
+        </div>
+
+        {showUsers && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
+            <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text"
@@ -204,6 +217,7 @@ export default function SettingsPage() {
               )}
             </tbody>
           </table>
+        </div>
         </div>
 
       </div>
