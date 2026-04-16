@@ -7,7 +7,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDays, Search, Bell, X, Lock, FileClock, Trash2, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import PureDividerBackground from "./PureDividerBackground";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModifications } from "@/contexts/ModificationContext";
