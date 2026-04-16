@@ -1572,9 +1572,62 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
   
   const [newEmail, setNewEmail] = useState("");
   
-  const domainUsers = computedGlobalDirectory.filter(u => 
-    partner && u.email.split('@')[1]?.toLowerCase() === partner.domain.toLowerCase()
-  );
+  // Build domain user list from trainingData (all emails matching partner domain)
+  // Supplement with computedGlobalDirectory entries
+  const domainUsers = React.useMemo(() => {
+    if (!partner) return [];
+    const domain = partner.domain.toLowerCase();
+
+    // Collect from trainingData — all flat records across all category keys
+    const fromTraining: { email: string; firstName: string; lastName: string }[] = [];
+    const ptd = trainingData[partnerId] as Record<string, any[]> | undefined;
+    if (ptd) {
+      Object.values(ptd).forEach((arr: any[]) => {
+        arr.forEach((p: any) => {
+          if (p.email?.toLowerCase().endsWith(`@${domain}`)) {
+            fromTraining.push({
+              email: p.email,
+              firstName: p.firstName || p.email.split('@')[0],
+              lastName: p.lastName || '',
+            });
+          }
+        });
+      });
+    }
+
+    // Also scan all trainingData by domain (in case partnerId key mismatch)
+    Object.values(trainingData).forEach((ptdAny: any) => {
+      Object.values(ptdAny as Record<string, any[]>).forEach((arr: any[]) => {
+        arr.forEach((p: any) => {
+          if (p.email?.toLowerCase().endsWith(`@${domain}`)) {
+            fromTraining.push({
+              email: p.email,
+              firstName: p.firstName || p.email.split('@')[0],
+              lastName: p.lastName || '',
+            });
+          }
+        });
+      });
+    });
+
+    // Supplement with computedGlobalDirectory
+    const fromGlobal = computedGlobalDirectory.filter(u =>
+      u.email.split('@')[1]?.toLowerCase() === domain
+    );
+
+    // Merge and deduplicate by email
+    const seen = new Set<string>();
+    const merged: { email: string; firstName: string; lastName: string }[] = [];
+    [...fromTraining, ...fromGlobal].forEach(u => {
+      const key = u.email.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(u);
+      }
+    });
+
+    return merged.sort((a, b) => a.firstName.localeCompare(b.firstName));
+  }, [partner, partnerId, computedGlobalDirectory]);
 
   const added = mod.addedEmails?.[categoryKey] || [];
   const removed = mod.removedEmails?.[categoryKey] || [];
@@ -1655,7 +1708,11 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
           onChange={(e) => setNewEmail(e.target.value)}
           className="flex-1 px-2 py-1.5 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0 bg-slate-50"
         >
-          <option value="" disabled>Select user from domain...</option>
+          <option value="" disabled>
+            {domainUsers.length > 0
+              ? `Select from ${domainUsers.length} domain users…`
+              : `No domain users found`}
+          </option>
           {domainUsers.filter(u => !combinedList.find(c => c.email === u.email)).map(u => (
             <option key={u.email} value={u.email}>{u.firstName} {u.lastName} ({u.email})</option>
           ))}
