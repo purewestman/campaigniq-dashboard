@@ -348,9 +348,6 @@ export default function EnablementPlansPage() {
                     )}
                   </div>
 
-                  {/* ── Plan Assignees (always visible) ───────────────── */}
-                  <AssigneePicker partnerId={partner.id} domain={partner.domain} />
-
                   {/* ── Roadmap toggle ─────────────────────────────────── */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : partner.id)}
@@ -376,6 +373,10 @@ export default function EnablementPlansPage() {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden border-t border-slate-100"
                       >
+                        {/* Plan-level assignees sit inside the roadmap section */}
+                        <div className="border-b border-slate-100">
+                          <AssigneePicker partnerId={partner.id} domain={partner.domain} />
+                        </div>
                         <div className="px-3 py-3 bg-slate-50/60 text-[11px] scale-[0.94] origin-top-left w-[106%]">
                           <EnablementTimeline partner={partner as Partner} compact />
                         </div>
