@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { GraduationCap, Award, PhoneCall, Mail } from "lucide-react";
+import { GraduationCap, Award, PhoneCall, Mail, FileDown } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { Badge } from "@/components/ui/badge";
+import { generateActivityReportHtml } from "@/lib/activityReportPdf";
 
 interface TrainingRecord {
   id: string;
@@ -77,14 +78,53 @@ export default function TrainingDetailsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <GraduationCap className="w-5 h-5 text-blue-500" />
-          Training Breakdown per Person
-        </h2>
-        <p className="text-[13px] text-muted-foreground mt-1">
-          Detailed view of online training and certifications completed by individuals.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-blue-500" />
+            Training Breakdown per Person
+          </h2>
+          <p className="text-[13px] text-muted-foreground mt-1">
+            Detailed view of online training and certifications completed by individuals.
+          </p>
+        </div>
+
+        {/* PDF download */}
+        {trainingData.length > 0 && (
+          <button
+            onClick={() => {
+              const stats = [
+                { label: "Total People", value: trainingData.length },
+                { label: "Total Certifications", value: trainingData.reduce((s, r) => s + r.count, 0) },
+                { label: "Partners", value: new Set(trainingData.map(r => r.partnerName)).size },
+                { label: "Experts", value: trainingData.filter(r => r.rating === "Expert").length },
+              ];
+              const rows = trainingData.map(r => ({
+                col1: r.partnerName,
+                col2: r.email,
+                col3: r.certs.length > 0 ? `${r.count} cert${r.count !== 1 ? "s" : ""}` : "No training",
+                col4: r.certs.slice(0, 3).join(", ") + (r.certs.length > 3 ? ` +${r.certs.length - 3} more` : ""),
+              }));
+              const html = generateActivityReportHtml(
+                "Certification & Training Report",
+                `PEI · FY27 Global Reseller Programme · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
+                stats,
+                ["Partner", "Email", "Count", "Certifications"],
+                rows
+              );
+              const win = window.open("", "_blank");
+              if (!win) return;
+              win.document.write(html);
+              win.document.close();
+              win.focus();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium border border-black/10 bg-white/80 text-foreground hover:bg-white hover:border-black/20 transition-all shrink-0"
+            title="Download certifications as PDF"
+          >
+            <FileDown className="w-4 h-4 text-blue-500" />
+            Export PDF
+          </button>
+        )}
       </div>
 
       <div className="terrain-card overflow-hidden">
