@@ -146,13 +146,15 @@ export default function AspTrackingPage() {
     });
 
     // Apply ROW-LEVEL SECURITY
-    if (user?.role === 'partner' && user.domain) {
+    if (user?.role !== 'Global Admin' && user?.domain) {
       const allowedPartnerNames = partners
         .filter(p => isLinkedDomain(user.domain, p.domain))
         .map(p => p.name);
         
       if (allowedPartnerNames.length > 0) {
         sorted = sorted.filter(r => allowedPartnerNames.includes(r.partner));
+      } else {
+        sorted = [];
       }
     }
 

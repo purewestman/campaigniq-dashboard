@@ -60,22 +60,24 @@ export default function PlanningHub() {
             />
           )}
         </button>
-        <button
-          onClick={() => setActiveTab("calendar")}
-          className={`pb-3 text-[13px] font-semibold transition-colors flex items-center gap-1.5 relative ${
-            activeTab === "calendar"
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <CalendarDays className="w-4 h-4" /> 12-Month Calendar
-          {activeTab === "calendar" && (
-            <span
-              className="absolute bottom-0 left-0 w-full h-[2px] rounded-t-full"
-              style={{ background: "var(--color-basil-green)" }}
-            />
-          )}
-        </button>
+        {user?.role === 'Global Admin' && (
+          <button
+            onClick={() => setActiveTab("calendar")}
+            className={`pb-3 text-[13px] font-semibold transition-colors flex items-center gap-1.5 relative ${
+              activeTab === "calendar"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" /> 12-Month Calendar
+            {activeTab === "calendar" && (
+              <span
+                className="absolute bottom-0 left-0 w-full h-[2px] rounded-t-full"
+                style={{ background: "var(--color-basil-green)" }}
+              />
+            )}
+          </button>
+        )}
         <button
           onClick={() => setActiveTab("commitments")}
           className={`pb-3 text-[13px] font-semibold transition-colors flex items-center gap-1.5 relative ${
@@ -106,7 +108,7 @@ export default function PlanningHub() {
           </div>
         )}
         
-        {activeTab === "calendar" && (
+        {activeTab === "calendar" && user?.role === 'Global Admin' && (
           <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
              <CalendarRoadmap />
           </section>
