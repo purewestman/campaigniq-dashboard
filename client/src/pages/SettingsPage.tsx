@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { isLinkedDomain } from "@/lib/data";
 import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,7 +17,7 @@ export default function SettingsPage() {
 
   const domainDirectory = isGlobalAdmin 
     ? computedGlobalDirectory 
-    : computedGlobalDirectory.filter(u => u.email.toLowerCase().endsWith(`@${user?.domain?.toLowerCase()}`));
+    : computedGlobalDirectory.filter(u => isLinkedDomain(user?.domain, u.email.split('@')[1]));
 
   const filteredUsers = domainDirectory.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -32,8 +33,8 @@ export default function SettingsPage() {
     
     if (!isGlobalAdmin) {
       const emailDomain = newUser.email.split('@')[1]?.toLowerCase();
-      if (emailDomain !== user?.domain?.toLowerCase()) {
-         toast.error(`Access Denied: You may only add users for the @${user?.domain} domain.`);
+      if (!isLinkedDomain(user?.domain, emailDomain)) {
+         toast.error(`Access Denied: You may only add users within your authorized domain group.`);
          return;
       }
     }

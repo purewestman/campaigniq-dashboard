@@ -2,8 +2,7 @@ import { useMemo, useState } from "react";
 import { CheckCircle2, AlertCircle, XCircle, ShieldAlert } from "lucide-react";
 import { activityData } from "@/lib/activityData";
 import { trainingData, type TrainingPerson } from "@/lib/trainingData";
-import { partners } from "@/lib/data";
-import ExportButton from "@/components/ExportButton";
+import { partners, isLinkedDomain } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateAspReportHtml } from "@/lib/aspGapReportPdf";
 import { FileDown } from "lucide-react";
@@ -148,9 +147,12 @@ export default function AspTrackingPage() {
 
     // Apply ROW-LEVEL SECURITY
     if (user?.role === 'partner' && user.domain) {
-      const domainPartner = partners.find(p => p.domain === user.domain);
-      if (domainPartner) {
-        sorted = sorted.filter(r => r.partner === domainPartner.name);
+      const allowedPartnerNames = partners
+        .filter(p => isLinkedDomain(user.domain, p.domain))
+        .map(p => p.name);
+        
+      if (allowedPartnerNames.length > 0) {
+        sorted = sorted.filter(r => allowedPartnerNames.includes(r.partner));
       }
     }
 
@@ -173,8 +175,8 @@ export default function AspTrackingPage() {
     // Collect all candidates across all visible partners
     const allCandidates = resultData.flatMap(r => r.candidates);
     const reportTitle = user?.role === 'partner' && user.domain 
-      ? `${partners.find(p => p.domain === user?.domain)?.name || 'Domain'} ASP Compliance Audit`
-      : "Global ASP Compliance Audit";
+      ? `${partners.find(p => isLinkedDomain(user?.domain, p.domain))?.name || 'Domain'} ASP Compliance Audit`
+      : "Global ASP Support Compliance Audit";
       
     const html = generateAspReportHtml(reportTitle, allCandidates);
     const win = window.open("", "_blank");

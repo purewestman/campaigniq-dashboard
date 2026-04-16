@@ -13,6 +13,23 @@ import { activityData } from "./activityData";
 export type ProgramTier = "authorized" | "preferred" | "elite" | "ambassador";
 export type ComplianceFilter = "all" | ProgramTier;
 
+// Helpers
+export function isLinkedDomain(userDomain: string | undefined, targetDomain: string | undefined): boolean {
+  if (!userDomain || !targetDomain) return false;
+  const ud = userDomain.toLowerCase();
+  const td = targetDomain.toLowerCase();
+  
+  if (ud === td) return true;
+  
+  // Specific group rule: nttdata.com can see dimensiondata.com and global.ntt
+  const nttGroup = ['nttdata.com', 'dimensiondata.com', 'global.ntt'];
+  if (nttGroup.includes(ud) && nttGroup.includes(td)) {
+      return true;
+  }
+  
+  return false;
+}
+
 export interface EnablementRequirements {
   salesPro: { required: number; obtained: number; manualEmails?: string[] };
   techPro: { required: number; obtained: number; manualEmails?: string[] };

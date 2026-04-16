@@ -34,7 +34,7 @@ import EnablementPlansPage from "@/pages/EnablementPlansPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
+import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction, isLinkedDomain } from "@/lib/data";
 import { Settings, CalendarCheck, CalendarDays, Map, FileBarChart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -152,7 +152,7 @@ export default function Home() {
     
     // Domain restriction for non-Global Admins
     if (user?.role !== 'Global Admin' && user?.domain) {
-      result = result.filter(p => p.domain.toLowerCase() === user?.domain?.toLowerCase());
+      result = result.filter(p => isLinkedDomain(user?.domain, p.domain));
     }
 
     if (searchQuery.trim()) {

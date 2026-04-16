@@ -12,7 +12,7 @@ import {
   Calendar, UserPlus, X, Users,
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
-import { trainingData } from "@/lib/trainingData";
+import { type TimelineItem, partners, trainingData, isLinkedDomain } from "@/lib/data";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
 import EnablementTimeline from "@/components/EnablementTimeline";
 import { toast } from "sonner";
@@ -42,13 +42,12 @@ function AssigneePicker({
   const mod = getModification(partnerId);
   const assignees: string[] = (mod?.addedEmails as any)?.plan ?? [];
 
-  // Domain emails from trainingData
   const domainEmails = useMemo(() => {
     return Array.from(new Set(
       Object.values(trainingData).flatMap(ptd =>
         Object.values(ptd as any).flatMap((arr: any) => (arr as any[]).map((p: any) => p.email))
       )
-    )).filter(e => e.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
+    )).filter(e => isLinkedDomain(domain, e.split('@')[1]));
   }, [domain]);
 
   const datalistId = `plan-emails-${partnerId}`;
@@ -56,9 +55,9 @@ function AssigneePicker({
   const addAssignee = (email: string) => {
     const val = email.trim();
     if (!val || !val.includes("@")) return;
-    // Allow same-domain or already in our list
-    if (!val.toLowerCase().endsWith(`@${domain.toLowerCase()}`)) {
-      toast.error(`Only @${domain} addresses can be added.`);
+    const emailDomain = val.split('@')[1];
+    if (!isLinkedDomain(domain, emailDomain)) {
+      toast.error(`Only compliant domains can be added.`);
       return;
     }
     if (assignees.includes(val)) return; // dedupe

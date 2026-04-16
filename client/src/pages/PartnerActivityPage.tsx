@@ -31,7 +31,7 @@ import {
 } from "recharts";
 import { activityData } from "@/lib/activityData";
 import { csvActivityData } from "@/lib/csvActivityData";
-import { partners } from "@/lib/data";
+import { partners, isLinkedDomain } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -118,9 +118,13 @@ export default function PartnerActivityPage({
   // ── Domain RLS: restrict records to logged-in partner ─────────────
   const VISIBLE_RECORDS = useMemo(() => {
     if (user?.role !== 'partner' || !user.domain) return ALL_RECORDS;
-    const domainPartner = partners.find(p => p.domain === user.domain);
-    if (!domainPartner) return ALL_RECORDS;
-    return ALL_RECORDS.filter(r => r.partner === domainPartner.name);
+    
+    const allowedPartnerNames = partners
+      .filter(p => isLinkedDomain(user.domain, p.domain))
+      .map(p => p.name);
+      
+    if (allowedPartnerNames.length === 0) return ALL_RECORDS;
+    return ALL_RECORDS.filter(r => allowedPartnerNames.includes(r.partner));
   }, [user]);
 
   const VISIBLE_PARTNERS = useMemo(

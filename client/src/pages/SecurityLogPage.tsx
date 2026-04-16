@@ -1,13 +1,20 @@
 import { useState, useEffect } from "react";
-import { partners } from "@/lib/data";
+import { partners, isLinkedDomain } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
 import { ShieldCheck, Key, UserCheck, AlertTriangle, Search, Info } from "lucide-react";
 
 export default function SecurityLogPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [logs, setLogs] = useState<{ domain: string; name: string; passwordSet: string | null; isDefault: boolean }[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const data = partners.map(p => {
+    let allowedPartners = partners;
+    if (user?.role !== 'Global Admin' && user?.domain) {
+      allowedPartners = partners.filter(p => isLinkedDomain(user.domain, p.domain));
+    }
+    
+    const data = allowedPartners.map(p => {
       const stored = localStorage.getItem(`pwd_${p.domain}`);
       return {
         domain: p.domain,
