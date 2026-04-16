@@ -119,10 +119,13 @@ export interface PartnerForExport {
 export interface TimelineItem {
   id: string;
   label: string;
-  month?: string;
+  month?: string;        // short code e.g. "M1-3"
+  monthRange?: string;   // display string e.g. "Month 1-2"
+  quarter?: string;
   category?: string;
   description?: string;
   status?: string;
+  emails?: string[];
 }
 
 export async function exportPartnerPptx(
@@ -241,13 +244,42 @@ export async function exportPartnerPptx(
     });
   } else {
     const maxVal = Math.max(...gapItems.map(g => g.val), 1);
+    // Draw a clean table-style bar chart — label | track | value
     gapItems.forEach((g, i) => {
-      const barW = (g.val / maxVal) * 9;
-      const y = 1.4 + i * 0.9;
-      gaps.addText(g.label, { x: 0.5, y, w: 3, h: 0.35, fontSize: 11, color: B.dark, fontFace: FONT });
-      gaps.addShape("rect", { x: 3.7, y: y + 0.03, w: barW, h: 0.3, fill: { color: B.orange }, line: { type: "none" } });
-      gaps.addShape("rect", { x: 3.7, y: y + 0.03, w: 9, h: 0.3, fill: { color: B.sand + "30" }, line: { type: "none" } });
-      gaps.addText(String(g.val), { x: 3.7 + barW + 0.15, y, w: 0.5, h: 0.35, fontSize: 11, bold: true, color: B.orange, fontFace: FONT });
+      const trackX = 3.8;
+      const trackW = 8.0;
+      const barW   = Math.max(0.15, (g.val / maxVal) * trackW);
+      const y      = 1.5 + i * 1.0;
+
+      // Row background (alternating)
+      if (i % 2 === 0) {
+        gaps.addShape("rect", { x: 0.3, y: y - 0.05, w: 12.7, h: 0.85,
+          fill: { color: "F7F3EE" }, line: { type: "none" } });
+      }
+
+      // Label
+      gaps.addText(g.label, {
+        x: 0.5, y: y + 0.1, w: 3.1, h: 0.4,
+        fontSize: 12, color: B.dark, fontFace: FONT, bold: false,
+      });
+
+      // Track background (light sand)
+      gaps.addShape("rect", {
+        x: trackX, y: y + 0.18, w: trackW, h: 0.28,
+        fill: { color: B.sand }, line: { type: "none" },
+      });
+
+      // Orange fill bar (drawn ON TOP of track)
+      gaps.addShape("rect", {
+        x: trackX, y: y + 0.18, w: barW, h: 0.28,
+        fill: { color: B.orange }, line: { type: "none" },
+      });
+
+      // Value label — placed AFTER the track, always on cream
+      gaps.addText(`${g.val} missing`, {
+        x: trackX + trackW + 0.2, y: y + 0.1, w: 1.5, h: 0.4,
+        fontSize: 11, bold: true, color: B.orange, fontFace: FONT,
+      });
     });
   }
 
@@ -262,22 +294,42 @@ export async function exportPartnerPptx(
       fontSize: 14, color: B.moss, align: "center", fontFace: FONT,
     });
   } else {
-    const planData = [
-      ["Period", "Item", "Category", "Status"],
-      ...timeline.slice(0, 14).map(item => [
-        item.month || "—",
-        item.label,
-        item.category || "—",
-        item.status || "planned",
-      ])
+    // Header row — styled separately
+    const headerCells = [
+      { text: "Period / Month",   options: { bold: true, color: B.white, fill: { color: B.dark } } },
+      { text: "Milestone",        options: { bold: true, color: B.white, fill: { color: B.dark } } },
+      { text: "Category",         options: { bold: true, color: B.white, fill: { color: B.dark } } },
+      { text: "Assignees",        options: { bold: true, color: B.white, fill: { color: B.dark } } },
+      { text: "Status",           options: { bold: true, color: B.white, fill: { color: B.dark } } },
     ];
-    plan.addTable(planData, {
-      x: 0.5, y: 1.3, w: 12.3,
-      colW: [1.5, 5.5, 2.5, 1.5],
-      border: { color: B.sand, pt: 1 },
-      fill: { color: B.white },
-      fontSize: 10, fontFace: FONT, color: B.dark,
+
+    const dataRows = timeline.slice(0, 16).map((item, idx) => {
+      const periodLabel = item.monthRange || item.month || item.quarter || "—";
+      const assignees   = (item as any).emails?.join(", ") || (item as any).email || "—";
+      const statusLabel = item.status === "completed" ? "✓ Done"
+                        : item.status === "gap"       ? "⚠ Urgent"
+                        : "Planned";
+      const rowFill = idx % 2 === 0 ? B.cream : "F7F3EE";
+      const statusColor = item.status === "completed" ? "27AE60"
+                        : item.status === "gap"       ? "E67E22"
+                        : B.moss;
+
+      return [
+        { text: periodLabel, options: { color: B.dark,   fill: { color: rowFill }, bold: true } },
+        { text: item.label,  options: { color: B.dark,   fill: { color: rowFill } } },
+        { text: item.category || "enablement", options: { color: B.moss, fill: { color: rowFill } } },
+        { text: assignees,   options: { color: B.moss,   fill: { color: rowFill }, fontSize: 9 } },
+        { text: statusLabel, options: { color: statusColor, fill: { color: rowFill }, bold: true } },
+      ];
+    });
+
+    plan.addTable([headerCells, ...dataRows], {
+      x: 0.4, y: 1.25, w: 12.5,
+      colW: [1.8, 4.5, 1.8, 2.4, 1.2],
+      border: { color: B.sand, pt: 0.5 },
+      fontSize: 10, fontFace: FONT,
       autoPage: true,
+      autoPageRepeatHeader: true,
     });
   }
 
