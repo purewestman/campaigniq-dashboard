@@ -4,10 +4,11 @@ import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert } from "
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, addedGlobalUsers } = useModifications();
+  const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, updateUserRole, addedGlobalUsers } = useModifications();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
+  const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical">("Sales");
 
   const filteredUsers = computedGlobalDirectory.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -22,9 +23,11 @@ export default function SettingsPage() {
     }
     addGlobalUser({
       ...newUser,
-      source: "manual"
+      source: "manual",
+      role: newUserRole
     });
     setNewUser({ firstName: "", lastName: "", email: "" });
+    setNewUserRole("Sales");
     setIsAdding(false);
     toast.success("User added to Global Directory");
   };
@@ -89,6 +92,14 @@ export default function SettingsPage() {
                  value={newUser.email} onChange={(e) => setNewUser(p => ({...p, email: e.target.value}))}
                  className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
                />
+               <select 
+                 value={newUserRole} onChange={(e) => setNewUserRole(e.target.value as any)}
+                 className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
+               >
+                 <option value="Admin">Admin</option>
+                 <option value="Sales">Sales</option>
+                 <option value="Technical">Technical</option>
+               </select>
             </div>
             <div className="flex justify-end gap-2">
                <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900">Cancel</button>
@@ -105,6 +116,7 @@ export default function SettingsPage() {
                 <th className="px-6 py-4">User</th>
                 <th className="px-6 py-4">Email Address</th>
                 <th className="px-6 py-4">Account Domain</th>
+                <th className="px-6 py-4">IAM Role</th>
                 <th className="px-6 py-4">Source</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -128,6 +140,17 @@ export default function SettingsPage() {
                     <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[11px] font-bold font-mono border border-slate-200">
                       @{user.email.split('@')[1]}
                     </span>
+                  </td>
+                  <td className="px-6 py-3.5">
+                    <select 
+                      value={user.role || "Sales"}
+                      onChange={(e) => updateUserRole(user.email, e.target.value as any)}
+                      className="bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded-md text-[11px] font-bold outline-none focus:border-pure-orange"
+                    >
+                      <option value="Admin">Admin</option>
+                      <option value="Sales">Sales</option>
+                      <option value="Technical">Technical</option>
+                    </select>
                   </td>
                   <td className="px-6 py-3.5">
                     {user.source === "telemetry" ? (
@@ -155,7 +178,7 @@ export default function SettingsPage() {
               ))}
               {filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     No users found matching your search.
                   </td>
                 </tr>

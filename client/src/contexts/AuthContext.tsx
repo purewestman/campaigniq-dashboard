@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { partners } from '@/lib/data';
 
 interface UserIdentity {
-  role: 'admin' | 'partner';
+  role: 'Global Admin' | 'Admin' | 'Sales' | 'Technical';
+  email?: string;
   domain?: string;
   name?: string;
   requiresSetup?: boolean;
@@ -14,7 +15,7 @@ interface AuthContextType {
   login: (password: string, username?: string) => 'success' | 'setup_required' | 'fail' | 'unauthorized_domain';
   logout: () => void;
   changePassword: (newPassword: string) => boolean;
-  resetPassword: (domain: string, newPassword: string) => boolean;
+  resetPassword: (email: string, newPassword: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Global admin logic
     if (username === 'pureuser' && password === 'prevents.comm1ts') {
-      const adminUser: UserIdentity = { role: 'admin', name: 'Global Admin' };
+      const adminUser: UserIdentity = { role: 'Global Admin', name: 'Global Admin', email: 'pureuser' };
       setIsLoggedIn(true);
       setUser(adminUser);
       sessionStorage.setItem('campaigniq_auth', 'true');
@@ -46,27 +47,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return 'success';
     }
     
-    // Partner logic
-    const partnerUrlStr = username.toLowerCase().trim();
-    const partnerMatch = partners.find(p => p.domain === partnerUrlStr);
+    // Partner Email logic
+    const email = username.toLowerCase().trim();
+    if (!email.includes('@')) return 'fail';
+    
+    const domain = email.split('@')[1];
+    const partnerMatch = partners.find(p => p.domain === domain);
     
     if (!partnerMatch) {
       return 'unauthorized_domain';
     }
     
     if (partnerMatch) {
-      const storedPassword = localStorage.getItem(`pwd_${partnerUrlStr}`);
-      
-      // Default password is "everpure" if none has been set for this domain
+      const storedPassword = localStorage.getItem(`pwd_${email}`);
       const effectivePassword = storedPassword ?? 'everpure';
+      
       if (password !== effectivePassword) {
         return 'fail';
       }
       
+      // Fetch dynamic role
+      const rolesData = localStorage.getItem("pei-global-user-roles-v1");
+      const rolesMap = rolesData ? JSON.parse(rolesData) : {};
+      const assignedRole = rolesMap[email] || "Sales";
+
       const requiresSetup = password === 'everpure';
       const partnerUser: UserIdentity = { 
-        role: 'partner', 
-        domain: partnerUrlStr, 
+        role: assignedRole, 
+        email,
+        domain: domain, 
         name: partnerMatch.name,
         requiresSetup
       };
@@ -93,8 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const changePassword = (newPassword: string) => {
-    if (user && user.role === 'partner' && user.domain) {
-      localStorage.setItem(`pwd_${user.domain}`, newPassword);
+    if (user && user.email && user.role !== 'Global Admin') {
+      localStorage.setItem(`pwd_${user.email.toLowerCase()}`, newPassword);
       // Update session user to clear setup flag and login
       const updatedUser = { ...user, requiresSetup: false };
       setUser(updatedUser);
@@ -106,10 +115,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const resetPassword = (domain: string, newPassword: string) => {
-    const partnerMatch = partners.find(p => p.domain === domain.toLowerCase().trim());
+  const resetPassword = (email: string, newPassword: string) => {
+    const rawEmail = email.toLowerCase().trim();
+    if (!rawEmail.includes('@')) return false;
+    
+    const domain = rawEmail.split('@')[1];
+    const partnerMatch = partners.find(p => p.domain === domain);
+    
     if (partnerMatch) {
-      localStorage.setItem(`pwd_${partnerMatch.domain}`, newPassword);
+      localStorage.setItem(`pwd_${rawEmail}`, newPassword);
       return true;
     }
     return false;

@@ -112,6 +112,8 @@ interface ModificationContextValue {
   addGlobalUser: (user: GlobalUser) => void;
   removeGlobalUser: (email: string) => void;
   computedGlobalDirectory: GlobalUser[];
+  userRoles: Record<string, "Admin" | "Sales" | "Technical">;
+  updateUserRole: (email: string, role: "Admin" | "Sales" | "Technical") => void;
 }
 
 export interface GlobalUser {
@@ -119,6 +121,7 @@ export interface GlobalUser {
   firstName: string;
   lastName: string;
   source: "telemetry" | "manual";
+  role: "Admin" | "Sales" | "Technical";
 }
 
 // ─── Persistence ──────────────────────────────────────────
@@ -128,10 +131,11 @@ const STORAGE_EVENTS_KEY = "pei-roadmap-events";
 const GLOBAL_ROADMAP_KEY = "pei-global-roadmap-v1";
 const PARTNER_TIMELINES_KEY = "pei-partner-timelines-v1";
 const GLOBAL_USERS_KEY = "pei-global-users-v1";
+const GLOBAL_USER_ROLES_KEY = "pei-global-user-roles-v1";
 
 function loadModifications(): GapModification[] {
   try {
-    const data = localStorage.getItem(MOD_KEY);
+    const data = localStorage.getItem("pei-gap-modifications-v2");
     return data ? JSON.parse(data) : [];
   } catch { return []; }
 }
@@ -169,6 +173,13 @@ function loadAddedGlobalUsers(): GlobalUser[] {
     const data = localStorage.getItem(GLOBAL_USERS_KEY);
     return data ? JSON.parse(data) : [];
   } catch { return []; }
+}
+
+function loadUserRoles(): Record<string, "Admin" | "Sales" | "Technical"> {
+  try {
+    const data = localStorage.getItem(GLOBAL_USER_ROLES_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch { return {}; }
 }
 
 function saveModifications(mods: GapModification[]) {
@@ -270,6 +281,7 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
   const [globalRoadmap, setGlobalRoadmapState] = useState<any[] | null>(loadGlobalRoadmap);
   const [partnerTimelines, setPartnerTimelinesState] = useState<Record<number, any[]>>(loadPartnerTimelines);
   const [addedGlobalUsers, setAddedGlobalUsersState] = useState<GlobalUser[]>(loadAddedGlobalUsers);
+  const [userRoles, setUserRolesState] = useState<Record<string, "Admin" | "Sales" | "Technical">>(loadUserRoles);
 
   const setGlobalRoadmap = useCallback((data: any[] | null) => {
     setGlobalRoadmapState(data);
@@ -503,6 +515,51 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const removeGlobalUser = useCallback((email: string) => {
+    setAddedGlobalUsersState(prev => {
+      const next = prev.filter(u => u.email !== email);
+      localStorage.setItem(GLOBAL_USERS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const updateUserRole = useCallback((email: string, role: "Admin" | "Sales" | "Technical") => {
+    setUserRolesState(prev => {
+      const next = { ...prev, [email.toLowerCase()]: role };
+      localStorage.setItem(GLOBAL_USER_ROLES_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const computedGlobalDirectory = useMemo(() => {
+    const directoryMap = new Map<string, GlobalUser>();
+    
+    // Add manual users first
+    addedGlobalUsers.forEach(u => directoryMap.set(u.email.toLowerCase(), {
+      ...u,
+      role: userRoles[u.email.toLowerCase()] || u.role || "Sales"
+    }));
+
+    // Crawl telemetry
+    Object.values(trainingData).forEach(ptd => {
+      Object.values(ptd).forEach((arr: any[]) => {
+        arr?.forEach(p => {
+          if (p && p.email && !directoryMap.has(p.email.toLowerCase())) {
+            directoryMap.set(p.email.toLowerCase(), {
+              email: p.email.toLowerCase(),
+              firstName: p.firstName || p.email.split('@')[0],
+              lastName: p.lastName || '',
+              source: "telemetry",
+              role: userRoles[p.email.toLowerCase()] || "Sales"
+            });
+          }
+        });
+      });
+    });
+
+    return Array.from(directoryMap.values()).sort((a, b) => a.email.localeCompare(b.email));
+  }, [addedGlobalUsers, userRoles]);
+
   return (
     <ModificationContext.Provider
       value={{
@@ -527,7 +584,8 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
         addedGlobalUsers,
         addGlobalUser,
         removeGlobalUser,
-        computedGlobalDirectory
+        computedGlobalDirectory,
+        updateUserRole
       }}
     >
       {children}

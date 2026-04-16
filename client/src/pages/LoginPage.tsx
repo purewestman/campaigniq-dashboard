@@ -67,16 +67,13 @@ export default function LoginPage() {
 
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const domain = username.toLowerCase().trim();
-    const emailDomain = resetEmail.split('@')[1]?.toLowerCase();
-    
-    if (emailDomain !== domain) {
-      toast.error(`Invalid email for domain ${domain}. Please use a ${domain} address.`);
+    if (!resetEmail.includes('@')) {
+      toast.error(`Please provide a valid corporate email.`);
       return;
     }
 
     setLoading(true);
-    setTargetResetDomain(domain);
+    setTargetResetDomain(resetEmail);
 
     setTimeout(() => {
       setLoading(false);
@@ -163,19 +160,19 @@ export default function LoginPage() {
                 className="space-y-4"
               >
                 <div className="space-y-3">
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-slate-400 group-focus-within:text-[var(--color-pure-orange)] transition-colors" />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className={`block w-full pl-10 pr-3 py-3 border ${errorType !== "none" ? "border-red-300 focus:border-red-500 focus:ring-red-500" : "border-slate-200 focus:border-pure-orange focus:ring-pure-orange"} rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 sm:text-sm transition-all`}
+                        placeholder="Corporate Email Address"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Enter Your Domain"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="w-full text-sm pl-11 pr-4 py-3.5 border-2 rounded-xl focus:outline-none border-[var(--color-stone-gray)] focus:border-[var(--color-pure-orange)] transition-all"
-                      required
-                    />
-                  </div>
 
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
