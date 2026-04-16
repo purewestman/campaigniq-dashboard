@@ -1607,19 +1607,21 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
       });
     });
 
-    // Also scan activityData for this partner
+    // Also scan all activityData for emails matching this domain (in case partner name key differs)
     const fromActivity: { email: string; firstName: string; lastName: string }[] = [];
-    if (activityData[partner.name]) {
-      activityData[partner.name].forEach((a: any) => {
-        if (a.email?.toLowerCase().endsWith(`@${domain}`)) {
-          fromActivity.push({
-            email: a.email,
-            firstName: a.name.split(' ')[0],
-            lastName: a.name.split(' ').slice(1).join(' ') || '',
-          });
-        }
-      });
-    }
+    Object.values(activityData).forEach((arr: any) => {
+      if (Array.isArray(arr)) {
+        arr.forEach((a: any) => {
+          if (a.email?.toLowerCase().endsWith(`@${domain}`)) {
+            fromActivity.push({
+              email: a.email,
+              firstName: a.name.split(' ')[0],
+              lastName: a.name.split(' ').slice(1).join(' ') || '',
+            });
+          }
+        });
+      }
+    });
 
     // Supplement with computedGlobalDirectory
     const fromGlobal = computedGlobalDirectory.filter(u =>
