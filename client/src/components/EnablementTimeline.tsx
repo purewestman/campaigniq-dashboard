@@ -17,7 +17,6 @@ import {
   Users,
   Shield,
   Plus,
-  ArrowRight,
   Star,
   Trash2
 } from "lucide-react";
@@ -53,11 +52,20 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
   const mod = getModification(partner.id);
   const customItems = mod?.customItems || [];
 
+  // Only show emails from this partner's domain
   const recommendedEmails = React.useMemo(() => {
-    return Array.from(new Set(Object.values(trainingData).flatMap(ptd => 
-      Object.values(ptd).flatMap(arr => arr.map(p => p.email))
-    )));
-  }, []);
+    const domainEmails = Array.from(new Set(
+      Object.values(trainingData).flatMap(ptd =>
+        Object.values(ptd).flatMap(arr => arr.map(p => p.email))
+      )
+    )).filter(email => email.toLowerCase().endsWith(`@${partner.domain.toLowerCase()}`));
+
+    // Fallback: if no domain emails found, return empty (don't leak other partners)
+    return domainEmails;
+  }, [partner.domain]);
+
+  // Unique datalist id so each partner card only shows its own users
+  const datalistId = `timeline-emails-${partner.id}`;
 
   // Helper to check if an activity is completed
   const hasActivity = (keywords: string[]) => {
@@ -303,7 +311,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
 
   return (
     <div className={compact ? "space-y-4" : "space-y-8"}>
-      <datalist id="timeline-emails">
+      <datalist id={datalistId}>
         {recommendedEmails.map(e => <option key={e} value={e} />)}
       </datalist>
 
@@ -520,7 +528,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                                </div>
                                <input
                                  type="text"
-                                 list="timeline-emails"
+                                 list={datalistId}
                                  placeholder="+ Add assignee email…"
                                  className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-44 transition-colors"
                                  onKeyDown={(e) => {
@@ -539,7 +547,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                                  onChange={(e) => {
                                    // Auto-add when user selects from datalist
                                    const val = e.target.value.trim();
-                                   const isExact = recommendedEmails.includes(val);
+                                   const isExact = recommendedEmails.includes(val) || (val.includes('@') && val.endsWith(`@${partner.domain.toLowerCase()}`));
                                    if (isExact) {
                                      setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id
                                        ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), val])) }
@@ -573,17 +581,23 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                         </span>
                         {item.status === "gap" && (
                           <div className="flex-1 flex justify-end">
-                            <button 
-                              className="text-[10px] font-bold text-pure-orange hover:underline flex items-center gap-1 animate-bounce"
+                            <button
+                              className="text-[10px] font-bold text-pure-orange hover:text-green-600 transition-colors flex items-center gap-1"
                               onClick={() => {
-                                toast.info("Opening Action Modal", {
-                                  description: `You can now nominate individuals or update metrics to address ${item.label}.`
+                                // Mark as completed and eligible for plan submission
+                                setTimelineData((prev: TimelineItem[]) =>
+                                  prev.map(i => i.id === item.id
+                                    ? { ...i, status: "completed" as const }
+                                    : i
+                                  )
+                                );
+                                toast.success(`"${item.label}" marked complete`, {
+                                  description: "This milestone is now ready to submit to the enablement plan.",
                                 });
-                                // In a real app, this would open a specific sub-modal or deep link
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
                               }}
                             >
-                              Take Action <ArrowRight className="w-3 h-3" />
+                              <CheckCircle2 className="w-3 h-3" />
+                              Mark Complete
                             </button>
                           </div>
                         )}
