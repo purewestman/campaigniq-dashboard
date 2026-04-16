@@ -33,6 +33,7 @@ import PlanningHub from "@/pages/PlanningHub";
 import EnablementPlansPage from "@/pages/EnablementPlansPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
 import { Settings, CalendarCheck, CalendarDays, Map, FileBarChart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -142,10 +143,18 @@ export default function Home() {
     getModifiedGapBreakdown,
     getModifiedEnablementDistribution,
   } = useModifications();
+  
+  const { user } = useAuth();
 
   // Combined filtering: tier filter first, then search query
   const filteredPartners = useMemo(() => {
     let result = filterModifiedPartners(complianceFilter);
+    
+    // Domain restriction for non-Global Admins
+    if (user?.role !== 'Global Admin' && user?.domain) {
+      result = result.filter(p => p.domain.toLowerCase() === user?.domain?.toLowerCase());
+    }
+
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter(
@@ -157,7 +166,7 @@ export default function Home() {
       );
     }
     return result;
-  }, [complianceFilter, searchQuery, filterModifiedPartners]);
+  }, [complianceFilter, searchQuery, filterModifiedPartners, user]);
 
   const filteredKPIs = useMemo(() => getModifiedKPIs(filteredPartners), [filteredPartners, getModifiedKPIs]);
   const filteredGapData = useMemo(() => getModifiedGapBreakdown(filteredPartners), [filteredPartners, getModifiedGapBreakdown]);
