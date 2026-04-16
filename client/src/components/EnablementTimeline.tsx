@@ -281,7 +281,69 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
     }))
   ];
 
-  // Merge in events
+  // Map events from the new matrix to the individual partner's enablement roadmap
+  const { globalRoadmap } = useModifications();
+  
+  if (globalRoadmap && !Array.isArray(globalRoadmap)) {
+    const matrix = globalRoadmap;
+    const getAbbreviation = (name: string): string => {
+      const n = name.toUpperCase();
+      if (n.includes("DATA SCIENCES")) return "DSC";
+      if (n.includes("FIRST TECHNOLOGY")) return "FT";
+      if (n.includes("NTT")) return "NTT";
+      if (n.includes("DIMENSION DATA")) return "NTT";
+      if (n.includes("AXIZ")) return "AXIZ";
+      if (n.includes("NEC")) return "NEC";
+      if (n.includes("TRIPLE H")) return "TRIPLE H";
+      if (n.includes("CES")) return "CES";
+      if (n.includes("TCM")) return "TCM";
+      return name.split(" ")[0].toUpperCase();
+    };
+
+    const partnerAbbrev = getAbbreviation(partner.name);
+    
+    Object.entries(matrix).forEach(([row, monthsObj]) => {
+      Object.entries(monthsObj as Record<string, any[]>).forEach(([month, events]) => {
+        events.forEach(evt => {
+          // Rule for inclusion:
+          // 1. If it's a 'FY27 Main Events' or 'FY27 EMEA Orange Belt', it's global and applies to everyone.
+          // 2. Otherwise, check if the event text contains the partner abbreviation.
+          // 3. Or if the event text contains "partners" (e.g. Aim for 5 partners, etc)
+          const isGlobal = row === "FY27 Main Events" || row === "FY27 EMEA Orange Belt";
+          const textUp = evt.text.toUpperCase();
+          const isSpecific = textUp.includes(partnerAbbrev) || textUp.includes("PARTNER");
+          
+          if (isGlobal || isSpecific) {
+            let q = "Q1";
+            if (["May","Jun","Jul"].includes(month)) q = "Q2";
+            if (["Aug","Sep","Oct"].includes(month)) q = "Q3";
+            if (["Nov","Dec","Jan"].includes(month)) q = "Q4";
+
+            allTimelineItems.push({
+              id: `matrix-${evt.id}`,
+              monthRange: month,
+              quarter: q,
+              category: "enablement",
+              label: evt.text,
+              description: `Part of ${row}`,
+              status: "planned",
+              icon: Star,
+              color: evt.tag === "Technical Sales Pro" ? "var(--color-blue-600, #2563eb)" : 
+                     evt.tag === "SE Bootcamp" ? "var(--color-red-500, #ef4444)" :
+                     evt.tag === "Simply Pure" ? "var(--color-slate-900, #0f172a)" :
+                     evt.tag === "Architecture + Depth" ? "var(--color-fuchsia-400, #e879f9)" :
+                     evt.tag === "Elective - Deep Dive" ? "var(--color-yellow-400, #facc15)" :
+                     evt.tag === "CIP, Solution based" ? "var(--color-rose-800, #9f1239)" :
+                     evt.tag === "Portfolio" ? "var(--color-teal-500, #14b8a6)" :
+                     evt.tag === "Tools" ? "var(--color-orange-600, #ea580c)" : "var(--color-slate-800, #1e293b)"
+            });
+          }
+        });
+      });
+    });
+  }
+
+  // Merge in basic events
   const partnerEvents = events.filter(e => e.partnerIds.includes(partner.id));
   partnerEvents.forEach(evt => {
     allTimelineItems.push({
