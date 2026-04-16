@@ -45,13 +45,18 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     return stored ? parseInt(stored) : 0;
   });
 
-  // Flash help button on first mount
-  const [helpPulse, setHelpPulse] = useState(false);
-  useEffect(() => {
-    const timer = setTimeout(() => setHelpPulse(true), 800);
-    const offTimer = setTimeout(() => setHelpPulse(false), 5000);
-    return () => { clearTimeout(timer); clearTimeout(offTimer); };
-  }, []);
+  // Welcome popup — show unless user has dismissed it this session
+  const [helpPulse, setHelpPulse] = useState(() => {
+    return !sessionStorage.getItem('help-dismissed');
+  });
+
+  const dismissHelp = (permanently: boolean) => {
+    setHelpPulse(false);
+    if (permanently) {
+      sessionStorage.setItem('help-dismissed', 'true');
+    }
+    // 'Later' sets no flag, so it reappears on next login
+  };
 
   // Live-reload signed exports for notification stream
   const [signedExportsData, setSignedExportsData] = useState(() => loadSignedExports());
@@ -406,15 +411,16 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
               <span className="hidden sm:inline font-black">Help</span>
             </button>
 
-            {/* Callout tooltip */}
+            {/* Welcome callout — fixed overlay so header overflow can't clip it */}
             <AnimatePresence>
               {helpPulse && (
                 <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.9 }}
+                  initial={{ opacity: 0, y: -12, scale: 0.92 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.9 }}
-                  transition={{ duration: 0.3, type: "spring", stiffness: 280, damping: 22 }}
-                  className="absolute right-0 top-[calc(100%+14px)] z-50 w-80"
+                  exit={{ opacity: 0, y: -12, scale: 0.92 }}
+                  transition={{ duration: 0.3, type: "spring", stiffness: 260, damping: 22 }}
+                  className="fixed top-[72px] right-6 z-[200] w-88"
+                  style={{ width: 340 }}
                 >
                   {/* Arrow */}
                   <div
@@ -423,35 +429,48 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
                   />
                   <div
                     className="rounded-2xl shadow-2xl overflow-hidden"
-                    style={{ background: "var(--color-ash-gray)" }}
+                    style={{
+                      background: "var(--color-ash-gray)",
+                      boxShadow: "0 24px 60px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.2)"
+                    }}
                   >
-                    {/* Body */}
-                    <div className="px-5 pt-5 pb-4">
-                      <p className="font-black text-[15px] text-white mb-1.5 flex items-center gap-2">
-                        <HelpCircle className="w-4 h-4 text-white/70 shrink-0" />
+                    {/* Header strip */}
+                    <div className="px-5 pt-5 pb-3">
+                      <p className="font-black text-[16px] text-white mb-2 flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4 text-white/60 shrink-0" />
                         Welcome to the Dashboard!
                       </p>
-                      <p className="text-white/80 text-[13px] leading-relaxed">
-                        Not sure where to start? Click <strong className="text-white">Start Tour</strong> for a guided walkthrough of every feature — takes under 2 minutes.
+                      <p className="text-white/75 text-[13px] leading-relaxed">
+                        Not sure where to start? Take a guided walkthrough of every feature — it takes under 2 minutes. You can always return via the <strong className="text-white">Help</strong> button.
                       </p>
                     </div>
+                    {/* Divider */}
+                    <div className="mx-5 border-t border-white/10" />
                     {/* Actions */}
-                    <div className="flex items-center gap-2 px-5 pb-5">
+                    <div className="flex items-center gap-2 px-5 py-4">
                       <button
                         onClick={() => {
-                          setHelpPulse(false);
+                          dismissHelp(true);
                           if (onNavChange) onNavChange("overview");
                           setTimeout(() => startTour(buildTourSteps()), 400);
                         }}
-                        className="flex-1 py-2 rounded-xl bg-[var(--color-pure-orange)] hover:bg-orange-500 text-white text-[13px] font-black transition-all active:scale-95 shadow-lg"
+                        className="flex-1 py-2.5 rounded-xl text-[13px] font-black transition-all active:scale-95 shadow-lg"
+                        style={{ background: "var(--color-pure-orange)", color: "#fff" }}
                       >
                         Start Tour →
                       </button>
                       <button
-                        onClick={() => setHelpPulse(false)}
-                        className="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[13px] font-semibold transition-all border border-white/10"
+                        onClick={() => dismissHelp(false)}
+                        className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[13px] font-semibold transition-all border border-white/10"
                       >
                         Later
+                      </button>
+                      <button
+                        onClick={() => dismissHelp(true)}
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-all border border-white/10"
+                        title="Close"
+                      >
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
