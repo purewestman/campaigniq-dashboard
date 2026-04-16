@@ -16,7 +16,6 @@ import DashboardHeader from "@/components/DashboardHeader";
 import ComplianceSummary from "@/components/ChannelSummary";
 import CalendarRoadmap from "@/components/CalendarRoadmap";
 import PartnerTable from "@/components/CampaignTable";
-import PartnerStatusGrid from "@/components/PartnerStatusGrid";
 import CorePlatforms from "@/components/CorePlatforms";
 import PartnersPage from "@/pages/PartnersPage";
 import TierCompliancePage from "@/pages/TierCompliancePage";
@@ -33,7 +32,7 @@ import PlanningHub from "@/pages/PlanningHub";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
-import { Settings, CalendarCheck, CalendarDays, Map } from "lucide-react";
+import { Settings, CalendarCheck, CalendarDays, Map, FileBarChart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Home() {
@@ -270,11 +269,46 @@ export default function Home() {
               </motion.div>
             )}
 
-            {/* Partner Status Cards Grid */}
+            {/* Quick Report Navigation Banner */}
             <section className="mb-6">
-              <PartnerStatusGrid 
-                partners={filteredPartners} 
-                onNavigateToPartner={navigateToPartner} 
+              <div className="flex items-center justify-between p-4 bg-slate-50 border rounded-xl" style={{ borderColor: 'var(--color-stone-gray)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg" style={{ background: 'var(--color-pure-orange)', color: 'white' }}>
+                    <FileBarChart className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-[13px] text-slate-900">Partner Compliance Reports & Logs</h3>
+                    <p className="text-[11px] text-slate-500">Access full CSV exports, modification histories, and audit data</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleNavChange('reports')}
+                  className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold bg-white border rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+                  style={{ color: 'var(--color-pure-orange)', borderColor: 'var(--color-stone-gray)' }}
+                >
+                  Open Reporting Center
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            </section>
+
+            {/* Tier Compliance Summary Cards (clickable filter) */}
+            <section className="mb-6">
+              <ComplianceSummary
+                activeFilter={complianceFilter}
+                onFilterChange={(filter: ComplianceFilter) => setComplianceFilter(filter)}
+                onNavigate={handleNavChange}
+              />
+            </section>
+
+            {/* Partner Details Compliance Table */}
+            <section className="mb-6" ref={partnerTableRef}>
+              <PartnerTable
+                partners={filteredPartners}
+                activeFilter={complianceFilter}
+                onFilterChange={setComplianceFilter}
+                searchQuery={searchQuery}
+                onNavigateToActivity={navigateToActivity}
               />
             </section>
           </>
