@@ -58,7 +58,7 @@ export default function ExportButton({ partner, variant = "primary" }: ExportBut
   return (
     <button
       onClick={handleSubmit}
-      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all shadow-sm ${
+      className={`tour-step-3 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold transition-all shadow-sm ${
         variant === "primary"
           ? "bg-[#FF7023] text-white hover:bg-[#E65F1B]"
           : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"

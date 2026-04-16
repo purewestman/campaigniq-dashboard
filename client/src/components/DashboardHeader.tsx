@@ -12,6 +12,7 @@ import PureDividerBackground from "./PureDividerBackground";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useOverrides } from "@/contexts/OverrideContext";
+import { useTour } from "@/contexts/TourContext";
 import { loadCommitments } from "@/components/CommitmentTracker";
 
 interface DashboardHeaderProps {
@@ -35,6 +36,7 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
   const { user, changePassword } = useAuth();
   const { allModificationHistory, modifiedPartners } = useModifications();
   const { overrides, aspOverrides } = useOverrides();
+  const { startTour } = useTour();
   
   const [showNotifications, setShowNotifications] = useState(false);
   const [clearedAt, setClearedAt] = useState<number>(() => {
@@ -146,6 +148,53 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     }
   };
 
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem("campaigniq_has_seen_tour");
+    if (!hasSeenTour && user) {
+      localStorage.setItem("campaigniq_has_seen_tour", "true");
+      // Slight delay so the page can fully mount before tour starts
+      setTimeout(() => {
+        startTour([
+          {
+            target: ".tour-step-1",
+            title: "1. Evaluate Partner Status",
+            content: "Check your partner's current tier and select their target tier from this dropdown to determine the enablement gap.",
+            placement: "bottom"
+          },
+          {
+            target: ".tour-step-2",
+            title: "2. Address Enablement Gaps",
+            content: "Expand a partner row to review specific metric gaps. Use this dropdown to assign target users to fulfill cert requirements.",
+            placement: "top"
+          },
+          {
+            target: ".tour-step-3",
+            title: "3. Submit to Plan",
+            content: "Once all required gap assignments are made, click this button to commit your gap overrides to the enablement roadmap.",
+            placement: "top"
+          },
+          {
+            target: ".tour-step-4",
+            title: "4. Track Enablement over 12 Months",
+            content: "Inside the Enablement Plans tab, you can assign users to a 12-month timeline for comprehensive roadmap tracking.",
+            placement: "bottom",
+            preAction: () => {
+              if (onNavChange) {
+                onNavChange("enablement");
+              }
+            }
+          },
+          {
+            target: ".tour-step-5",
+            title: "5. Export and Present",
+            content: "When you are satisfied with the timeline, export it as a branded PPTX ready for presentation.",
+            placement: "bottom"
+          }
+        ]);
+      }, 800);
+    }
+  }, [startTour, user, onNavChange]);
+
   const handlePasswordChange = () => {
     const newPass = prompt("Enter a new password for all users in your domain:");
     if (newPass) {
@@ -192,6 +241,56 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              startTour([
+                {
+                  target: ".tour-step-1",
+                  title: "1. Evaluate Partner Status",
+                  content: "Check your partner's current tier and select their target tier from this dropdown to determine the enablement gap.",
+                  placement: "bottom"
+                },
+                {
+                  target: ".tour-step-2",
+                  title: "2. Address Enablement Gaps",
+                  content: "Expand a partner row to review specific metric gaps. Use this dropdown to assign target users to fulfill cert requirements.",
+                  placement: "top"
+                },
+                {
+                  target: ".tour-step-3",
+                  title: "3. Submit to Plan",
+                  content: "Once all required gap assignments are made, click this button to commit your gap overrides to the enablement roadmap.",
+                  placement: "top"
+                },
+                {
+                  target: ".tour-step-4",
+                  title: "4. Track Enablement over 12 Months",
+                  content: "Inside the Enablement Plans tab, you can assign users to a 12-month timeline for comprehensive roadmap tracking.",
+                  placement: "bottom",
+                  preAction: () => {
+                    if (onNavChange) {
+                      onNavChange("enablement");
+                    }
+                  }
+                },
+                {
+                  target: ".tour-step-5",
+                  title: "5. Export and Present",
+                  content: "When you are satisfied with the timeline, export it as a branded PPTX ready for presentation.",
+                  placement: "bottom"
+                }
+              ]);
+            }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:bg-slate-900 hover:text-white"
+            style={{
+              background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
+              borderColor: "var(--color-pure-orange)",
+              color: "var(--color-pure-orange)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            Take Tour
+          </button>
           {user?.role === 'partner' && (
             <button
               onClick={handlePasswordChange}

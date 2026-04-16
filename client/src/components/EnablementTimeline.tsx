@@ -631,7 +631,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                                  type="text"
                                  list={datalistId}
                                  placeholder="+ Add assignee…"
-                                 className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-44 transition-colors"
+                                 className="tour-step-4 text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-44 transition-colors"
                                  onKeyDown={(e) => {
                                    if (e.key === 'Enter' || e.key === ',') {
                                      e.preventDefault();

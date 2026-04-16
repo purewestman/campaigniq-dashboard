@@ -389,7 +389,7 @@ export default function EnablementPlansPage() {
                     <button
                       onClick={() => handleExportOne(partner.id)}
                       disabled={exportingId === partner.id}
-                      className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-[var(--color-pure-orange)] hover:text-white border border-slate-200 text-slate-700 text-[12px] font-bold px-3 py-2 rounded-lg transition-all active:scale-95 disabled:opacity-60"
+                      className="tour-step-5 w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-[var(--color-pure-orange)] hover:text-white border border-slate-200 text-slate-700 text-[12px] font-bold px-3 py-2 rounded-lg transition-all active:scale-95 disabled:opacity-60"
                     >
                       <Download className="w-3.5 h-3.5" />
                       {exportingId === partner.id ? "Generating PPTX…" : "Export PPTX"}
