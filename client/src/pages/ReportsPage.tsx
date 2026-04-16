@@ -444,52 +444,7 @@ export default function ReportsPage() {
             </div>
           </motion.div>
 
-          {/* Partner Compliance Table */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="space-y-4"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
-              <div>
-                <h3 className="text-[15px] font-bold text-foreground">Partner Compliance Detail</h3>
-                <p className="text-[11px] text-muted-foreground">Detailed gap analysis per partner</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search partners..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-4 py-2 bg-white/50 border border-border rounded-xl text-xs w-64 focus:ring-2 focus:ring-pure-orange/20"
-                  />
-                </div>
-                <div className="flex items-center gap-1 bg-white/50 border border-border rounded-xl p-1">
-                  {(["all", "authorized", "preferred", "elite", "ambassador"] as const).map((tier) => (
-                    <button
-                      key={tier}
-                      onClick={() => setComplianceFilter(tier)}
-                      className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${
-                        complianceFilter === tier ? "bg-pure-orange text-white shadow-sm" : "text-muted-foreground hover:bg-black/5"
-                      }`}
-                    >
-                      {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
 
-            <PartnerTable
-              partners={modifiedPartners}
-              activeFilter={complianceFilter}
-              onFilterChange={setComplianceFilter}
-              searchQuery={searchQuery}
-            />
-          </motion.div>
         </div>
       )}
 
