@@ -981,11 +981,6 @@ function ExpandedRow({ partner, onNavigateToActivity }: { partner: Partner, onNa
             </div>
           </div>
 
-          {/* ── 12-Month Strategic Roadmap ───────────────────────── */}
-          <div className="md:col-span-2 pt-4 border-t border-slate-200">
-            <EnablementTimeline partner={partner} />
-          </div>
-
           {/* ── ASP Eligibility Panel ──────────────────────────────── */}
           <div className="md:col-span-2">
             <AspEligibilityPanel partnerId={partner.id} />

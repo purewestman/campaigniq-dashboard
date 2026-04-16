@@ -1,7 +1,6 @@
 /**
  * EnablementPlansPage.tsx
- * Dedicated page showing each partner's enablement gap plan as small cards.
- * Extracted from the Overview tab.
+ * Dedicated page: partner cards + compact 12-Month roadmap per partner.
  */
 
 import React, { useState, useMemo } from "react";
@@ -9,12 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, ChevronRight, Download, DownloadCloud,
   CheckCircle2, AlertTriangle, Clock, Target, BarChart3,
-  Calendar, Users
+  Calendar,
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
-import { partners, TIER_DEFINITIONS, type ProgramTier } from "@/lib/data";
+import { TIER_DEFINITIONS } from "@/lib/data";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
+import EnablementTimeline from "@/components/EnablementTimeline";
 import { toast } from "sonner";
+import type { Partner } from "@/lib/data";
 
 type FilterMode = "all" | "has_gaps" | "has_plan" | "no_plan" | "compliant";
 
@@ -66,10 +67,7 @@ export default function EnablementPlansPage() {
   const handleExportAll = async () => {
     setExportingAll(true);
     try {
-      await exportAllPartnersPptx(
-        modifiedPartners as any[],
-        partnerTimelines
-      );
+      await exportAllPartnersPptx(modifiedPartners as any[], partnerTimelines);
       toast.success("All partners deck exported!");
     } catch (e) {
       console.error(e);
@@ -79,12 +77,20 @@ export default function EnablementPlansPage() {
     }
   };
 
-  const filters: { id: FilterMode; label: string }[] = [
-    { id: "all",       label: `All (${modifiedPartners.length})` },
-    { id: "has_gaps",  label: `Has Gaps (${modifiedPartners.filter(p => p.totalGaps > 0).length})` },
-    { id: "has_plan",  label: `Has Plan (${modifiedPartners.filter(p => (partnerTimelines[p.id]?.length ?? 0) > 0).length})` },
-    { id: "no_plan",   label: `Needs Plan (${modifiedPartners.filter(p => (partnerTimelines[p.id]?.length ?? 0) === 0 && p.totalGaps > 0).length})` },
-    { id: "compliant", label: `Compliant (${modifiedPartners.filter(p => p.overallCompliant).length})` },
+  const counts = {
+    all:       modifiedPartners.length,
+    has_gaps:  modifiedPartners.filter(p => p.totalGaps > 0).length,
+    has_plan:  modifiedPartners.filter(p => (partnerTimelines[p.id]?.length ?? 0) > 0).length,
+    no_plan:   modifiedPartners.filter(p => (partnerTimelines[p.id]?.length ?? 0) === 0 && p.totalGaps > 0).length,
+    compliant: modifiedPartners.filter(p => p.overallCompliant).length,
+  };
+
+  const filterBtns: { id: FilterMode; label: string }[] = [
+    { id: "all",       label: `All (${counts.all})` },
+    { id: "has_gaps",  label: `Has Gaps (${counts.has_gaps})` },
+    { id: "has_plan",  label: `Has Plan (${counts.has_plan})` },
+    { id: "no_plan",   label: `Needs Plan (${counts.no_plan})` },
+    { id: "compliant", label: `Compliant (${counts.compliant})` },
   ];
 
   return (
@@ -99,7 +105,7 @@ export default function EnablementPlansPage() {
               Partner Enablement Plans
             </h1>
             <p className="text-[14px] text-slate-500 mt-1">
-              Individual gap allocation and 12-month roadmap planning per partner.
+              Gap allocation, 12-month roadmap and PPTX export — per partner.
             </p>
           </div>
           <button
@@ -114,23 +120,19 @@ export default function EnablementPlansPage() {
 
         {/* Filter bar */}
         <div className="flex flex-wrap items-center gap-2 bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex-1 min-w-0 relative mr-2">
-            <input
-              type="text"
-              placeholder="Search partner name or domain…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-4 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-pure-orange)] transition-colors"
-            />
-          </div>
-          {filters.map(f => (
+          <input
+            type="text"
+            placeholder="Search partner name or domain…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="flex-1 min-w-[200px] pl-4 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[var(--color-pure-orange)] transition-colors"
+          />
+          {filterBtns.map(f => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all ${
-                filter === f.id
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                filter === f.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
               {f.label}
@@ -138,7 +140,7 @@ export default function EnablementPlansPage() {
           ))}
         </div>
 
-        {/* Partner cards grid */}
+        {/* Partner cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           <AnimatePresence>
             {filtered.map(partner => {
@@ -148,11 +150,11 @@ export default function EnablementPlansPage() {
               const req = partner.requirements;
 
               const gapRows = [
-                { label: "Sales Pro",  gap: Math.max(0, req.salesPro.required - req.salesPro.obtained) },
-                { label: "Tech Pro",   gap: Math.max(0, req.techPro.required - req.techPro.obtained) },
-                { label: "Bootcamp",   gap: Math.max(0, req.bootcamp.required - req.bootcamp.obtained) },
-                { label: "Impl Spec",  gap: Math.max(0, req.implSpec.required - req.implSpec.obtained) },
-                { label: "Simply Pure",gap: Math.max(0, req.simplyPure.required - req.simplyPure.obtained) },
+                { label: "Sales Pro",   gap: Math.max(0, req.salesPro.required  - req.salesPro.obtained) },
+                { label: "Tech Pro",    gap: Math.max(0, req.techPro.required   - req.techPro.obtained) },
+                { label: "Bootcamp",    gap: Math.max(0, req.bootcamp.required  - req.bootcamp.obtained) },
+                { label: "Impl Spec",   gap: Math.max(0, req.implSpec.required  - req.implSpec.obtained) },
+                { label: "Simply Pure", gap: Math.max(0, req.simplyPure.required - req.simplyPure.obtained) },
               ].filter(r => r.gap > 0);
 
               return (
@@ -166,14 +168,14 @@ export default function EnablementPlansPage() {
                   className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col"
                 >
                   {/* Card header */}
-                  <div className="px-4 pt-4 pb-3 border-b border-slate-100">
+                  <div className="px-4 pt-4 pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="text-[13px] font-black text-slate-900 truncate">{partner.name}</h3>
                         <p className="text-[11px] text-slate-500 font-mono truncate">{partner.domain}</p>
                       </div>
                       <span
-                        className="text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ml-1"
+                        className="text-[10px] font-black px-2 py-0.5 rounded-full shrink-0"
                         style={{ background: `color-mix(in srgb, ${tierColor} 12%, transparent)`, color: tierColor }}
                       >
                         {partner.programTier}
@@ -196,80 +198,57 @@ export default function EnablementPlansPage() {
                       </div>
                       <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
                         <Calendar className="w-3 h-3 text-slate-500" />
-                        <span className="text-[11px] font-bold text-slate-700">{timeline.length} plan item{timeline.length !== 1 ? "s" : ""}</span>
+                        <span className="text-[11px] font-bold text-slate-700">
+                          {timeline.length} plan item{timeline.length !== 1 ? "s" : ""}
+                        </span>
                       </div>
                     </div>
+
+                    {/* Gap pills inline — always visible */}
+                    {gapRows.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {gapRows.map(g => (
+                          <span key={g.label} className="text-[10px] font-bold bg-red-50 text-red-500 border border-red-100 px-2 py-0.5 rounded-full">
+                            -{g.gap} {g.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Expand toggle */}
+                  {/* Expand / collapse: 12-Month Roadmap */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : partner.id)}
-                    className="flex items-center justify-between px-4 py-2 text-[11px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-2 text-[11px] font-bold text-slate-500 hover:text-[var(--color-pure-orange)] hover:bg-orange-50/50 transition-colors border-t border-slate-100"
                   >
-                    <span>{isExpanded ? "Hide details" : "View plan & gaps"}</span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      12-Month Enablement Roadmap
+                    </span>
                     <ChevronRight
                       className="w-3.5 h-3.5 transition-transform duration-200"
                       style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}
                     />
                   </button>
 
-                  {/* Expanded detail */}
+                  {/* Roadmap — compact scale */}
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.22 }}
+                        transition={{ duration: 0.25 }}
                         className="overflow-hidden border-t border-slate-100"
                       >
-                        <div className="px-4 py-3 space-y-4">
-                          {/* Gaps */}
-                          {gapRows.length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Open Gaps</p>
-                              <div className="space-y-1.5">
-                                {gapRows.map(g => (
-                                  <div key={g.label} className="flex items-center justify-between">
-                                    <span className="text-[12px] text-slate-600">{g.label}</span>
-                                    <span className="text-[11px] font-black text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                                      -{g.gap}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Timeline items */}
-                          {timeline.length > 0 && (
-                            <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Plan Items</p>
-                              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                {timeline.map(item => (
-                                  <div key={item.id} className="flex items-start gap-2 text-[11px]">
-                                    <Clock className="w-3 h-3 shrink-0 mt-0.5 text-slate-400" />
-                                    <div>
-                                      <span className="font-bold text-slate-700">{item.label}</span>
-                                      {item.month && <span className="text-slate-400 ml-1">· {item.month}</span>}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {gapRows.length === 0 && timeline.length === 0 && (
-                            <p className="text-[12px] text-slate-400 italic text-center py-2">
-                              No gaps or plan items — partner is on track.
-                            </p>
-                          )}
+                        <div className="px-3 py-3 bg-slate-50/60 text-[11px] scale-[0.94] origin-top-left w-[106%]">
+                          <EnablementTimeline partner={partner as Partner} compact />
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  {/* Footer: export button */}
+                  {/* Footer */}
                   <div className="px-4 pb-4 pt-2 mt-auto border-t border-slate-100">
                     <button
                       onClick={() => handleExportOne(partner.id)}

@@ -43,9 +43,10 @@ interface TimelineItem {
 
 interface EnablementTimelineProps {
   partner: Partner;
+  compact?: boolean;
 }
 
-export default function EnablementTimeline({ partner }: EnablementTimelineProps) {
+export default function EnablementTimeline({ partner, compact = false }: EnablementTimelineProps) {
   const { getModification, addModification, events, partnerTimelines, updatePartnerTimeline } = useModifications();
   const reqs = partner.requirements;
   const activities = activityData[partner.name] || [];
@@ -301,44 +302,64 @@ export default function EnablementTimeline({ partner }: EnablementTimelineProps)
   const quarters = ["Q1", "Q2", "Q3", "Q4"];
 
   return (
-    <div className="space-y-8">
+    <div className={compact ? "space-y-4" : "space-y-8"}>
       <datalist id="timeline-emails">
         {recommendedEmails.map(e => <option key={e} value={e} />)}
       </datalist>
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Calendar className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
-            12-Month Enablement & Demand Gen Roadmap
-          </h3>
-          <p className="text-[13px] text-muted-foreground mt-1">
-            Strategic planning guide based on current gaps and solution-led growth targets.
-          </p>
+
+      {!compact && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Calendar className="w-5 h-5" style={{ color: "var(--color-pure-orange)" }} />
+              12-Month Enablement & Demand Gen Roadmap
+            </h3>
+            <p className="text-[13px] text-muted-foreground mt-1">
+              Strategic planning guide based on current gaps and solution-led growth targets.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsAdding(!isAdding)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Manual Entry
+            </button>
+            <div className="flex items-center gap-4 text-[11px] font-medium ml-4">
+            <span className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+              Completed
+            </span>
+            <span className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+              Open Gap
+            </span>
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <div className="w-2.5 h-2.5 rounded-full border-2 border-slate-300" />
+              Planned
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        </div>
+      )}
+
+      {compact && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-[10px] font-medium text-slate-400">
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> Done</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400" /> Gap</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full border border-slate-300" /> Planned</span>
+          </div>
           <button
             onClick={() => setIsAdding(!isAdding)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 rounded-md border border-slate-200 text-[10px] font-bold text-slate-500 hover:bg-slate-100 transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
-            Add Manual Entry
+            <Plus className="w-3 h-3" />
+            Add
           </button>
-          <div className="flex items-center gap-4 text-[11px] font-medium ml-4">
-          <span className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-            Completed
-          </span>
-          <span className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
-            Open Gap
-          </span>
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-slate-300" />
-            Planned
-          </span>
         </div>
-      </div>
-      </div>
+      )}
 
       {isAdding && (
         <motion.div
