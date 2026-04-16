@@ -351,7 +351,7 @@ export default function EnablementPlansPage() {
                   {/* ── Roadmap toggle ─────────────────────────────────── */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : partner.id)}
-                    className="flex items-center justify-between px-4 py-2 text-[11px] font-bold text-slate-500 hover:text-[var(--color-pure-orange)] hover:bg-orange-50/50 transition-colors border-t border-slate-100"
+                    className="tour-expand-card flex items-center justify-between px-4 py-2 text-[11px] font-bold text-slate-500 hover:text-[var(--color-pure-orange)] hover:bg-orange-50/50 transition-colors border-t border-slate-100 w-full"
                   >
                     <span className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />

@@ -148,52 +148,89 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     }
   };
 
-  // ── Tour step definitions (also used for auto-tour on first load) ───────────
+  // ── Tour step definitions ──────────────────────────────────────────
   const buildTourSteps = useCallback(() => [
+    // ── Step 1: tier selector ───────────────────────────────────────
     {
       target: ".tour-step-1",
-      title: "Step 1 — Select Target Tier",
-      content: "Evaluate your partner's current status. The tour will now change the target tier dropdown to 'Elite' so you can see the gap difference.",
+      title: "Step 1 — Select a Target Tier",
+      content: "Start by reviewing your current partner tier. Watch as the tour changes the target tier to 'Elite' so you can see how the enablement gap requirement updates.",
       placement: "bottom" as const,
       autoAction: async ({ delay, selectValue }: any) => {
         selectValue(".tour-step-1", "elite");
-        await delay(700);
+        await delay(800);
       },
     },
+    // ── Step 2: expand partner row ─────────────────────────────────
     {
       target: ".tour-step-2",
       title: "Step 2 — Expand a Partner Row",
-      content: "Click any partner row to expand the gap breakdown. The tour is opening the first row now so you can see the full enablement gap detail.",
+      content: "Click any partner row to reveal the full enablement gap breakdown below it. Watch as the tour opens the first partner row now.",
       placement: "top" as const,
       autoAction: async ({ delay, clickEl }: any) => {
         clickEl(".tour-step-2");
-        await delay(900);
+        await delay(1200);
       },
     },
+    // ── Step 3: gap dropdown ───────────────────────────────────────
+    {
+      target: ".tour-step-gap-select",
+      title: "Step 3 — Assign an Employee to a Gap",
+      content: "For each enablement gap, use this dropdown to pick a qualified domain user who will complete the certification. Watch as the tour selects a sample user then clicks Add.",
+      placement: "top" as const,
+      autoAction: async ({ delay, selectValue, clickEl }: any) => {
+        // Focus the gap dropdown
+        const sel = document.querySelector<HTMLSelectElement>(".tour-step-gap-select");
+        if (sel && sel.options.length > 1) {
+          // Select the first real option (index 1)
+          await delay(600);
+          selectValue(".tour-step-gap-select", sel.options[1]?.value ?? "");
+          await delay(800);
+          // Click the + Add button beside it
+          clickEl(".tour-step-gap-select + button");
+          await delay(700);
+        }
+      },
+    },
+    // ── Step 4: Submit to Enablement Plan ────────────────────────────
     {
       target: ".tour-step-3",
-      title: "Step 3 — Submit to Enablement Plan",
-      content: "Once gaps have assignees, click 'Submit to Enablement Plan' to commit this plan to the 12-month roadmap.",
+      title: "Step 4 — Submit to the Enablement Plan",
+      content: "Once all gaps have an assignee, click 'Submit to Enablement Plan'. This locks in the plan and moves it to the 12-month roadmap automatically.",
       placement: "top" as const,
     },
+    // ── Step 5: navigate enablement + expand card ──────────────────────
     {
-      target: ".tour-step-4",
-      title: "Step 4 — Assign Users to Timeline",
-      content: "Inside the Enablement Plans tab, use this field to assign domain users to specific 12-month milestones. The tour will type a sample email now.",
+      target: ".tour-expand-card",
+      title: "Step 5 — Open the 12-Month Roadmap",
+      content: "Go to the Enablement Plans tab and click the '12-Month Enablement Roadmap' toggle on any partner card to reveal the full timeline. Watch as the tour opens the first card now.",
       placement: "bottom" as const,
       preAction: async () => {
         if (onNavChange) onNavChange("enablement");
-        await new Promise(r => setTimeout(r, 800));
+        // Wait longer for the page to mount fully
+        await new Promise(r => setTimeout(r, 1200));
       },
-      autoAction: async ({ delay, typeInto }: any) => {
-        await typeInto(".tour-step-4", "john.doe@partner.com");
-        await delay(500);
+      autoAction: async ({ delay, clickEl }: any) => {
+        clickEl(".tour-expand-card");
+        await delay(1200);
       },
     },
+    // ── Step 6: assignee picker inside timeline ────────────────────────
+    {
+      target: ".tour-step-4",
+      title: "Step 6 — Assign Users to Timeline Items",
+      content: "Each milestone in the 12-month plan has an assignee field. Watch as the tour types a sample email address to show you how it works.",
+      placement: "bottom" as const,
+      autoAction: async ({ delay, typeInto }: any) => {
+        await typeInto(".tour-step-4", "jane.smith@partner.com");
+        await delay(600);
+      },
+    },
+    // ── Step 7: export PPTX ──────────────────────────────────────────
     {
       target: ".tour-step-5",
-      title: "Step 5 — Export Plan as PowerPoint",
-      content: "Download the full 12-month enablement plan as a branded PowerPoint presentation, ready to share with your regional manager.",
+      title: "Step 7 — Export Plan as PowerPoint",
+      content: "When the plan is complete, click 'Export PPTX' to download a branded PowerPoint presentation ready for your regional enablement review.",
       placement: "bottom" as const,
     },
   ], [onNavChange]);
@@ -252,23 +289,23 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          {/* Help / Take Tour button – always visible in top right */}
+          {/* Help button – white bg so it pops against the dark/orange header */}
           <button
-            title="Take a guided tour"
+            title="Take a guided walkthrough"
             onClick={() => {
               if (onNavChange) onNavChange("overview");
               setTimeout(() => startTour(buildTourSteps()), 400);
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:scale-105 active:scale-95 shadow-md"
             style={{
-              background: "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)",
-              borderColor: "var(--color-pure-orange)",
-              color: "var(--color-pure-orange)",
+              background: "rgba(255,255,255,0.95)",
+              borderColor: "rgba(255,255,255,0.6)",
+              color: "var(--color-basil-green)",
               backdropFilter: "blur(8px)",
             }}
           >
             <HelpCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Help</span>
+            <span className="hidden sm:inline font-black">Help</span>
           </button>
           {user?.role === 'partner' && (
             <button

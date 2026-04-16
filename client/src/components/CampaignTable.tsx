@@ -1719,7 +1719,7 @@ function InlineEmailManager({ partnerId, categoryKey, autoList }: { partnerId: n
         <select 
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          className="flex-1 px-2 py-1.5 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0 bg-slate-50"
+          className="tour-step-gap-select flex-1 px-2 py-1.5 text-[11px] rounded border border-slate-200 focus:outline-none focus:border-pure-orange min-w-0 bg-slate-50"
         >
           <option value="" disabled>
             {domainUsers.length > 0
