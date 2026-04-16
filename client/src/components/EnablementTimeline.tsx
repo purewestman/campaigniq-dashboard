@@ -38,7 +38,7 @@ interface TimelineItem {
   status: "completed" | "planned" | "gap";
   icon: any;
   color: string;
-  email?: string;
+  emails?: string[];
 }
 
 interface EnablementTimelineProps {
@@ -503,17 +503,51 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                             >
                               {item.description}
                             </p>
-                            <div className="mt-2 text-right">
-                               <input 
+                            <div className="mt-2">
+                               {/* Multi-assignee pills */}
+                               <div className="flex flex-wrap gap-1 mb-1">
+                                 {(item.emails ?? (item as any).email ? [(item as any).email] : []).filter(Boolean).map((em: string) => (
+                                   <span key={em} className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-indigo-100">
+                                     {em.split('@')[0]}
+                                     <button
+                                       type="button"
+                                       onClick={() => setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id ? { ...i, emails: (i.emails ?? []).filter(e => e !== em) } : i))}
+                                       className="ml-0.5 hover:text-red-500 transition-colors"
+                                       title="Remove"
+                                     >×</button>
+                                   </span>
+                                 ))}
+                               </div>
+                               <input
                                  type="text"
                                  list="timeline-emails"
-                                 placeholder="Assignee Email..."
-                                 className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-40 transition-colors"
-                                 onChange={(e) => {
-                                   const newEmail = e.target.value;
-                                   setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id ? { ...i, email: newEmail } : i));
+                                 placeholder="+ Add assignee email…"
+                                 className="text-[10px] text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded px-2 py-1 focus:outline-none focus:border-indigo-300 w-44 transition-colors"
+                                 onKeyDown={(e) => {
+                                   if (e.key === 'Enter' || e.key === ',') {
+                                     e.preventDefault();
+                                     const val = (e.target as HTMLInputElement).value.trim();
+                                     if (val && val.includes('@')) {
+                                       setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id
+                                         ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), val])) }
+                                         : i
+                                       ));
+                                       (e.target as HTMLInputElement).value = '';
+                                     }
+                                   }
                                  }}
-                                 value={item.email || ""}
+                                 onChange={(e) => {
+                                   // Auto-add when user selects from datalist
+                                   const val = e.target.value.trim();
+                                   const isExact = recommendedEmails.includes(val);
+                                   if (isExact) {
+                                     setTimelineData((prev: TimelineItem[]) => prev.map(i => i.id === item.id
+                                       ? { ...i, emails: Array.from(new Set([...(i.emails ?? []), val])) }
+                                       : i
+                                     ));
+                                     e.target.value = '';
+                                   }
+                                 }}
                                />
                             </div>
                           </div>
