@@ -1541,6 +1541,7 @@ export default function PartnerTable({ partners, activeFilter, onFilterChange, s
         </table>
       </div>
     </motion.div>
+    </>
   );
 }
 
