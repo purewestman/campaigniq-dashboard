@@ -2,21 +2,21 @@ import React, { useState } from "react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { isLinkedDomain } from "@/lib/data";
-import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert, Key } from "lucide-react";
+import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert, Settings2, Check, X, Key } from "lucide-react";
 import { toast } from "sonner";
-import SecurityLogPage from "./SecurityLogPage";
 
 export default function SettingsPage() {
-  const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, updateUserRole, addedGlobalUsers } = useModifications();
+  const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, updateUserRole } = useModifications();
   const { user } = useAuth();
   const isGlobalAdmin = user?.role === 'Global Admin';
   
-  const [activeTab, setActiveTab] = useState<"users" | "security">("users");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdding, setIsAdding] = useState(false);
-  const [showUsers, setShowUsers] = useState(true);
   const [newUser, setNewUser] = useState({ firstName: "", lastName: "", email: "" });
   const [newUserRole, setNewUserRole] = useState<"Admin" | "Sales" | "Technical" | "Sales & Technical">("Sales");
+
+  const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
+  const [pendingRoles, setPendingRoles] = useState<Record<string, string>>({});
 
   const domainDirectory = isGlobalAdmin 
     ? computedGlobalDirectory 
@@ -52,13 +52,30 @@ export default function SettingsPage() {
     toast.success("User added to Global Directory");
   };
 
+  const handleResetPassword = (domain: string) => {
+    if (confirm(`Are you sure you want to reset the primary login password for ${domain} back to 'everpure'?`)) {
+      localStorage.setItem(`pwd_${domain}`, "everpure");
+      toast.success(`Password for ${domain} successfully reset.`);
+    }
+  };
+
+  const commitSave = (email: string) => {
+    if (pendingRoles[email]) {
+      updateUserRole(email, pendingRoles[email] as any);
+      toast.success("User role updated successfully");
+      setPendingRoles(prev => { const n = {...prev}; delete n[email]; return n; });
+    }
+    setActionMenuFor(null);
+  };
+
   return (
     <div className="flex-1 w-full bg-[#FAFAFA] min-h-screen text-slate-800 font-sans p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 border-b-4 border-pure-orange inline-block pb-2 max-w-fit">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 border-b-4 border-pure-orange inline-block pb-2 max-w-fit flex items-center gap-3">
+            <Settings2 className="w-8 h-8 text-pure-orange" />
             {isGlobalAdmin ? "Admin Settings & Operations" : "Partner Identity Directory"}
           </h1>
           <p className="text-[14px] text-slate-500 font-medium">
@@ -66,137 +83,129 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Admin Tabs */}
-        {isGlobalAdmin && (
-          <div className="flex items-center gap-6 border-b border-slate-200">
-             <button 
-               onClick={() => setActiveTab("users")}
-               className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all \${activeTab === "users" ? "text-pure-orange border-b-2 border-pure-orange" : "text-slate-400 hover:text-slate-600"}`}
-             >
-               <Users className="w-4 h-4" /> Manage Partners & Users
-             </button>
-             <button 
-               onClick={() => setActiveTab("security")}
-               className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all \${activeTab === "security" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400 hover:text-slate-600"}`}
-             >
-               <Key className="w-4 h-4" /> Password Resets (Security)
-             </button>
-          </div>
-        )}
-
-        {activeTab === "users" && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
-            
-            {/* Action Bar */}
-            <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-              <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text"
-                  placeholder="Search by name or email..."
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-pure-orange transition-colors"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <button 
-                onClick={() => setIsAdding(!isAdding)}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
-              >
-                <UserPlus className="w-4 h-4" /> Add User
-              </button>
+        <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
+          
+          {/* Action Bar */}
+          <div className="flex items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text"
+                placeholder="Search directory..."
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-pure-orange transition-colors"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+            <button 
+              onClick={() => setIsAdding(!isAdding)}
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" /> Add User
+            </button>
+          </div>
 
-            {/* Add User Panel */}
-            {isAdding && (
-              <div className="bg-white p-6 rounded-xl shadow-md border border-pure-orange space-y-4">
-                <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-pure-orange" />
-                  Manual Directory Entry
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Users added manually will bypass organic telemetry detection and become immediately available for assigning requirements in the exact domains you register them under.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                   <input 
-                     type="text" placeholder="First Name" 
-                     value={newUser.firstName} onChange={(e) => setNewUser(p => ({...p, firstName: e.target.value}))}
-                     className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
-                   />
-                   <input 
-                     type="text" placeholder="Last Name" 
-                     value={newUser.lastName} onChange={(e) => setNewUser(p => ({...p, lastName: e.target.value}))}
-                     className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
-                   />
-                   <input 
-                     type="email" placeholder="Email Address (e.g. user@partner.com)" 
-                     value={newUser.email} onChange={(e) => setNewUser(p => ({...p, email: e.target.value}))}
-                     className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
-                   />
-                   <select 
-                     value={newUserRole} onChange={(e) => setNewUserRole(e.target.value as any)}
-                     className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
-                   >
-                     <option value="Admin">Admin</option>
-                     <option value="Sales">Sales</option>
-                     <option value="Technical">Technical</option>
-                     <option value="Sales & Technical">Sales & Technical (Both)</option>
-                   </select>
-                </div>
-                <div className="flex justify-end gap-2">
-                   <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900">Cancel</button>
-                   <button onClick={handleAdd} className="px-5 py-2 text-sm font-bold text-white bg-pure-orange rounded-lg shadow-sm">Save to Directory</button>
-                </div>
+          {/* Add User Panel */}
+          {isAdding && (
+            <div className="bg-white p-6 rounded-xl shadow-md border border-pure-orange space-y-4">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-pure-orange" />
+                Manual Directory Entry
+              </h3>
+              <p className="text-xs text-slate-500">
+                Users added manually will bypass organic telemetry detection and become immediately available for assigning requirements in the exact domains you register them under.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <input 
+                   type="text" placeholder="First Name" 
+                   value={newUser.firstName} onChange={(e) => setNewUser(p => ({...p, firstName: e.target.value}))}
+                   className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
+                 />
+                 <input 
+                   type="text" placeholder="Last Name" 
+                   value={newUser.lastName} onChange={(e) => setNewUser(p => ({...p, lastName: e.target.value}))}
+                   className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
+                 />
+                 <input 
+                   type="email" placeholder="Email Address (e.g. user@partner.com)" 
+                   value={newUser.email} onChange={(e) => setNewUser(p => ({...p, email: e.target.value}))}
+                   className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
+                 />
+                 <select 
+                   value={newUserRole} onChange={(e) => setNewUserRole(e.target.value as any)}
+                   className="bg-slate-50 border border-slate-200 px-3 py-2 text-sm rounded-lg focus:border-pure-orange outline-none"
+                 >
+                   <option value="Admin">Admin</option>
+                   <option value="Sales">Sales</option>
+                   <option value="Technical">Technical</option>
+                   <option value="Sales & Technical">Sales & Technical (Both)</option>
+                 </select>
               </div>
-            )}
+              <div className="flex justify-end gap-2">
+                 <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900">Cancel</button>
+                 <button onClick={handleAdd} className="px-5 py-2 text-sm font-bold text-white bg-pure-orange rounded-lg shadow-sm">Save to Directory</button>
+              </div>
+            </div>
+          )}
 
-            {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-widest border-b border-slate-200">
-                  <tr>
-                    <th className="px-6 py-4">User</th>
-                    <th className="px-6 py-4">Email Address</th>
-                    <th className="px-6 py-4">Account Domain</th>
-                    <th className="px-6 py-4">IAM Role</th>
-                    <th className="px-6 py-4">Source</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-[13px] font-medium text-slate-700">
-                  {filteredUsers.map((user) => (
-                    <tr key={user.email} className="hover:bg-slate-50/50">
+          {/* Table */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-widest border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Email Address</th>
+                  <th className="px-6 py-4">Account Domain</th>
+                  <th className="px-6 py-4">IAM Role</th>
+                  <th className="px-6 py-4">Source</th>
+                  <th className="px-6 py-4 text-right">Settings</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-[13px] font-medium text-slate-700">
+                {filteredUsers.map((userObj) => {
+                  const isEditing = actionMenuFor === userObj.email;
+                  const currentDisplayRole = isEditing ? (pendingRoles[userObj.email] || userObj.role || "Sales") : (userObj.role || "Sales");
+                  const userDomain = userObj.email.split('@')[1];
+
+                  return (
+                    <tr key={userObj.email} className={`transition-colors duration-200 ${isEditing ? 'bg-amber-50/30' : 'hover:bg-slate-50/50'}`}>
                       <td className="px-6 py-3.5 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500">
+                        <div className={`w-8 h-8 rounded-full ${isEditing ? 'bg-amber-100 text-amber-600 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'} border flex items-center justify-center transition-colors`}>
                           <Users className="w-4 h-4" />
                         </div>
-                        <span>{user.firstName} {user.lastName}</span>
+                        <span>{userObj.firstName} {userObj.lastName}</span>
                       </td>
                       <td className="px-6 py-3.5">
                         <span className="flex items-center gap-2 text-slate-500 font-mono text-[12px]">
                           <Mail className="w-3.5 h-3.5" />
-                          {user.email}
+                          {userObj.email}
                         </span>
                       </td>
                       <td className="px-6 py-3.5">
                         <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[11px] font-bold font-mono border border-slate-200">
-                          @{user.email.split('@')[1]}
+                          @{userDomain}
                         </span>
                       </td>
                       <td className="px-6 py-3.5">
-                        <select 
-                          value={user.role || "Sales"}
-                          onChange={(e) => updateUserRole(user.email, e.target.value as any)}
-                          className="bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded-md text-[11px] font-bold outline-none focus:border-pure-orange"
-                        >
-                          <option value="Admin">Admin</option>
-                          <option value="Sales">Sales</option>
-                          <option value="Technical">Technical</option>
-                          <option value="Sales & Technical">Sales & Technical (Both)</option>
-                        </select>
+                        {isEditing ? (
+                          <select 
+                            value={currentDisplayRole}
+                            onChange={(e) => setPendingRoles(p => ({...p, [userObj.email]: e.target.value}))}
+                            className="bg-white border text-slate-600 px-2 py-1.5 rounded-md text-[12px] font-bold outline-none border-amber-400 focus:ring-2 focus:ring-amber-400/20 shadow-sm w-full"
+                          >
+                            <option value="Admin">Admin</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Sales & Technical">Sales & Technical (Both)</option>
+                          </select>
+                        ) : (
+                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold ${currentDisplayRole === 'Admin' ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-600 border border-slate-200'}`}>
+                            {currentDisplayRole}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-3.5">
-                        {user.source === "telemetry" ? (
+                        {userObj.source === "telemetry" ? (
                           <span className="inline-flex items-center gap-1 text-moss-green bg-moss-green/10 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
                             <BadgeCheck className="w-3 h-3" /> Telemetry
                           </span>
@@ -206,39 +215,64 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-3.5 text-right">
-                        {user.source === "manual" && (
+                      <td className="px-6 py-3.5 text-right w-[200px]">
+                        {!isEditing ? (
                           <button 
-                            onClick={() => removeGlobalUser(user.email)}
-                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                            title="Remove manual user"
+                            onClick={() => setActionMenuFor(userObj.email)}
+                            className="text-xs font-bold px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md transition-colors"
                           >
-                            <Trash2 className="w-4 h-4 inline" />
+                            Actions
                           </button>
+                        ) : (
+                          <div className="flex items-center justify-end gap-1.5 animate-in fade-in slide-in-from-right-2 duration-200">
+                            <button 
+                              onClick={() => commitSave(userObj.email)}
+                              className="px-2 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md flex items-center gap-1 text-[11px] font-bold shadow-sm"
+                            >
+                              <Check className="w-3 h-3" /> Save
+                            </button>
+                            {isGlobalAdmin && (
+                              <button 
+                                onClick={() => { handleResetPassword(userDomain); setActionMenuFor(null); }}
+                                className="px-2 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md flex items-center gap-1 text-[11px] font-bold shadow-sm"
+                                title={`Reset password for domain @${userDomain}`}
+                              >
+                                <Key className="w-3 h-3" /> Reset
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => { setActionMenuFor(null); setPendingRoles(p => { const n={...p}; delete n[userObj.email]; return n; }); }}
+                              className="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md flex items-center gap-1 text-[11px] font-bold"
+                            >
+                              <X className="w-3 h-3" /> Cancel
+                            </button>
+                            {userObj.source === "manual" && (
+                              <button 
+                                onClick={() => removeGlobalUser(userObj.email)}
+                                className="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-md ml-1"
+                                title="Delete user entirely"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                     </tr>
-                  ))}
-                  {filteredUsers.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-slate-500 font-medium">
-                        No users mapped to this search query.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
+                  )
+                })}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500 font-medium">
+                      No users mapped to this search query.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
 
-        {activeTab === "security" && isGlobalAdmin && (
-          <div className="animate-in fade-in slide-in-from-top-4 -mx-8 -mt-8">
-             <SecurityLogPage />
-          </div>
-        )}
-
+        </div>
       </div>
     </div>
   );
