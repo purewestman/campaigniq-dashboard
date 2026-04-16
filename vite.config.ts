@@ -160,6 +160,10 @@ export default defineConfig({
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
     },
+    modules: [
+      path.resolve(import.meta.dirname, "node_modules"),
+      "node_modules",
+    ],
   },
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),
@@ -183,6 +187,10 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
+      allow: [
+        path.resolve(import.meta.dirname),
+        path.resolve(import.meta.dirname, "node_modules"),
+      ],
     },
   },
 });

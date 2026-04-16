@@ -544,35 +544,40 @@ function AspStep({ step, label, sublabel, required, people }: AspStepProps) {
         {people.length}/{required} individuals
       </p>
 
-      {/* Who? accordion */}
+      {/* Who? – chevron icon toggle */}
       {people.length > 0 && (
-        <div className="mt-3 text-[11px]">
+        <div className="mt-2">
           <button
             onClick={() => setOpen(o => !o)}
-            className="flex items-center gap-1.5 font-semibold transition-colors w-full p-1.5 rounded-md hover:bg-black/5"
+            className="flex items-center gap-1 text-[10px] font-semibold transition-colors group"
             style={{ color: ASP_ORANGE }}
+            title={open ? "Hide individuals" : "Show individuals"}
           >
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "" : "-rotate-90"}`} />
-            {open ? "Hide Individuals" : "View Individuals"}
+            <ChevronRight
+              className="w-3.5 h-3.5 transition-transform duration-200"
+              style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+            />
+            {open ? "Hide" : "Who?"}
           </button>
-          
+
           <AnimatePresence>
             {open && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="p-3 space-y-2 mt-1.5 border-l-[3px] bg-slate-50/70 rounded-r-md" style={{ borderColor: ASP_ORANGE }}>
+                <div className="mt-2 space-y-1.5 pl-2 border-l-2" style={{ borderColor: ASP_ORANGE }}>
                   {people.map(p => (
                     <div key={p.email} className="flex flex-col">
-                      <span className="font-bold text-slate-800">{p.firstName} {p.lastName}</span>
-                      <span className="text-slate-500 text-[10px]">{p.email}</span>
+                      <span className="text-[11px] font-bold text-slate-800">{p.firstName} {p.lastName}</span>
+                      <span className="text-[10px] text-slate-500">{p.email}</span>
                     </div>
                   ))}
                   {people.length < required && (
-                    <p className="text-[10px] text-muted-foreground pt-2 border-t border-black/10 mt-2">
+                    <p className="text-[10px] text-muted-foreground pt-1.5 border-t border-black/10 mt-1">
                       Need {required - people.length} more to qualify.
                     </p>
                   )}

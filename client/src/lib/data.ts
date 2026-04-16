@@ -858,6 +858,7 @@ export const navItems: NavItem[] = [
   { id: "training", label: "Training & Activity", icon: "Award", badge: totalExamsPassedCount },
   { id: "asp", label: "ASP Tracking", icon: "ShieldAlert" },
   { id: "planning", label: "Strategic Planning", icon: "Map" },
+  { id: "enablement", label: "Enablement Plans", icon: "ClipboardList" },
   { id: "reports", label: "Reporting Center", icon: "FileBarChart" },
   { id: "settings", label: "Settings", icon: "Settings" },
 ];

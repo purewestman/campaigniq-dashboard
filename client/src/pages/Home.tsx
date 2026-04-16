@@ -30,6 +30,7 @@ import SecurityLogPage from "@/pages/SecurityLogPage";
 import SettingsPage from "@/pages/SettingsPage";
 import TrainingHub from "@/pages/TrainingHub";
 import PlanningHub from "@/pages/PlanningHub";
+import EnablementPlansPage from "@/pages/EnablementPlansPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type ComplianceFilter, TIER_DEFINITIONS, generateRecommendedAction } from "@/lib/data";
@@ -193,6 +194,9 @@ export default function Home() {
 
       case "planning":
         return <PlanningHub />;
+
+      case "enablement":
+        return <EnablementPlansPage />;
 
       case "asp":
         return <AspTrackingPage />;

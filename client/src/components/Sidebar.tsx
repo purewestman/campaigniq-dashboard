@@ -24,6 +24,8 @@ import {
   CalendarCheck,
   CalendarDays,
   LogOut,
+  ClipboardList,
+  Map,
 } from "lucide-react";
 import { navItems, partners } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +44,8 @@ const iconMap: Record<string, React.ElementType> = {
   ShieldAlert,
   CalendarCheck,
   CalendarDays,
+  ClipboardList,
+  Map,
 };
 
 interface SidebarProps {
