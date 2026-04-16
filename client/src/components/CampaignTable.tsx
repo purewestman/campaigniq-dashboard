@@ -312,7 +312,7 @@ function RequirementBarWithOverride({
         {/* Toggle certified people — chevron > */}
         <button
           onClick={(e) => { e.stopPropagation(); setShowPeople((p) => !p); }}
-          className="p-1 rounded-md transition-all hover:bg-black/10 active:scale-95 shrink-0"
+          className="tour-step-gap-toggle p-1 rounded-md transition-all hover:bg-black/10 active:scale-95 shrink-0"
           style={{ color: "var(--color-basil-green)" }}
           title={`View ${label} certified individuals`}
         >

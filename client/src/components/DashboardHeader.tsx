@@ -180,6 +180,24 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         await delay(1200);
       },
     },
+    // ── Step 2b: click a gap row chevron to reveal the email picker ─────────
+    {
+      target: ".tour-step-gap-toggle",
+      title: "Step 2b — Open a Gap's Assignee Panel",
+      content: "Each gap metric has a small chevron (›). Click it to reveal the employee assignment panel for that certification gap. Watch as the tour opens one now.",
+      placement: "top" as const,
+      // Wait for partner row expand animation to finish
+      preAction: async () => {
+        await new Promise(r => setTimeout(r, 1000));
+      },
+      autoAction: async ({ delay }: any) => {
+        const btn = document.querySelector<HTMLElement>(".tour-step-gap-toggle");
+        if (btn) {
+          btn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+        }
+        await delay(1000);
+      },
+    },
     // ── Step 3: gap dropdown ─────────────────────────────────────────────
     {
       target: ".tour-step-gap-select",
