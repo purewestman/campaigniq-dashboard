@@ -161,14 +161,22 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
         await delay(800);
       },
     },
-    // ── Step 2: expand partner row ─────────────────────────────────
+    // ── Step 2: expand partner row ──────────────────────────────────────────
     {
       target: ".tour-step-2",
       title: "Step 2 — Expand a Partner Row",
       content: "Click any partner row to reveal the full enablement gap breakdown below it. Watch as the tour opens the first partner row now.",
       placement: "top" as const,
-      autoAction: async ({ delay, clickEl }: any) => {
-        clickEl(".tour-step-2");
+      // Give step 1's tier change time to settle first
+      preAction: async () => {
+        await new Promise(r => setTimeout(r, 600));
+      },
+      autoAction: async ({ delay }: any) => {
+        // Dispatch a proper MouseEvent — .click() doesn't trigger React synthetic events on motion.tr
+        const row = document.querySelector<HTMLElement>(".tour-step-2");
+        if (row) {
+          row.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+        }
         await delay(1200);
       },
     },

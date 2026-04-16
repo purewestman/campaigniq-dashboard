@@ -91,7 +91,10 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       const el = document.querySelector<HTMLElement>(sel);
       if (el) {
         moveCursorTo(el);
-        setTimeout(() => el.click(), 300);
+        setTimeout(() => {
+          // Use bubbling MouseEvent so React synthetic handlers fire
+          el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+        }, 300);
       }
     },
     selectValue: (sel, value) => {
