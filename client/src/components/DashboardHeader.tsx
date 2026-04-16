@@ -5,7 +5,7 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Search, Bell, X, Lock, FileClock, Trash2 } from "lucide-react";
+import { CalendarDays, Search, Bell, X, Lock, FileClock, Trash2, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useRef, useState, useEffect, useMemo } from "react";
 import PureDividerBackground from "./PureDividerBackground";
@@ -148,52 +148,63 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
     }
   };
 
+  // ── Tour step definitions (also used for auto-tour on first load) ───────────
+  const buildTourSteps = useCallback(() => [
+    {
+      target: ".tour-step-1",
+      title: "Step 1 — Select Target Tier",
+      content: "Evaluate your partner's current status. The tour will now change the target tier dropdown to 'Elite' so you can see the gap difference.",
+      placement: "bottom" as const,
+      autoAction: async ({ delay, selectValue }: any) => {
+        selectValue(".tour-step-1", "elite");
+        await delay(700);
+      },
+    },
+    {
+      target: ".tour-step-2",
+      title: "Step 2 — Expand a Partner Row",
+      content: "Click any partner row to expand the gap breakdown. The tour is opening the first row now so you can see the full enablement gap detail.",
+      placement: "top" as const,
+      autoAction: async ({ delay, clickEl }: any) => {
+        clickEl(".tour-step-2");
+        await delay(900);
+      },
+    },
+    {
+      target: ".tour-step-3",
+      title: "Step 3 — Submit to Enablement Plan",
+      content: "Once gaps have assignees, click 'Submit to Enablement Plan' to commit this plan to the 12-month roadmap.",
+      placement: "top" as const,
+    },
+    {
+      target: ".tour-step-4",
+      title: "Step 4 — Assign Users to Timeline",
+      content: "Inside the Enablement Plans tab, use this field to assign domain users to specific 12-month milestones. The tour will type a sample email now.",
+      placement: "bottom" as const,
+      preAction: async () => {
+        if (onNavChange) onNavChange("enablement");
+        await new Promise(r => setTimeout(r, 800));
+      },
+      autoAction: async ({ delay, typeInto }: any) => {
+        await typeInto(".tour-step-4", "john.doe@partner.com");
+        await delay(500);
+      },
+    },
+    {
+      target: ".tour-step-5",
+      title: "Step 5 — Export Plan as PowerPoint",
+      content: "Download the full 12-month enablement plan as a branded PowerPoint presentation, ready to share with your regional manager.",
+      placement: "bottom" as const,
+    },
+  ], [onNavChange]);
+
   useEffect(() => {
     const hasSeenTour = localStorage.getItem("campaigniq_has_seen_tour");
     if (!hasSeenTour && user) {
       localStorage.setItem("campaigniq_has_seen_tour", "true");
-      // Slight delay so the page can fully mount before tour starts
-      setTimeout(() => {
-        startTour([
-          {
-            target: ".tour-step-1",
-            title: "1. Evaluate Partner Status",
-            content: "Check your partner's current tier and select their target tier from this dropdown to determine the enablement gap.",
-            placement: "bottom"
-          },
-          {
-            target: ".tour-step-2",
-            title: "2. Address Enablement Gaps",
-            content: "Expand a partner row to review specific metric gaps. Use this dropdown to assign target users to fulfill cert requirements.",
-            placement: "top"
-          },
-          {
-            target: ".tour-step-3",
-            title: "3. Submit to Plan",
-            content: "Once all required gap assignments are made, click this button to commit your gap overrides to the enablement roadmap.",
-            placement: "top"
-          },
-          {
-            target: ".tour-step-4",
-            title: "4. Track Enablement over 12 Months",
-            content: "Inside the Enablement Plans tab, you can assign users to a 12-month timeline for comprehensive roadmap tracking.",
-            placement: "bottom",
-            preAction: () => {
-              if (onNavChange) {
-                onNavChange("enablement");
-              }
-            }
-          },
-          {
-            target: ".tour-step-5",
-            title: "5. Export and Present",
-            content: "When you are satisfied with the timeline, export it as a branded PPTX ready for presentation.",
-            placement: "bottom"
-          }
-        ]);
-      }, 800);
+      setTimeout(() => startTour(buildTourSteps()), 900);
     }
-  }, [startTour, user, onNavChange]);
+  }, [startTour, user, buildTourSteps]);
 
   const handlePasswordChange = () => {
     const newPass = prompt("Enter a new password for all users in your domain:");
@@ -241,55 +252,23 @@ export default function DashboardHeader({ searchQuery, onSearchChange, onNavChan
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
+          {/* Help / Take Tour button – always visible in top right */}
           <button
+            title="Take a guided tour"
             onClick={() => {
-              startTour([
-                {
-                  target: ".tour-step-1",
-                  title: "1. Evaluate Partner Status",
-                  content: "Check your partner's current tier and select their target tier from this dropdown to determine the enablement gap.",
-                  placement: "bottom"
-                },
-                {
-                  target: ".tour-step-2",
-                  title: "2. Address Enablement Gaps",
-                  content: "Expand a partner row to review specific metric gaps. Use this dropdown to assign target users to fulfill cert requirements.",
-                  placement: "top"
-                },
-                {
-                  target: ".tour-step-3",
-                  title: "3. Submit to Plan",
-                  content: "Once all required gap assignments are made, click this button to commit your gap overrides to the enablement roadmap.",
-                  placement: "top"
-                },
-                {
-                  target: ".tour-step-4",
-                  title: "4. Track Enablement over 12 Months",
-                  content: "Inside the Enablement Plans tab, you can assign users to a 12-month timeline for comprehensive roadmap tracking.",
-                  placement: "bottom",
-                  preAction: () => {
-                    if (onNavChange) {
-                      onNavChange("enablement");
-                    }
-                  }
-                },
-                {
-                  target: ".tour-step-5",
-                  title: "5. Export and Present",
-                  content: "When you are satisfied with the timeline, export it as a branded PPTX ready for presentation.",
-                  placement: "bottom"
-                }
-              ]);
+              if (onNavChange) onNavChange("overview");
+              setTimeout(() => startTour(buildTourSteps()), 400);
             }}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:bg-slate-900 hover:text-white"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[13px] font-bold transition-all hover:scale-105 active:scale-95"
             style={{
-              background: "color-mix(in srgb, var(--color-pure-orange) 10%, transparent)",
+              background: "color-mix(in srgb, var(--color-pure-orange) 12%, transparent)",
               borderColor: "var(--color-pure-orange)",
               color: "var(--color-pure-orange)",
               backdropFilter: "blur(8px)",
             }}
           >
-            Take Tour
+            <HelpCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Help</span>
           </button>
           {user?.role === 'partner' && (
             <button
