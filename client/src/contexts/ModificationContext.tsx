@@ -515,6 +515,16 @@ export function ModificationProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const addGlobalUser = useCallback((user: GlobalUser) => {
+    setAddedGlobalUsersState(prev => {
+      const exists = prev.some(u => u.email === user.email);
+      if (exists) return prev;
+      const next = [...prev, user];
+      localStorage.setItem(GLOBAL_USERS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const removeGlobalUser = useCallback((email: string) => {
     setAddedGlobalUsersState(prev => {
       const next = prev.filter(u => u.email !== email);
