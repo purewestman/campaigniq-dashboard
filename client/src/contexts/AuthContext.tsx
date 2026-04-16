@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { partners } from '@/lib/data';
+import { partners, isLinkedDomain } from '@/lib/data';
 
 interface UserIdentity {
   role: 'Global Admin' | 'Admin' | 'Sales' | 'Technical' | 'Sales & Technical';
