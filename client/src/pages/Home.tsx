@@ -57,6 +57,13 @@ export default function Home() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+    if (id === "training") {
+      // Clear all activity filters to ensure "certs" tab opens by default
+      setActivityPartnerFilter(null);
+      setActivityCourseFilter(null);
+      setActivitySearchFilter(null);
+      setForceActivityTab(0);
+    }
     setActiveNav(id);
   }, []);
 
@@ -161,7 +168,8 @@ export default function Home() {
     if (partner) setActivityPartnerFilter(partner);
     if (course) setActivityCourseFilter(course);
     if (search) setActivitySearchFilter(search);
-    setActiveNav("activity");
+    setForceActivityTab(prev => prev + 1);
+    setActiveNav("training");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
