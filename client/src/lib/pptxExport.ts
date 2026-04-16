@@ -17,7 +17,7 @@ async function getPptxgen() {
 const B = {
   dark:       "2D2A27", // Slide text / dark BG
   orange:     "FF7023", // Pure Storage / Everpure primary accent
-  cream:      "FFF5E3", // Main slide background
+  cream:      "F3F3F3", // Main slide background (Matched from Template SlideMaster)
   sand:       "D0C8BA", // Dividers / secondary fills
   moss:       "5A6359", // Secondary label colour
   peach:      "F2CDC4", // Alternate BG
@@ -26,7 +26,7 @@ const B = {
   lightGreen: "C5E4CC",
 } as const;
 
-const FONT = "Calibri"; // Closest to Grotesk available in PPTX
+const FONT = "Familjen Grotesk"; // Official template font
 
 // ─── Slide helpers ────────────────────────────────────────────────────────────
 
@@ -53,16 +53,6 @@ function addStyledTitle(
       fontFace: FONT,
     });
   }
-  // Bottom accent bar
-  slide.addShape("rect", {
-    x: 0, y: 7.38, w: "100%", h: 0.12,
-    fill: { color: B.sand },
-    line: { type: "none" },
-  });
-  slide.addText("Everpure | FY27 Partner Enablement", {
-    x: 0.5, y: 7.35, w: 8, h: 0.18,
-    fontSize: 8, color: B.moss, fontFace: FONT,
-  });
 }
 
 function hexagon(slide: any, x: number, y: number, size: number, color: string) {
