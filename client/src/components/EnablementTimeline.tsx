@@ -615,7 +615,7 @@ export default function EnablementTimeline({ partner, compact = false }: Enablem
                             <div className="mt-2">
                                {/* Multi-assignee pills */}
                                <div className="flex flex-wrap gap-1 mb-1">
-                                 {(item.emails ?? (item as any).email ? [(item as any).email] : []).filter(Boolean).map((em: string) => (
+                                 {(item.emails && item.emails.length > 0 ? item.emails : (item as any).email ? [(item as any).email] : []).filter(Boolean).map((em: string) => (
                                    <span key={em} className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-indigo-100">
                                      {em.split('@')[0]}
                                      <button
