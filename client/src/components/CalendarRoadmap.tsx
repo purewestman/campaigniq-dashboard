@@ -106,7 +106,7 @@ inject("FY27 EMEA Orange Belt", "Oct", "Review Webinar", "Portfolio");
 
 export default function CalendarRoadmap() {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { modifications } = useModifications();
+  const { modifications, setGlobalRoadmap } = useModifications();
   const [editableMatrix, setEditableMatrixState] = useState(() => {
     const fromCtx = modifications.find(m => m.type === "roadmap" && m.targetId === "global_calendar");
     return fromCtx ? fromCtx.data : structuredClone(BASE_MATRIX);
