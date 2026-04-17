@@ -28,7 +28,7 @@ import PartnerActivityPage from "@/pages/PartnerActivityPage";
 import AspTrackingPage from "@/pages/AspTrackingPage";
 import SecurityLogPage from "@/pages/SecurityLogPage";
 import SettingsPage from "@/pages/SettingsPage";
-import TrainingHub from "@/pages/TrainingHub";
+
 import PlanningHub from "@/pages/PlanningHub";
 import EnablementPlansPage from "@/pages/EnablementPlansPage";
 import CommitmentTracker, { loadCommitments, saveCommitment, removeCommitment, type PartnerCommitment } from "@/components/CommitmentTracker";
@@ -47,23 +47,19 @@ export default function Home() {
   const [activityCourseFilter, setActivityCourseFilter] = useState<string | null>(null);
   const [activitySearchFilter, setActivitySearchFilter] = useState<string | null>(null);
   const [partnerSearchFilter, setPartnerSearchFilter] = useState<string | null>(null);
-  const [forceActivityTab, setForceActivityTab] = useState(0);
+
   const [commitments, setCommitments] = useState<PartnerCommitment[]>(loadCommitments);
   const partnerTableRef = useRef<HTMLDivElement>(null);
 
   const handleNavChange = useCallback((id: string) => {
     if (id === "activity") {
-      setForceActivityTab(prev => prev + 1);
-      setActiveNav("training");
       window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
     }
-    if (id === "training") {
-      // Clear all activity filters to ensure "certs" tab opens by default
+    if (id === "certifications") {
       setActivityPartnerFilter(null);
       setActivityCourseFilter(null);
       setActivitySearchFilter(null);
-      setForceActivityTab(0);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
     setActiveNav(id);
   }, []);
@@ -172,13 +168,11 @@ export default function Home() {
   const filteredGapData = useMemo(() => getModifiedGapBreakdown(filteredPartners), [filteredPartners, getModifiedGapBreakdown]);
   const filteredEnablement = useMemo(() => getModifiedEnablementDistribution(filteredPartners), [filteredPartners, getModifiedEnablementDistribution]);
 
-  // Navigation helper to switch pages with filters
   const navigateToActivity = (partner?: string, course?: string, search?: string) => {
     if (partner) setActivityPartnerFilter(partner);
     if (course) setActivityCourseFilter(course);
     if (search) setActivitySearchFilter(search);
-    setForceActivityTab(prev => prev + 1);
-    setActiveNav("training");
+    setActiveNav("activity");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -193,19 +187,21 @@ export default function Home() {
             onNavigateToActivity={navigateToActivity} 
           />
         );
-      case "training":
+      case "certifications":
         return (
-          <TrainingHub 
-            activityPartnerFilter={activityPartnerFilter}
-            activityCourseFilter={activityCourseFilter}
-            activitySearchFilter={activitySearchFilter}
-            forceActivityTab={forceActivityTab}
+          <CertificationsPage />
+        );
+      case "activity":
+        return (
+          <PartnerActivityPage 
+            initialPartner={activityPartnerFilter || undefined}
+            initialCourse={activityCourseFilter || undefined}
+            initialSearch={activitySearchFilter || undefined}
             onClearFilters={() => {
               setActivityPartnerFilter(null);
               setActivityCourseFilter(null);
               setActivitySearchFilter(null);
             }}
-            onNavigateToActivity={navigateToActivity}
           />
         );
 

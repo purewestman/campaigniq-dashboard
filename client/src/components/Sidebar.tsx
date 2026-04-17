@@ -156,7 +156,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onCollapse 
           const isActive = activeNav === item.id;
           
           let themeColor = "var(--color-pure-orange)";
-          if (item.id === "training") themeColor = "var(--color-basil-green)";
+          if (item.id === "activity" || item.id === "certifications") themeColor = "var(--color-basil-green)";
           else if (item.id === "planning") themeColor = "var(--color-quartz-pink)";
           else if (item.id === "reports") themeColor = "var(--color-cinnamon-brown)";
 
