@@ -10,6 +10,7 @@ export interface RoadmapEvent {
   tag: TagType;
   date?: string;
   email?: string;
+  completed?: boolean;
 }
 
 const MONTHS = ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"];
@@ -172,6 +173,14 @@ export default function CalendarRoadmap() {
     });
   };
 
+  const toggleItemCompletion = (row: string, month: string, index: number) => {
+    setEditableMatrix((prev: any) => {
+      const clone = structuredClone(prev);
+      clone[row][month][index].completed = !clone[row][month][index].completed;
+      return clone;
+    });
+  };
+
   const addEventToCell = (row: string, month: string, tag: TagType = "Custom") => {
     setEditableMatrix((prev: any) => {
       const clone = structuredClone(prev);
@@ -183,6 +192,10 @@ export default function CalendarRoadmap() {
   return (
     <div id="calendar-roadmap-print-zone" className={`font-sans text-slate-800 w-full transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[200] bg-slate-50 p-4 md:p-8 overflow-y-auto' : 'print:p-0 print:m-0 overflow-hidden'}`}>
       <style>{`
+        @page {
+          size: landscape;
+          margin: 10mm;
+        }
         @media print {
           body * {
             visibility: hidden;
@@ -198,13 +211,14 @@ export default function CalendarRoadmap() {
             background: white !important;
             padding: 0;
             margin: 0;
+            zoom: 65%; /* Scale down to fit 12 months in landscape */
           }
           .print-hide {
             display: none !important;
           }
         }
       `}</style>
-      <div className={`mx-auto space-y-6 ${isFullscreen ? 'max-w-none w-full pb-32' : 'max-w-[1600px]'}`}>
+      <div className={`mx-auto space-y-6 ${isFullscreen ? 'max-w-none w-full pb-32' : 'max-w-[1600px] print:max-w-none'}`}>
         
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 shrink-0 relative overflow-hidden">
@@ -314,30 +328,41 @@ export default function CalendarRoadmap() {
                                    key={event.id}
                                    draggable
                                    onDragStart={e => handleDragStart(e, row, month, i)}
-                                   className={`relative flex items-start gap-1 p-1 rounded-sm transition-all group/item cursor-grab active:cursor-grabbing hover:shadow-md z-10 ${style.isStar ? "" : "hover:bg-white/90"}`}
+                                   className={`relative flex items-start gap-0.5 p-1 rounded-sm transition-all group/item hover:shadow-md z-10 ${style.isStar ? "" : "hover:bg-white/90"} ${event.completed ? 'opacity-50' : ''}`}
                                  >
+                                    <div className="opacity-0 group-hover/item:opacity-100 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-opacity flex items-center h-[20px]">
+                                      <GripVertical size={13} />
+                                    </div>
                                     {style.isStar ? (
-                                      <Star className="text-yellow-400 fill-yellow-400 stroke-yellow-500 shrink-0 mt-0.5 drop-shadow scale-110" size={14} />
+                                      <Star className="text-yellow-400 fill-yellow-400 stroke-yellow-500 shrink-0 drop-shadow scale-110 h-[20px]" size={14} />
                                     ) : (
-                                      <style.icon className={`shrink-0 mt-0.5 ${style.iconColor}`} size={16} />
+                                      <style.icon className={`shrink-0 ${style.iconColor} h-[20px]`} size={16} />
                                     )}
                                     <div 
                                       contentEditable 
                                       suppressContentEditableWarning
                                       onBlur={e => updateItemText(row, month, i, e.currentTarget.textContent || "Event")}
-                                      className="text-[13px] font-bold text-slate-800 leading-tight focus:outline-none focus:bg-white rounded px-1 py-0.5 flex-1 break-words cursor-text"
+                                      className={`text-[13px] font-bold text-slate-800 leading-tight focus:outline-none focus:bg-white rounded px-1 py-0.5 flex-1 break-words cursor-text ${event.completed ? 'line-through text-slate-400' : ''}`}
                                     >
                                       {event.text}
                                     </div>
 
                                     {/* Action Toolbar on Hover */}
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 bg-white shadow-xl border border-slate-200 rounded-lg p-1 flex items-center gap-1 transition-opacity z-50">
-                                       <button onClick={() => removeItem(row, month, i)} className="text-slate-400 hover:text-red-500 p-0.5 rounded hover:bg-red-50">
+                                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 bg-white shadow-xl border border-slate-200 rounded-lg p-1 flex items-center gap-1.5 transition-opacity z-50 print-hide">
+                                       <button 
+                                         onClick={() => toggleItemCompletion(row, month, i)} 
+                                         className={`p-0.5 rounded transition shadow-sm border ${event.completed ? 'bg-emerald-100 text-emerald-600 border-emerald-200 hover:bg-emerald-200' : 'bg-slate-50 text-slate-400 hover:text-emerald-500 border-slate-200 hover:bg-slate-100'}`}
+                                         title={event.completed ? "Mark incomplete" : "Mark completed"}
+                                       >
+                                         <Award size={12} />
+                                       </button>
+                                       <div className="w-px h-3 bg-slate-200"></div>
+                                       <button onClick={() => removeItem(row, month, i)} className="text-slate-400 hover:text-red-500 p-0.5 rounded hover:bg-red-50" title="Delete event">
                                          <Trash2 size={12} />
                                        </button>
                                        <div className="w-px h-3 bg-slate-200"></div>
                                        <select 
-                                         className="text-[9px] bg-transparent focus:outline-none w-16"
+                                         className="text-[9px] font-bold bg-transparent focus:outline-none w-16 text-slate-600 cursor-pointer"
                                          value={event.tag}
                                          onChange={(e) => updateItemTag(row, month, i, e.target.value as TagType)}
                                        >
