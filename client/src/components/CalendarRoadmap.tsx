@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Star, Printer, Trash2, GripVertical, Plus, Box, Award, BookOpen, Layers, Zap, Cpu, Briefcase, Wrench } from 'lucide-react';
+import { Star, Printer, Trash2, GripVertical, Plus, Box, Award, BookOpen, Layers, Zap, Cpu, Briefcase, Wrench, Maximize, Minimize } from 'lucide-react';
 import { useModifications } from '@/contexts/ModificationContext';
 
 export type TagType = "Simply Pure" | "Technical Sales Pro" | "SE Bootcamp" | "Architecture + Depth" | "Elective - Deep Dive" | "CIP, Solution based" | "Portfolio" | "Tools" | "Milestone" | "Custom";
@@ -104,6 +104,7 @@ inject("FY27 EMEA Orange Belt", "Oct", "Review Webinar", "Portfolio");
 
 
 export default function CalendarRoadmap() {
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { modifications } = useModifications();
   const [editableMatrix, setEditableMatrixState] = useState(() => {
     const fromCtx = modifications.find(m => m.type === "roadmap" && m.targetId === "global_calendar");
@@ -180,14 +181,36 @@ export default function CalendarRoadmap() {
   };
 
   return (
-    <div className="font-sans text-slate-800 print:p-0 print:m-0 w-full overflow-hidden">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+    <div id="calendar-roadmap-print-zone" className={`font-sans text-slate-800 w-full transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-[200] bg-slate-50 p-4 md:p-8 overflow-y-auto' : 'print:p-0 print:m-0 overflow-hidden'}`}>
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #calendar-roadmap-print-zone, #calendar-roadmap-print-zone * {
+            visibility: visible;
+          }
+          #calendar-roadmap-print-zone {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            background: white !important;
+            padding: 0;
+            margin: 0;
+          }
+          .print-hide {
+            display: none !important;
+          }
+        }
+      `}</style>
+      <div className={`mx-auto space-y-6 ${isFullscreen ? 'max-w-none w-full pb-32' : 'max-w-[1600px]'}`}>
         
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 shrink-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden relative z-10 w-full">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print-hide relative z-10 w-full">
             <div className="flex-1">
               <div 
                 contentEditable suppressContentEditableWarning
@@ -198,6 +221,13 @@ export default function CalendarRoadmap() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition shadow-sm font-bold"
+              >
+                {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+              </button>
               <button 
                 onClick={() => window.print()}
                 className="flex items-center gap-2 px-4 py-2 bg-[#7b8e97] text-white rounded hover:bg-[#687a82] transition shadow-sm font-bold"
