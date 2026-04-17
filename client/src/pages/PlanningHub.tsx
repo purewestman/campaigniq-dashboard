@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import CalendarRoadmap from "@/components/CalendarRoadmap";
-import SEJourneyMap from "@/components/SEJourneyMap";
 import CorePlatforms from "@/components/CorePlatforms";
 import CommitmentTracker, { loadCommitments, type PartnerCommitment } from "@/components/CommitmentTracker";
 import { useAuth } from "@/contexts/AuthContext";
 import { Map as MapIcon, CalendarDays, CalendarCheck } from "lucide-react";
 
 export default function PlanningHub() {
-  const [activeTab, setActiveTab] = useState<"journey" | "calendar" | "commitments">("journey");
+  const [activeTab, setActiveTab] = useState<"platforms" | "calendar" | "commitments">("platforms");
   
   const { user } = useAuth();
   const [commitments, setCommitments] = useState<PartnerCommitment[]>([]);
@@ -38,22 +37,22 @@ export default function PlanningHub() {
             Strategic Planning
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1">
-            SE Journey maps, RSA Initiative timelines, and Partner Commitments.
+            Core Platform configurations, RSA Initiative timelines, and Partner Commitments.
           </p>
         </div>
       </div>
 
       <div className="flex gap-4 border-b">
         <button
-          onClick={() => setActiveTab("journey")}
+          onClick={() => setActiveTab("platforms")}
           className={`pb-3 text-[13px] font-semibold transition-colors flex items-center gap-1.5 relative ${
-            activeTab === "journey"
+            activeTab === "platforms"
               ? "text-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <MapIcon className="w-4 h-4" /> SE Journey Map
-          {activeTab === "journey" && (
+          <MapIcon className="w-4 h-4" /> Core Platforms
+          {activeTab === "platforms" && (
             <span
               className="absolute bottom-0 left-0 w-full h-[2px] rounded-t-full"
               style={{ background: "var(--color-basil-green)" }}
@@ -97,14 +96,9 @@ export default function PlanningHub() {
       </div>
 
       <div className="pt-2">
-        {activeTab === "journey" && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <SEJourneyMap />
-            </div>
-            <div className="xl:col-span-1">
-              <CorePlatforms />
-            </div>
+        {activeTab === "platforms" && (
+          <div className="grid grid-cols-1 gap-6">
+            <CorePlatforms />
           </div>
         )}
         

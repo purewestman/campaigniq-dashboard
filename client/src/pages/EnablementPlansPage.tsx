@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList, ChevronRight, Download, DownloadCloud,
   CheckCircle2, AlertTriangle, Target, BarChart3,
-  Calendar, UserPlus, X, Users, PenTool,
+  Calendar, UserPlus, X, Users, PenTool, Map as MapIcon
 } from "lucide-react";
 import { useModifications } from "@/contexts/ModificationContext";
 import { type TimelineItem, partners, isLinkedDomain } from "@/lib/data";
@@ -17,6 +17,7 @@ import { trainingData } from "@/lib/trainingData";
 import { exportPartnerPptx, exportAllPartnersPptx } from "@/lib/pptxExport";
 import { addSignedExport } from "@/lib/signedExports";
 import EnablementTimeline from "@/components/EnablementTimeline";
+import SEJourneyMap from "@/components/SEJourneyMap";
 import { toast } from "sonner";
 import type { Partner } from "@/lib/data";
 import { useAuth } from "@/contexts/AuthContext";
@@ -168,6 +169,7 @@ export default function EnablementPlansPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [exportingId, setExportingId] = useState<number | null>(null);
   const [exportingAll, setExportingAll] = useState(false);
+  const [showJourneyMap, setShowJourneyMap] = useState(false);
 
   const filtered = useMemo(() => {
     let list = modifiedPartners;
@@ -279,15 +281,39 @@ export default function EnablementPlansPage() {
               Gap allocation, 12-month roadmap, plan assignees and PPTX export — per partner.
             </p>
           </div>
-          <button
-            onClick={handleExportAllClick}
-            disabled={exportingAll || signModal.type !== 'none'}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md disabled:opacity-60"
-          >
-            <DownloadCloud className="w-4 h-4" />
-            {exportingAll ? "Generating…" : "Export All (PPTX)"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowJourneyMap(!showJourneyMap)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm border ${showJourneyMap ? 'bg-pure-orange text-white border-pure-orange hover:bg-orange-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+            >
+              <MapIcon className="w-4 h-4" />
+              {showJourneyMap ? "Hide SE Journey Map" : "View SE Journey Map"}
+            </button>
+            <button
+              onClick={handleExportAllClick}
+              disabled={exportingAll || signModal.type !== 'none'}
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md disabled:opacity-60"
+            >
+              <DownloadCloud className="w-4 h-4" />
+              {exportingAll ? "Generating…" : "Export All (PPTX)"}
+            </button>
+          </div>
         </div>
+
+        {/* Global SE Journey Map Toggle Section */}
+        <AnimatePresence>
+          {showJourneyMap && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <SEJourneyMap />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filter bar */}
         <div className="flex flex-wrap items-center gap-2 bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200">

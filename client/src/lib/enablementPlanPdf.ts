@@ -603,6 +603,67 @@ function signatureBlock() {
     </div>`;
 }
 
+function sectionSEJourneyMap() {
+  const SE_JOURNEY_STEPS = [
+    {
+      step: 1, title: "Foundation – Simply Pure",
+      links: [{ text: "Simply Pure for Partners – Partner Academy", url: "https://partneracademy.purestorage.com/student/activity/1999196" }]
+    },
+    {
+      step: 2, title: "Core Technical Ramp – TSP",
+      links: [
+        { text: "TSP Learning Path", url: "https://partneracademy.purestorage.com/student/path/3099159" },
+        { text: "TSP FY27 – Partner Central", url: "https://purestorage.my.site.com/partners/s/enablementprogram/0Qocw00000000pdCAA/technical-sales-professional-fy27" }
+      ]
+    },
+    {
+      step: 3, title: "In-Person Core Immersion – SE Bootcamp",
+      links: [
+        { text: "Partner SE Bootcamp", url: "https://partneracademy.purestorage.com/student/page/2420173-pure-storage-partner-se-bootcamp?course_session_id=551394" },
+        { text: "My Events", url: "https://partneracademy.purestorage.com/student/my_events" }
+      ]
+    },
+    {
+      step: 4, title: "Architecture & Solution Depth – EDC + Alliances",
+      links: [
+        { text: "How to Build an EDC", url: "https://employeeacademy.purestorage.com/student/activity/2854893-how-to-build-an-enterprise-data-cloud-for-partner-se" },
+        { text: "Alliance Offerings", url: "https://purestorage.my.site.com/partners/s/" }
+      ]
+    },
+    {
+      step: 5, title: "Electives & Deep Technical Mastery",
+      links: [
+        { text: "Training Catalogue", url: "https://partneracademy.purestorage.com/student/catalog" },
+        { text: "Partner Library", url: "https://purestorage.my.site.com/partners/s/" }
+      ]
+    },
+    {
+      step: 6, title: "Certification & Practice Specializations",
+      links: [
+        { text: "Architect Associate Cert", url: "https://www.purestorage.com/partners/certifications/flasharray-architect-associate.html" },
+        { text: "CIP Orientation", url: "https://docs.google.com/presentation/d/1t_YgnLQCRw7h3uRGWqpE_zyYWDN6VH1oC2kQfOEAJ_Y" }
+      ]
+    }
+  ];
+
+  const items = SE_JOURNEY_STEPS.map(s => `
+    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:#fff;">
+      <div style="font-size:12px;font-weight:800;color:#111827;margin-bottom:6px;">Step ${s.step}: ${escHtml(s.title)}</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${s.links.map((l:any) => \`<a href="\${escHtml(l.url)}" style="font-size:10px;color:#2563eb;font-weight:600;text-decoration:none;" target="_blank">🔗 \${escHtml(l.text)}</a>\`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="section-block">
+      <div class="section-title">🗺️ Global SE Journey Map (Reference)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#fafafa;padding:16px;border-radius:8px;border:1px solid #e5e7eb;">
+        ${items}
+      </div>
+    </div>`;
+}
+
 // ─── Main Generator ───────────────────────────────────────────
 
 export function generateEnablementPlanHtml(
@@ -749,6 +810,7 @@ export function generateEnablementPlanHtml(
     ${sectionBusiness(partner)}
     ${sectionAsp(partner, aspOverride)}
     ${sectionTimeline(partner)}
+    ${sectionSEJourneyMap()}
     <div class="footer no-print">
       <span>Pure Storage FY27 Global Reseller Program · CampaignIQ Dashboard</span>
       <span>Confidential — For internal use only</span>
