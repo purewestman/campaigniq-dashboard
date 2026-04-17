@@ -224,7 +224,7 @@ export default function CalendarRoadmap() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 shrink-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print-hide relative z-10 w-full">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 w-full">
             <div className="flex-1">
               <div 
                 contentEditable suppressContentEditableWarning
@@ -234,7 +234,7 @@ export default function CalendarRoadmap() {
                 {headerState.title}
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 print-hide">
               <button 
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition shadow-sm font-bold"
