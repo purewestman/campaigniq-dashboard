@@ -6,7 +6,7 @@ import { Users, UserPlus, Search, Trash2, Mail, BadgeCheck, ShieldAlert, Setting
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { computedGlobalDirectory, addGlobalUser, removeGlobalUser, updateUserRole } = useModifications();
+  const modCtx = useModifications();
   const { user } = useAuth();
   const isGlobalAdmin = user?.role === 'Global Admin';
   
@@ -21,8 +21,8 @@ export default function SettingsPage() {
   const [pendingRoles, setPendingRoles] = useState<Record<string, string>>({});
 
   const domainDirectory = isGlobalAdmin 
-    ? computedGlobalDirectory 
-    : computedGlobalDirectory.filter(u => isLinkedDomain(user?.domain, u.email.split('@')[1]));
+    ? modCtx.computedGlobalDirectory 
+    : modCtx.computedGlobalDirectory.filter(u => isLinkedDomain(user?.domain, u.email.split('@')[1]));
 
   const filteredUsers = domainDirectory.filter(u => 
     u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -43,7 +43,7 @@ export default function SettingsPage() {
          return;
       }
     }
-    addGlobalUser({
+    modCtx.addGlobalUser({
       ...newUser,
       source: "manual",
       role: newUserRole
@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
   const commitSave = (email: string) => {
     if (pendingRoles[email]) {
-      updateUserRole(email, pendingRoles[email] as any);
+      modCtx.updateUserRole(email, pendingRoles[email] as any);
       toast.success("User role updated successfully");
       setPendingRoles(prev => { const n = {...prev}; delete n[email]; return n; });
     }
@@ -116,7 +116,7 @@ export default function SettingsPage() {
               ? roleInput as any 
               : "Sales";
             
-            addGlobalUser({
+            modCtx.addGlobalUser({
               firstName: firstName || "",
               lastName: lastName || "",
               email: email.toLowerCase(),
@@ -340,7 +340,7 @@ export default function SettingsPage() {
                             </button>
                             {userObj.source === "manual" && (
                               <button 
-                                onClick={() => removeGlobalUser(userObj.email)}
+                                onClick={() => modCtx.removeGlobalUser(userObj.email)}
                                 className="px-2 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-md ml-1"
                                 title="Delete user entirely"
                               >
